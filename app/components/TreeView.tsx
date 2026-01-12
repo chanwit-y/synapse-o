@@ -29,6 +29,8 @@ function TreeNodeItem({ node, level, onNodeClick }: TreeNodeItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const hasChildren = node.children && node.children.length > 0;
   const isFolder = node.type === "folder";
+  // Add extra indentation for nested items (files/folders inside folders)
+  const indentLevel = level > 0 ? level * 20 + 8 : 8;
 
   const handleClick = () => {
     if (isFolder && hasChildren) {
@@ -41,7 +43,7 @@ function TreeNodeItem({ node, level, onNodeClick }: TreeNodeItemProps) {
     <div>
       <div
         className="flex items-center gap-1 px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded cursor-pointer transition-colors group"
-        style={{ paddingLeft: `${level * 16 + 8}px` }}
+        style={{ paddingLeft: `${indentLevel}px` }}
         onClick={handleClick}
       >
         {isFolder && hasChildren && (
