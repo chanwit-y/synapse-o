@@ -1,5 +1,6 @@
 "use client";
 
+import { Exo_2 } from "next/font/google";
 import MarkdownEditor from "./components/MarkdownEditor";
 
 export default function Home() {
@@ -9,3 +10,5 @@ export default function Home() {
     </div>
   );
 }
+
+

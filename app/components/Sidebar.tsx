@@ -1,63 +1,105 @@
 "use client";
 
-import TreeView, { TreeNode } from "./TreeView";
+import TreeView, { TreeNode, TreeViewGroup } from "./TreeView";
 
 // Sample folder structure data - only .md files
-const sampleTreeData: TreeNode[] = [
+const sampleTreeData: TreeViewGroup[] = [
   {
-    name: "docs",
-    type: "folder",
-    children: [
+    groupName: "group1",
+    directories: [
       {
-        name: "getting-started",
+        name: "docs",
         type: "folder",
         children: [
-          { name: "introduction.md", type: "file" },
-          { name: "installation.md", type: "file" },
-          { name: "quick-start.md", type: "file" },
+          {
+            name: "getting-started",
+            type: "folder",
+            children: [
+              { name: "introduction.md", type: "file" },
+              { name: "installation.md", type: "file" },
+              { name: "quick-start.md", type: "file" },
+            ],
+          },
+          {
+            name: "guides",
+            type: "folder",
+            children: [
+              { name: "api-reference.md", type: "file" },
+              { name: "best-practices.md", type: "file" },
+              { name: "troubleshooting.md", type: "file" },
+            ],
+          },
+          {
+            name: "examples",
+            type: "folder",
+            children: [
+              { name: "basic-usage.md", type: "file" },
+              { name: "advanced-features.md", type: "file" },
+            ],
+          },
+          { name: "changelog.md", type: "file" },
+          { name: "contributing.md", type: "file" },
         ],
       },
       {
-        name: "guides",
+        name: "notes",
         type: "folder",
         children: [
-          { name: "api-reference.md", type: "file" },
-          { name: "best-practices.md", type: "file" },
-          { name: "troubleshooting.md", type: "file" },
+          { name: "meeting-notes.md", type: "file" },
+          { name: "ideas.md", type: "file" },
+          { name: "todo.md", type: "file" },
+          {
+            name: "projects",
+            type: "folder",
+            children: [
+              { name: "project-alpha.md", type: "file" },
+              { name: "project-beta.md", type: "file" },
+            ],
+          },
         ],
       },
       {
-        name: "examples",
-        type: "folder",
-        children: [
-          { name: "basic-usage.md", type: "file" },
-          { name: "advanced-features.md", type: "file" },
-        ],
+        name: "README.md",
+        type: "file",
       },
-      { name: "changelog.md", type: "file" },
-      { name: "contributing.md", type: "file" },
     ],
   },
   {
-    name: "notes",
-    type: "folder",
-    children: [
-      { name: "meeting-notes.md", type: "file" },
-      { name: "ideas.md", type: "file" },
-      { name: "todo.md", type: "file" },
+    groupName: "group2",
+    directories: [
       {
-        name: "projects",
+        name: "src",
         type: "folder",
         children: [
-          { name: "project-alpha.md", type: "file" },
-          { name: "project-beta.md", type: "file" },
+          {
+            name: "components",
+            type: "folder",
+            children: [
+              { name: "Button.tsx", type: "file" },
+              { name: "Card.tsx", type: "file" },
+              { name: "Modal.tsx", type: "file" },
+            ],
+          },
+          {
+            name: "utils",
+            type: "folder",
+            children: [
+              { name: "helpers.ts", type: "file" },
+              { name: "constants.ts", type: "file" },
+            ],
+          },
+          { name: "index.ts", type: "file" },
+        ],
+      },
+      {
+        name: "tests",
+        type: "folder",
+        children: [
+          { name: "unit", type: "folder", children: [{ name: "test-utils.ts", type: "file" }] },
+          { name: "integration", type: "folder", children: [{ name: "api.test.ts", type: "file" }] },
         ],
       },
     ],
-  },
-  {
-    name: "README.md",
-    type: "file",
   },
 ];
 
