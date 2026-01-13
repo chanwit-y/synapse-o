@@ -117,17 +117,17 @@ export default function MarkdownEditor() {
     x: 0,
     y: 0
   });
-  const [selectionPopover, setSelectionPopover] = useState<{
-    visible: boolean;
-    content: string;
-    x: number;
-    y: number;
-  }>({
-    visible: false,
-    content: '',
-    x: 0,
-    y: 0
-  });
+  // const [selectionPopover, setSelectionPopover] = useState<{
+  //   visible: boolean;
+  //   content: string;
+  //   x: number;
+  //   y: number;
+  // }>({
+  //   visible: false,
+  //   content: '',
+  //   x: 0,
+  //   y: 0
+  // });
   const popoverRef = useRef<HTMLDivElement>(null);
   const selectionPopoverRef = useRef<HTMLDivElement>(null);
 
@@ -149,68 +149,69 @@ export default function MarkdownEditor() {
 
     const handleMouseOut = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (target.classList.contains('custom-highlight')) {
+      // console.log('custom-highlight', target.classList.contains('custom-highlight'))
+      if (target.classList.contains('custom-highlight') || target.querySelector('.custom-highlight')) {
         setPopover(prev => ({ ...prev, visible: false }));
       }
     };
 
-    // Handle text selection in the editor
-    const handleSelectionChange = () => {
-      const selection = window.getSelection();
-      if (selection && selection.toString().trim().length > 0) {
-        const range = selection.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
-        const selectedText = selection.toString().trim();
+    // // Handle text selection in the editor
+    // const handleSelectionChange = () => {
+    //   const selection = window.getSelection();
+    //   if (selection && selection.toString().trim().length > 0) {
+    //     const range = selection.getRangeAt(0);
+    //     const rect = range.getBoundingClientRect();
+    //     const selectedText = selection.toString().trim();
 
-        // For debugging: show popover for any selection first
-        // TODO: Restrict to editor area once working
-        setSelectionPopover({
-          visible: true,
-          content: `Selected: "${selectedText}"`,
-          x: rect.left + rect.width / 2,
-          y: rect.top - 45
-        });
+    //     // For debugging: show popover for any selection first
+    //     // TODO: Restrict to editor area once working
+    //     setSelectionPopover({
+    //       visible: true,
+    //       content: `Selected: "${selectedText}"`,
+    //       x: rect.left + rect.width / 2,
+    //       y: rect.top - 45
+    //     });
 
-        // Check if selection is within the markdown editor
-        const editorContainer = document.querySelector('.w-md-editor');
-        const isInEditor = editorContainer && (
-          editorContainer.contains(range.commonAncestorContainer) ||
-          editorContainer.contains(range.startContainer) ||
-          editorContainer.contains(range.endContainer)
-        );
+    //     // Check if selection is within the markdown editor
+    //     const editorContainer = document.querySelector('.w-md-editor');
+    //     const isInEditor = editorContainer && (
+    //       editorContainer.contains(range.commonAncestorContainer) ||
+    //       editorContainer.contains(range.startContainer) ||
+    //       editorContainer.contains(range.endContainer)
+    //     );
 
-        // If not in editor, hide the popover
-        if (!isInEditor) {
-          setSelectionPopover(prev => ({ ...prev, visible: false }));
-        }
-      } else {
-        setSelectionPopover(prev => ({ ...prev, visible: false }));
-      }
-    };
+    //     // If not in editor, hide the popover
+    //     if (!isInEditor) {
+    //       setSelectionPopover(prev => ({ ...prev, visible: false }));
+    //     }
+    //   } else {
+    //     setSelectionPopover(prev => ({ ...prev, visible: false }));
+    //   }
+    // };
 
     // Handle mouse up events for text selection
-    const handleMouseUp = () => {
-      // Small delay to ensure selection is complete
-      setTimeout(() => {
-        handleSelectionChange();
-      }, 10);
-    };
+    // const handleMouseUp = () => {
+    //   // Small delay to ensure selection is complete
+    //   setTimeout(() => {
+    //     handleSelectionChange();
+    //   }, 10);
+    // };
 
     // Add event listeners to the document
     document.addEventListener('mouseover', handleMouseOver);
     document.addEventListener('mouseout', handleMouseOut);
-    document.addEventListener('selectionchange', handleSelectionChange);
-    document.addEventListener('mouseup', handleMouseUp);
+    // document.addEventListener('selectionchange', handleSelectionChange);
+    // document.addEventListener('mouseup', handleMouseUp);
 
     // Also add event listeners specifically to the editor when it's available
     const addEditorListeners = () => {
       const editorContainer = document.querySelector('.w-md-editor');
       if (editorContainer) {
-        editorContainer.addEventListener('mouseup', handleMouseUp as EventListener);
-        editorContainer.addEventListener('selectstart', () => {
-          // Clear any existing selection popover when starting a new selection
-          setSelectionPopover(prev => ({ ...prev, visible: false }));
-        });
+        // editorContainer.addEventListener('mouseup', handleMouseUp as EventListener);
+        // editorContainer.addEventListener('selectstart', () => {
+        //   // Clear any existing selection popover when starting a new selection
+        //   setSelectionPopover(prev => ({ ...prev, visible: false }));
+        // });
       }
     };
 
@@ -221,12 +222,12 @@ export default function MarkdownEditor() {
     return () => {
       document.removeEventListener('mouseover', handleMouseOver);
       document.removeEventListener('mouseout', handleMouseOut);
-      document.removeEventListener('selectionchange', handleSelectionChange);
-      document.removeEventListener('mouseup', handleMouseUp);
+      // document.removeEventListener('selectionchange', handleSelectionChange);
+      // document.removeEventListener('mouseup', handleMouseUp);
 
       const editorContainer = document.querySelector('.w-md-editor');
       if (editorContainer) {
-        editorContainer.removeEventListener('mouseup', handleMouseUp as EventListener);
+        // editorContainer.removeEventListener('mouseup', handleMouseUp as EventListener);
         editorContainer.removeEventListener('selectstart', () => { });
       }
 
@@ -423,13 +424,13 @@ You can highlight ??important information?? or ??key concepts?? in your document
           
         `}
       </style>
-      <h1 style={{ marginBottom: '20px', color: '#333' }}>React Markdown Editor</h1>
+      {/* <h1 style={{ marginBottom: '20px', color: '#333' }}>React Markdown Editor</h1> */}
       <MDEditor
         value={value}
         onChange={(val) => {
           setValue(val || '')
         }}
-        height={600}
+        height="calc(100vh - 100px)"
         preview="live"
         data-color-mode="light"
         visibleDragbar={false}
@@ -490,7 +491,7 @@ You can highlight ??important information?? or ??key concepts?? in your document
       )}
 
       {/* Selection Popover Component */}
-      {selectionPopover.visible && (
+      {/* {selectionPopover.visible && (
         <div
           ref={selectionPopoverRef}
           className="selection-popover"
@@ -502,7 +503,7 @@ You can highlight ??important information?? or ??key concepts?? in your document
         >
           {selectionPopover.content}
         </div>
-      )}
+      )} */}
     </div>
   );
 }

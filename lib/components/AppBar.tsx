@@ -7,7 +7,7 @@ export default function AppBar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto flex h-16 items-center justify-between px-1 ">
         <div className="flex items-center">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
             Synapse
