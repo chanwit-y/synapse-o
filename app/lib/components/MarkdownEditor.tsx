@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import MDEditor, { commands } from '@uiw/react-md-editor';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import { useTheme } from './ThemeProvider';
 
 // Define a custom bold icon component
 const CustomBoldIcon = () => (
@@ -198,6 +199,7 @@ function rehypeHighlight() {
 
 
 export default function MarkdownEditor() {
+  const { theme } = useTheme();
   const [popover, setPopover] = useState<{
     visible: boolean;
     content: string;
@@ -813,6 +815,10 @@ You can highlight ??important information?? or ??key concepts?? in your document
            color: #333 !important;
         }
 
+        .dark .code-line {
+           color: #E5E5E5 !important;
+        }
+
         .token.title.important {
            color: #636CCB !important;
         }
@@ -865,6 +871,11 @@ You can highlight ??important information?? or ??key concepts?? in your document
           cursor: help;
         }
 
+        .dark .custom-highlight {
+          background-color: #B8860B;
+          color: #FFF;
+        }
+
         .popover {
           position: fixed;
           background: #333;
@@ -879,6 +890,11 @@ You can highlight ??important information?? or ??key concepts?? in your document
           word-wrap: break-word;
         }
 
+        .dark .popover {
+          background: #1f1f1f;
+          color: #ededed;
+        }
+
         .popover::after {
           content: '';
           position: absolute;
@@ -887,6 +903,10 @@ You can highlight ??important information?? or ??key concepts?? in your document
           transform: translateX(-50%);
           border: 5px solid transparent;
           border-top-color: #333;
+        }
+
+        .dark .popover::after {
+          border-top-color: #1f1f1f;
         }
 
         .selection-popover {
@@ -924,6 +944,11 @@ You can highlight ??important information?? or ??key concepts?? in your document
           min-width: 280px;
         }
 
+        .dark .image-upload-popover {
+          background: #1f1f1f;
+          border-color: #404040;
+        }
+
         .image-upload-popover::before {
           content: '';
           position: absolute;
@@ -932,6 +957,10 @@ You can highlight ??important information?? or ??key concepts?? in your document
           transform: translateX(-50%);
           border: 6px solid transparent;
           border-bottom-color: white;
+        }
+
+        .dark .image-upload-popover::before {
+          border-bottom-color: #1f1f1f;
         }
 
         .image-upload-popover::after {
@@ -945,11 +974,19 @@ You can highlight ??important information?? or ??key concepts?? in your document
           margin-bottom: -1px;
         }
 
+        .dark .image-upload-popover::after {
+          border-bottom-color: #404040;
+        }
+
         .image-upload-popover h3 {
           margin: 0 0 12px 0;
           font-size: 16px;
           font-weight: 600;
           color: #333;
+        }
+
+        .dark .image-upload-popover h3 {
+          color: #ededed;
         }
 
         .image-upload-popover input[type="file"] {
@@ -959,6 +996,12 @@ You can highlight ??important information?? or ??key concepts?? in your document
           border-radius: 4px;
           font-size: 14px;
           cursor: pointer;
+        }
+
+        .dark .image-upload-popover input[type="file"] {
+          border-color: #404040;
+          background-color: #2a2a2a;
+          color: #ededed;
         }
 
         .image-upload-popover input[type="file"]:hover {
@@ -976,6 +1019,11 @@ You can highlight ??important information?? or ??key concepts?? in your document
           min-width: 280px;
         }
 
+        .dark .link-popover {
+          background: #1f1f1f;
+          border-color: #404040;
+        }
+
         .link-popover::before {
           content: '';
           position: absolute;
@@ -984,6 +1032,10 @@ You can highlight ??important information?? or ??key concepts?? in your document
           transform: translateX(-50%);
           border: 6px solid transparent;
           border-bottom-color: white;
+        }
+
+        .dark .link-popover::before {
+          border-bottom-color: #1f1f1f;
         }
 
         .link-popover::after {
@@ -997,11 +1049,19 @@ You can highlight ??important information?? or ??key concepts?? in your document
           margin-bottom: -1px;
         }
 
+        .dark .link-popover::after {
+          border-bottom-color: #404040;
+        }
+
         .link-popover h3 {
           margin: 0 0 12px 0;
           font-size: 16px;
           font-weight: 600;
           color: #333;
+        }
+
+        .dark .link-popover h3 {
+          color: #ededed;
         }
 
         .link-popover label {
@@ -1012,6 +1072,10 @@ You can highlight ??important information?? or ??key concepts?? in your document
           color: #333;
         }
 
+        .dark .link-popover label {
+          color: #ededed;
+        }
+
         .link-popover input[type="text"] {
           width: 100%;
           padding: 8px;
@@ -1020,6 +1084,12 @@ You can highlight ??important information?? or ??key concepts?? in your document
           font-size: 14px;
           margin-bottom: 12px;
           box-sizing: border-box;
+        }
+
+        .dark .link-popover input[type="text"] {
+          background-color: #2a2a2a;
+          border-color: #404040;
+          color: #ededed;
         }
 
         .link-popover input[type="text"]:focus {
@@ -1059,6 +1129,11 @@ You can highlight ??important information?? or ??key concepts?? in your document
           min-width: 280px;
         }
 
+        .dark .heading-popover {
+          background: #1f1f1f;
+          border-color: #404040;
+        }
+
         .heading-popover::before {
           content: '';
           position: absolute;
@@ -1067,6 +1142,10 @@ You can highlight ??important information?? or ??key concepts?? in your document
           transform: translateX(-50%);
           border: 6px solid transparent;
           border-bottom-color: white;
+        }
+
+        .dark .heading-popover::before {
+          border-bottom-color: #1f1f1f;
         }
 
         .heading-popover::after {
@@ -1080,11 +1159,19 @@ You can highlight ??important information?? or ??key concepts?? in your document
           margin-bottom: -1px;
         }
 
+        .dark .heading-popover::after {
+          border-bottom-color: #404040;
+        }
+
         .heading-popover h3 {
           margin: 0 0 12px 0;
           font-size: 16px;
           font-weight: 600;
           color: #333;
+        }
+
+        .dark .heading-popover h3 {
+          color: #ededed;
         }
 
         .heading-popover label {
@@ -1093,6 +1180,10 @@ You can highlight ??important information?? or ??key concepts?? in your document
           font-size: 14px;
           font-weight: 500;
           color: #333;
+        }
+
+        .dark .heading-popover label {
+          color: #ededed;
         }
 
         .heading-popover select {
@@ -1105,6 +1196,12 @@ You can highlight ??important information?? or ??key concepts?? in your document
           box-sizing: border-box;
           background-color: white;
           cursor: pointer;
+        }
+
+        .dark .heading-popover select {
+          background-color: #2a2a2a;
+          border-color: #404040;
+          color: #ededed;
         }
 
         .heading-popover select:focus {
@@ -1126,7 +1223,7 @@ You can highlight ??important information?? or ??key concepts?? in your document
         }}
         height="calc(100vh - 100px)"
         preview="live"
-        data-color-mode="light"
+        data-color-mode={theme}
         visibleDragbar={false}
 
         // textareaProps={{
@@ -1142,10 +1239,10 @@ You can highlight ??important information?? or ??key concepts?? in your document
             //   return <textarea style={{ fontSize: '.95rem' }} {...props} />
             // },
             h1: ({ node, ...props }) => (
-              <h1 style={{ color: '#636CCB', fontSize: '2rem' }} {...props} />
+              <h1 style={{ color: theme === 'dark' ? '#8B9AFF' : '#636CCB', fontSize: '2rem' }} {...props} />
             ),
             p: ({ node, ...props }) => (
-              <p style={{ color: '#37353E', fontSize: '.95rem' }} {...props} />
+              <p style={{ color: theme === 'dark' ? '#E5E5E5' : '#37353E', fontSize: '.95rem' }} {...props} />
             ),
             a: ({ node, ...props }) => (
               <a style={{ color: '#0BA6DF', fontSize: '.95rem' }} {...props} />
