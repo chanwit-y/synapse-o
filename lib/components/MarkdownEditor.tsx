@@ -26,6 +26,80 @@ const customBoldCommand = {
   shortcuts: "ctrl+b", // Add keyboard shortcut
 };
 
+// Define a custom italic icon component
+const CustomItalicIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="19" y1="4" x2="10" y2="4"></line>
+    <line x1="14" y1="20" x2="5" y2="20"></line>
+    <line x1="15" y1="4" x2="9" y2="20"></line>
+  </svg>
+);
+
+// Define a custom italic command with the new icon
+const customItalicCommand = {
+  name: "italic",
+  keyCommand: "italic",
+  buttonProps: { "aria-label": "Italic (Ctrl+I)" },
+  icon: <CustomItalicIcon />, // Use the custom italic icon
+  execute: (state: { selectedText: any; }, api: { replaceSelection: (arg0: string) => void; }) => {
+    // Define the action for italic command
+    let modifyText = `*${state.selectedText || "Italic Text"}*`;
+    api.replaceSelection(modifyText);
+  },
+  shortcuts: "ctrl+i", // Add keyboard shortcut
+};
+
+// Define a custom strikethrough icon component
+const CustomStrikethroughIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+    <line x1="8" y1="12" x2="16" y2="12"></line>
+  </svg>
+);
+
+// Define a custom strikethrough command with the new icon
+const customStrikethroughCommand = {
+  name: "strikethrough",
+  keyCommand: "strikethrough",
+  buttonProps: { "aria-label": "Strikethrough" },
+  icon: <CustomStrikethroughIcon />, // Use the custom strikethrough icon
+  execute: (state: { selectedText: any; }, api: { replaceSelection: (arg0: string) => void; }) => {
+    // Define the action for strikethrough command
+    let modifyText = `~~${state.selectedText || "Strikethrough Text"}~~`;
+    api.replaceSelection(modifyText);
+  },
+};
+
+// Define a custom underline icon component
+const CustomUnderlineIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"></path>
+    <line x1="4" y1="21" x2="20" y2="21"></line>
+  </svg>
+);
+
+// Define a custom underline command with the new icon
+const customUnderlineCommand = {
+  name: "underline",
+  keyCommand: "underline",
+  buttonProps: { "aria-label": "Underline (Ctrl+U)" },
+  icon: <CustomUnderlineIcon />, // Use the custom underline icon
+  execute: (state: { selectedText: any; }, api: { replaceSelection: (arg0: string) => void; }) => {
+    // Define the action for underline command using HTML <u> tags
+    let modifyText = `<u>${state.selectedText || "Underline Text"}</u>`;
+    api.replaceSelection(modifyText);
+  },
+  shortcuts: "ctrl+u", // Add keyboard shortcut
+};
+
+// Custom link icon component
+const CustomLinkIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+  </svg>
+);
+
 // Custom image icon component
 const CustomImageIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -135,8 +209,20 @@ export default function MarkdownEditor() {
     x: 0,
     y: 0
   });
+  const [linkPopover, setLinkPopover] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+  }>({
+    visible: false,
+    x: 0,
+    y: 0
+  });
   const imageUploadPopoverRef = useRef<HTMLDivElement>(null);
+  const linkPopoverRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const linkTextInputRef = useRef<HTMLInputElement>(null);
+  const linkUrlInputRef = useRef<HTMLInputElement>(null);
   const editorApiRef = useRef<{ 
     replaceSelection: (text: string) => void;
     setState: (state: any) => void;
@@ -187,6 +273,50 @@ export default function MarkdownEditor() {
           y: window.innerHeight / 2
         });
       }
+    },
+  };
+
+  // Custom link command that shows popover with text and URL inputs
+  const customLinkCommand = {
+    name: "link",
+    keyCommand: "link",
+    buttonProps: { "aria-label": "Insert Link" },
+    icon: <CustomLinkIcon />,
+    execute: (state: any, api: any) => {
+      // Store the API reference and current state for later use
+      editorApiRef.current = api;
+      editorStateRef.current = state;
+      
+      // Get the button element position to show popover near it
+      const toolbar = document.querySelector('.w-md-editor-toolbar');
+      const linkButton = toolbar?.querySelector('[aria-label="Insert Link"]') as HTMLElement;
+      
+      if (linkButton) {
+        const rect = linkButton.getBoundingClientRect();
+        setLinkPopover({
+          visible: true,
+          x: rect.left + rect.width / 2,
+          y: rect.bottom + 10
+        });
+      } else {
+        // Fallback to center of screen
+        setLinkPopover({
+          visible: true,
+          x: window.innerWidth / 2,
+          y: window.innerHeight / 2
+        });
+      }
+      
+      // Focus on text input after a short delay
+      setTimeout(() => {
+        if (linkTextInputRef.current) {
+          linkTextInputRef.current.focus();
+          // If there's selected text, use it as the link text
+          if (state.selectedText) {
+            linkTextInputRef.current.value = state.selectedText;
+          }
+        }
+      }, 100);
     },
   };
 
@@ -292,6 +422,63 @@ export default function MarkdownEditor() {
     }
   };
 
+  // Handle link submission
+  const handleLinkSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const linkText = linkTextInputRef.current?.value.trim() || '';
+    const linkUrl = linkUrlInputRef.current?.value.trim() || '';
+    
+    if (!linkUrl) {
+      alert('Please enter a URL');
+      return;
+    }
+    
+    // If no text provided, use the URL as the text
+    const displayText = linkText || linkUrl;
+    const linkMarkdown = `[${displayText}](${linkUrl})`;
+    
+    // Get the current cursor position from the textarea
+    const textarea = document.querySelector('.w-md-editor-text-input') as HTMLTextAreaElement;
+    
+    if (textarea) {
+      const currentText = textarea.value;
+      const cursorStart = textarea.selectionStart;
+      const cursorEnd = textarea.selectionEnd;
+      
+      // Insert the link markdown at the current cursor position
+      const newText = 
+        currentText.substring(0, cursorStart) + 
+        linkMarkdown + 
+        currentText.substring(cursorEnd);
+      
+      // Update the editor value
+      setValue(newText);
+      
+      // Set cursor position after the inserted link markdown
+      setTimeout(() => {
+        const newTextarea = document.querySelector('.w-md-editor-text-input') as HTMLTextAreaElement;
+        if (newTextarea) {
+          const newCursorPos = cursorStart + linkMarkdown.length;
+          newTextarea.focus();
+          newTextarea.setSelectionRange(newCursorPos, newCursorPos);
+        }
+      }, 10);
+    } else if (editorApiRef.current) {
+      // Fallback to replaceSelection if textarea is not found
+      editorApiRef.current.replaceSelection(linkMarkdown);
+    }
+    
+    // Close the popover and reset inputs
+    setLinkPopover({ visible: false, x: 0, y: 0 });
+    if (linkTextInputRef.current) {
+      linkTextInputRef.current.value = '';
+    }
+    if (linkUrlInputRef.current) {
+      linkUrlInputRef.current.value = '';
+    }
+  };
+
   // Handle click outside to close popover
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -302,16 +489,24 @@ export default function MarkdownEditor() {
       ) {
         setImageUploadPopover({ visible: false, x: 0, y: 0 });
       }
+      
+      if (
+        linkPopoverRef.current &&
+        !linkPopoverRef.current.contains(event.target as Node) &&
+        !(event.target as HTMLElement).closest('[aria-label="Insert Link"]')
+      ) {
+        setLinkPopover({ visible: false, x: 0, y: 0 });
+      }
     };
 
-    if (imageUploadPopover.visible) {
+    if (imageUploadPopover.visible || linkPopover.visible) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [imageUploadPopover.visible]);
+  }, [imageUploadPopover.visible, linkPopover.visible]);
 
   // Handle popover events
   useEffect(() => {
@@ -655,6 +850,89 @@ You can highlight ??important information?? or ??key concepts?? in your document
         .image-upload-popover input[type="file"]:hover {
           border-color: #0BA6DF;
         }
+
+        .link-popover {
+          position: fixed;
+          background: white;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          padding: 16px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          z-index: 1002;
+          min-width: 280px;
+        }
+
+        .link-popover::before {
+          content: '';
+          position: absolute;
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border: 6px solid transparent;
+          border-bottom-color: white;
+        }
+
+        .link-popover::after {
+          content: '';
+          position: absolute;
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border: 7px solid transparent;
+          border-bottom-color: #e0e0e0;
+          margin-bottom: -1px;
+        }
+
+        .link-popover h3 {
+          margin: 0 0 12px 0;
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+        }
+
+        .link-popover label {
+          display: block;
+          margin-bottom: 6px;
+          font-size: 14px;
+          font-weight: 500;
+          color: #333;
+        }
+
+        .link-popover input[type="text"] {
+          width: 100%;
+          padding: 8px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 14px;
+          margin-bottom: 12px;
+          box-sizing: border-box;
+        }
+
+        .link-popover input[type="text"]:focus {
+          outline: none;
+          border-color: #0BA6DF;
+        }
+
+        .link-popover button {
+          width: 100%;
+          padding: 8px 16px;
+          background-color: #0BA6DF;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+
+        .link-popover button:hover {
+          background-color: #0a95c7;
+        }
+
+        .link-popover button:active {
+          background-color: #0988b3;
+        }
           
         `}
       </style>
@@ -730,7 +1008,7 @@ You can highlight ??important information?? or ??key concepts?? in your document
           }
         }}
 
-        commands={[customBoldCommand, commands.italic, commands.link, commands.code, customImageCommand]} // Use custom image command with upload popover
+        commands={[customBoldCommand, customItalicCommand, customUnderlineCommand, customStrikethroughCommand, customImageCommand, customLinkCommand, commands.code]} // Use custom image command with upload popover
         hideToolbar={false}
       />
       {/* <hr /> */}
@@ -770,6 +1048,39 @@ You can highlight ??important information?? or ??key concepts?? in your document
             onChange={handleFileSelect}
             style={{ display: 'block', width: '100%' }}
           />
+        </div>
+      )}
+
+      {/* Link Popover Component */}
+      {linkPopover.visible && (
+        <div
+          ref={linkPopoverRef}
+          className="link-popover"
+          style={{
+            left: linkPopover.x,
+            top: linkPopover.y,
+            transform: 'translateX(-50%)'
+          }}
+        >
+          <h3>Insert Link</h3>
+          <form onSubmit={handleLinkSubmit}>
+            <label htmlFor="link-text">Link Text</label>
+            <input
+              ref={linkTextInputRef}
+              id="link-text"
+              type="text"
+              placeholder="Enter link text"
+            />
+            <label htmlFor="link-url">URL</label>
+            <input
+              ref={linkUrlInputRef}
+              id="link-url"
+              type="text"
+              placeholder="https://example.com"
+              required
+            />
+            <button type="submit">Insert Link</button>
+          </form>
         </div>
       )}
 

@@ -87,21 +87,38 @@ function TreeNodeItem({ node, level, onNodeClick, selectedNodePath, setSelectedN
           {node.name}
         </span>
       </div>
-      {isExpanded && hasChildren && (
-        <div>
-          {node.children!.map((child, index) => (
-            <TreeNodeItem
-              key={`${child.name}-${index}`}
-              node={child}
-              level={level + 1}
-              onNodeClick={onNodeClick}
-              selectedNodePath={selectedNodePath}
-              setSelectedNodePath={setSelectedNodePath}
-              nodePath={`${nodePath}/${child.name}`}
-              selectedNode={selectedNode}
-              setSelectedNode={setSelectedNode}
-            />
-          ))}
+      {hasChildren && (
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            isExpanded 
+              ? "max-h-[10000px] opacity-100" 
+              : "max-h-0 opacity-0"
+          }`}
+          style={{
+            transitionProperty: "max-height, opacity",
+          }}
+        >
+          <div 
+            className={`transform transition-all duration-300 ease-in-out ${
+              isExpanded 
+                ? "translate-y-0 opacity-100" 
+                : "-translate-y-4 opacity-0"
+            }`}
+          >
+            {node.children!.map((child, index) => (
+              <TreeNodeItem
+                key={`${child.name}-${index}`}
+                node={child}
+                level={level + 1}
+                onNodeClick={onNodeClick}
+                selectedNodePath={selectedNodePath}
+                setSelectedNodePath={setSelectedNodePath}
+                nodePath={`${nodePath}/${child.name}`}
+                selectedNode={selectedNode}
+                setSelectedNode={setSelectedNode}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -189,13 +206,22 @@ function TreeViewGroupItem({
         </div>
       </div>
       <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "max-h-[10000px] opacity-100" : "max-h-0 opacity-0"
-          }`}
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isExpanded 
+            ? "max-h-[10000px] opacity-100" 
+            : "max-h-0 opacity-0"
+        }`}
         style={{
           transitionProperty: "max-height, opacity",
         }}
       >
-        <div className="pt-1 pl-4">
+        <div 
+          className={`pt-1 pl-4 transform transition-all duration-300 ease-in-out ${
+            isExpanded 
+              ? "translate-y-0 opacity-100" 
+              : "-translate-y-4 opacity-0"
+          }`}
+        >
           {group.directories.map((node, index) => (
             <TreeNodeItem
               key={`${node.name}-${index}`}
