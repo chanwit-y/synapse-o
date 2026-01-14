@@ -117,7 +117,9 @@ function TreeViewGroupItem({
   selectedNode,
   setSelectedNode,
   onAddFile,
-  onAddFolder
+  onAddFolder,
+  isFavorited,
+  onToggleFavorite
 }: {
   group: TreeViewGroup;
   groupIndex: number;
@@ -128,6 +130,8 @@ function TreeViewGroupItem({
   setSelectedNode: (node: TreeNode | null) => void;
   onAddFile?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
   onAddFolder?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
+  isFavorited: boolean;
+  onToggleFavorite: (groupIndex: number) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -172,11 +176,15 @@ function TreeViewGroupItem({
             className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
             onClick={(e) => {
               e.stopPropagation();
-              // Handle favorite action
+              onToggleFavorite(groupIndex);
             }}
             title="Favorite"
           >
-            <Star className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+            <Star className={`w-3.5 h-3.5 transition-colors ${
+              isFavorited 
+                ? "text-yellow-500 dark:text-yellow-400 fill-yellow-500 dark:fill-yellow-400" 
+                : "text-gray-500 dark:text-gray-400"
+            }`} />
           </button>
         </div>
       </div>
@@ -210,6 +218,19 @@ function TreeViewGroupItem({
 export default function TreeView({ data, onNodeClick, onAddFile, onAddFolder }: TreeViewProps) {
   const [selectedNodePath, setSelectedNodePath] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
+  const [favoritedGroups, setFavoritedGroups] = useState<Set<number>>(new Set());
+
+  const handleToggleFavorite = (groupIndex: number) => {
+    setFavoritedGroups((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupIndex)) {
+        newSet.delete(groupIndex);
+      } else {
+        newSet.add(groupIndex);
+      }
+      return newSet;
+    });
+  };
 
   return (
     <div className="h-full overflow-y-auto">
@@ -226,6 +247,8 @@ export default function TreeView({ data, onNodeClick, onAddFile, onAddFolder }: 
             setSelectedNode={setSelectedNode}
             onAddFile={onAddFile}
             onAddFolder={onAddFolder}
+            isFavorited={favoritedGroups.has(groupIndex)}
+            onToggleFavorite={handleToggleFavorite}
           />
         ))}
       </div>
