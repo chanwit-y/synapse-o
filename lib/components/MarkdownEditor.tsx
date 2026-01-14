@@ -109,6 +109,15 @@ const CustomImageIcon = () => (
   </svg>
 );
 
+// Custom heading icon component
+const CustomHeadingIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 4h3v16H6V4z"></path>
+    <path d="M15 4h3v16h-3V4z"></path>
+    <path d="M6 12h12"></path>
+  </svg>
+);
+
 
 // Custom remark plugin to parse ??text?? syntax
 function remarkHighlight() {
@@ -218,8 +227,19 @@ export default function MarkdownEditor() {
     x: 0,
     y: 0
   });
+  const [headingPopover, setHeadingPopover] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+  }>({
+    visible: false,
+    x: 0,
+    y: 0
+  });
   const imageUploadPopoverRef = useRef<HTMLDivElement>(null);
   const linkPopoverRef = useRef<HTMLDivElement>(null);
+  const headingPopoverRef = useRef<HTMLDivElement>(null);
+  const headingSelectRef = useRef<HTMLSelectElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const linkTextInputRef = useRef<HTMLInputElement>(null);
   const linkUrlInputRef = useRef<HTMLInputElement>(null);
@@ -315,6 +335,46 @@ export default function MarkdownEditor() {
           if (state.selectedText) {
             linkTextInputRef.current.value = state.selectedText;
           }
+        }
+      }, 100);
+    },
+  };
+
+  // Custom heading command that shows popover with select field
+  const customHeadingCommand = {
+    name: "heading",
+    keyCommand: "heading",
+    buttonProps: { "aria-label": "Insert Heading" },
+    icon: <CustomHeadingIcon />,
+    execute: (state: any, api: any) => {
+      // Store the API reference and current state for later use
+      editorApiRef.current = api;
+      editorStateRef.current = state;
+      
+      // Get the button element position to show popover near it
+      const toolbar = document.querySelector('.w-md-editor-toolbar');
+      const headingButton = toolbar?.querySelector('[aria-label="Insert Heading"]') as HTMLElement;
+      
+      if (headingButton) {
+        const rect = headingButton.getBoundingClientRect();
+        setHeadingPopover({
+          visible: true,
+          x: rect.left + rect.width / 2,
+          y: rect.bottom + 10
+        });
+      } else {
+        // Fallback to center of screen
+        setHeadingPopover({
+          visible: true,
+          x: window.innerWidth / 2,
+          y: window.innerHeight / 2
+        });
+      }
+      
+      // Focus on select after a short delay
+      setTimeout(() => {
+        if (headingSelectRef.current) {
+          headingSelectRef.current.focus();
         }
       }, 100);
     },
@@ -479,6 +539,52 @@ export default function MarkdownEditor() {
     }
   };
 
+  // Handle heading selection
+  const handleHeadingSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const level = parseInt(e.target.value);
+    if (!level || level < 1 || level > 6) return;
+    
+    const selectedText = editorStateRef.current?.selectedText || 'Heading';
+    const headingMarkdown = `${'#'.repeat(level)} ${selectedText}`;
+    
+    // Get the current cursor position from the textarea
+    const textarea = document.querySelector('.w-md-editor-text-input') as HTMLTextAreaElement;
+    
+    if (textarea) {
+      const currentText = textarea.value;
+      const cursorStart = textarea.selectionStart;
+      const cursorEnd = textarea.selectionEnd;
+      
+      // Insert the heading markdown at the current cursor position
+      const newText = 
+        currentText.substring(0, cursorStart) + 
+        headingMarkdown + 
+        currentText.substring(cursorEnd);
+      
+      // Update the editor value
+      setValue(newText);
+      
+      // Set cursor position after the inserted heading markdown
+      setTimeout(() => {
+        const newTextarea = document.querySelector('.w-md-editor-text-input') as HTMLTextAreaElement;
+        if (newTextarea) {
+          const newCursorPos = cursorStart + headingMarkdown.length;
+          newTextarea.focus();
+          newTextarea.setSelectionRange(newCursorPos, newCursorPos);
+        }
+      }, 10);
+    } else if (editorApiRef.current) {
+      // Fallback to replaceSelection if textarea is not found
+      editorApiRef.current.replaceSelection(headingMarkdown);
+    }
+    
+    // Close the popover and reset select
+    setHeadingPopover({ visible: false, x: 0, y: 0 });
+    if (headingSelectRef.current) {
+      headingSelectRef.current.value = '';
+    }
+  };
+
   // Handle click outside to close popover
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -497,16 +603,24 @@ export default function MarkdownEditor() {
       ) {
         setLinkPopover({ visible: false, x: 0, y: 0 });
       }
+      
+      if (
+        headingPopoverRef.current &&
+        !headingPopoverRef.current.contains(event.target as Node) &&
+        !(event.target as HTMLElement).closest('[aria-label="Insert Heading"]')
+      ) {
+        setHeadingPopover({ visible: false, x: 0, y: 0 });
+      }
     };
 
-    if (imageUploadPopover.visible || linkPopover.visible) {
+    if (imageUploadPopover.visible || linkPopover.visible || headingPopover.visible) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [imageUploadPopover.visible, linkPopover.visible]);
+  }, [imageUploadPopover.visible, linkPopover.visible, headingPopover.visible]);
 
   // Handle popover events
   useEffect(() => {
@@ -933,6 +1047,74 @@ You can highlight ??important information?? or ??key concepts?? in your document
         .link-popover button:active {
           background-color: #0988b3;
         }
+
+        .heading-popover {
+          position: fixed;
+          background: white;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          padding: 16px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          z-index: 1002;
+          min-width: 280px;
+        }
+
+        .heading-popover::before {
+          content: '';
+          position: absolute;
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border: 6px solid transparent;
+          border-bottom-color: white;
+        }
+
+        .heading-popover::after {
+          content: '';
+          position: absolute;
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border: 7px solid transparent;
+          border-bottom-color: #e0e0e0;
+          margin-bottom: -1px;
+        }
+
+        .heading-popover h3 {
+          margin: 0 0 12px 0;
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+        }
+
+        .heading-popover label {
+          display: block;
+          margin-bottom: 6px;
+          font-size: 14px;
+          font-weight: 500;
+          color: #333;
+        }
+
+        .heading-popover select {
+          width: 100%;
+          padding: 8px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 14px;
+          margin-bottom: 12px;
+          box-sizing: border-box;
+          background-color: white;
+          cursor: pointer;
+        }
+
+        .heading-popover select:focus {
+          outline: none;
+          border-color: #0BA6DF;
+        }
+
+        .heading-popover select:hover {
+          border-color: #0BA6DF;
+        }
           
         `}
       </style>
@@ -1008,7 +1190,7 @@ You can highlight ??important information?? or ??key concepts?? in your document
           }
         }}
 
-        commands={[customBoldCommand, customItalicCommand, customUnderlineCommand, customStrikethroughCommand, customImageCommand, customLinkCommand, commands.code]} // Use custom image command with upload popover
+        commands={[customBoldCommand, customItalicCommand, customUnderlineCommand, customStrikethroughCommand, customHeadingCommand, customImageCommand, customLinkCommand]} // Use custom commands with popovers
         hideToolbar={false}
       />
       {/* <hr /> */}
@@ -1081,6 +1263,36 @@ You can highlight ??important information?? or ??key concepts?? in your document
             />
             <button type="submit">Insert Link</button>
           </form>
+        </div>
+      )}
+
+      {/* Heading Popover Component */}
+      {headingPopover.visible && (
+        <div
+          ref={headingPopoverRef}
+          className="heading-popover"
+          style={{
+            left: headingPopover.x,
+            top: headingPopover.y,
+            transform: 'translateX(-50%)'
+          }}
+        >
+          <h3>Insert Heading</h3>
+          <label htmlFor="heading-level">Heading Level</label>
+          <select
+            ref={headingSelectRef}
+            id="heading-level"
+            onChange={handleHeadingSelect}
+            defaultValue=""
+          >
+            <option value="" disabled>Select heading level</option>
+            <option value="1">Heading 1</option>
+            <option value="2">Heading 2</option>
+            <option value="3">Heading 3</option>
+            <option value="4">Heading 4</option>
+            <option value="5">Heading 5</option>
+            <option value="6">Heading 6</option>
+          </select>
         </div>
       )}
 
