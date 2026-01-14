@@ -26,6 +26,15 @@ const customBoldCommand = {
   shortcuts: "ctrl+b", // Add keyboard shortcut
 };
 
+// Custom image icon component
+const CustomImageIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+    <polyline points="21 15 16 10 5 21"></polyline>
+  </svg>
+);
+
 
 // Custom remark plugin to parse ??text?? syntax
 function remarkHighlight() {
@@ -117,6 +126,23 @@ export default function MarkdownEditor() {
     x: 0,
     y: 0
   });
+  const [imageUploadPopover, setImageUploadPopover] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+  }>({
+    visible: false,
+    x: 0,
+    y: 0
+  });
+  const imageUploadPopoverRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const editorApiRef = useRef<{ 
+    replaceSelection: (text: string) => void;
+    setState: (state: any) => void;
+    getState: () => any;
+  } | null>(null);
+  const editorStateRef = useRef<any>(null);
   // const [selectionPopover, setSelectionPopover] = useState<{
   //   visible: boolean;
   //   content: string;
@@ -130,6 +156,162 @@ export default function MarkdownEditor() {
   // });
   const popoverRef = useRef<HTMLDivElement>(null);
   const selectionPopoverRef = useRef<HTMLDivElement>(null);
+
+  // Custom image command that shows upload popover
+  const customImageCommand = {
+    name: "image",
+    keyCommand: "image",
+    buttonProps: { "aria-label": "Insert Image" },
+    icon: <CustomImageIcon />,
+    execute: (state: any, api: any) => {
+      // Store the API reference and current state for later use
+      editorApiRef.current = api;
+      editorStateRef.current = state;
+      
+      // Get the button element position to show popover near it
+      const toolbar = document.querySelector('.w-md-editor-toolbar');
+      const imageButton = toolbar?.querySelector('[aria-label="Insert Image"]') as HTMLElement;
+      
+      if (imageButton) {
+        const rect = imageButton.getBoundingClientRect();
+        setImageUploadPopover({
+          visible: true,
+          x: rect.left + rect.width / 2,
+          y: rect.bottom + 10
+        });
+      } else {
+        // Fallback to center of screen
+        setImageUploadPopover({
+          visible: true,
+          x: window.innerWidth / 2,
+          y: window.innerHeight / 2
+        });
+      }
+    },
+  };
+
+  // Handle file selection
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check if file is an image
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    // Check file size (limit to 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      alert('Image file is too large. Please select an image smaller than 10MB.');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    try {
+      // Create FormData to upload the file
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Upload the file to the API
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to upload file');
+      }
+
+      const result = await response.json();
+      
+      if (!result.success || !result.path) {
+        throw new Error('Upload failed: No file path returned');
+      }
+
+      // Get the file path from the response
+      // Ensure the path is properly formatted (should be /upload/filename)
+      let imagePath = result.path;
+      
+      // Normalize the path - ensure it starts with /
+      if (!imagePath.startsWith('/')) {
+        imagePath = '/' + imagePath;
+      }
+      
+      // Log for debugging (can be removed in production)
+      console.log('Image uploaded successfully:', imagePath);
+      
+      const altText = file.name.replace(/\.[^/.]+$/, ""); // Remove file extension
+      const imageMarkdown = `![${altText}](${imagePath})`;
+      
+      // Get the current cursor position from the textarea
+      const textarea = document.querySelector('.w-md-editor-text-input') as HTMLTextAreaElement;
+      
+      if (textarea) {
+        const currentText = textarea.value;
+        const cursorStart = textarea.selectionStart;
+        const cursorEnd = textarea.selectionEnd;
+        
+        // Insert the image markdown at the current cursor position
+        const newText = 
+          currentText.substring(0, cursorStart) + 
+          imageMarkdown + 
+          currentText.substring(cursorEnd);
+        
+        // Update the editor value
+        setValue(newText);
+        
+        // Set cursor position after the inserted image markdown
+        setTimeout(() => {
+          const newTextarea = document.querySelector('.w-md-editor-text-input') as HTMLTextAreaElement;
+          if (newTextarea) {
+            const newCursorPos = cursorStart + imageMarkdown.length;
+            newTextarea.focus();
+            newTextarea.setSelectionRange(newCursorPos, newCursorPos);
+          }
+        }, 10);
+      } else if (editorApiRef.current) {
+        // Fallback to replaceSelection if textarea is not found
+        editorApiRef.current.replaceSelection(imageMarkdown);
+      }
+      
+      // Close the popover
+      setImageUploadPopover({ visible: false, x: 0, y: 0 });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert(error instanceof Error ? error.message : 'Error uploading image. Please try again.');
+    } finally {
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Handle click outside to close popover
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        imageUploadPopoverRef.current &&
+        !imageUploadPopoverRef.current.contains(event.target as Node) &&
+        !(event.target as HTMLElement).closest('[aria-label="Insert Image"]')
+      ) {
+        setImageUploadPopover({ visible: false, x: 0, y: 0 });
+      }
+    };
+
+    if (imageUploadPopover.visible) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [imageUploadPopover.visible]);
 
   // Handle popover events
   useEffect(() => {
@@ -421,6 +603,58 @@ You can highlight ??important information?? or ??key concepts?? in your document
           border: 5px solid transparent;
           border-top-color: #4E61D3;
         }
+
+        .image-upload-popover {
+          position: fixed;
+          background: white;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          padding: 16px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          z-index: 1002;
+          min-width: 280px;
+        }
+
+        .image-upload-popover::before {
+          content: '';
+          position: absolute;
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border: 6px solid transparent;
+          border-bottom-color: white;
+        }
+
+        .image-upload-popover::after {
+          content: '';
+          position: absolute;
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border: 7px solid transparent;
+          border-bottom-color: #e0e0e0;
+          margin-bottom: -1px;
+        }
+
+        .image-upload-popover h3 {
+          margin: 0 0 12px 0;
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+        }
+
+        .image-upload-popover input[type="file"] {
+          width: 100%;
+          padding: 8px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 14px;
+          cursor: pointer;
+        }
+
+        .image-upload-popover input[type="file"]:hover {
+          border-color: #0BA6DF;
+        }
           
         `}
       </style>
@@ -456,6 +690,33 @@ You can highlight ??important information?? or ??key concepts?? in your document
             a: ({ node, ...props }) => (
               <a style={{ color: '#0BA6DF', fontSize: '.95rem' }} {...props} />
             ),
+            img: ({ node, src, alt, ...props }: any) => {
+              // Ensure image paths are correctly resolved
+              // If src starts with /upload/, it's already correct
+              // If it starts with /api/upload/, convert to /upload/
+              let imageSrc = src;
+              if (src?.startsWith('/api/upload/')) {
+                imageSrc = src.replace('/api/upload/', '/upload/');
+              }
+              
+              return (
+                <img
+                  src={imageSrc}
+                  alt={alt || ''}
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                    borderRadius: '4px',
+                    margin: '10px 0',
+                  }}
+                  onError={(e) => {
+                    console.error('Image failed to load:', imageSrc);
+                    // Optionally show a placeholder or error message
+                  }}
+                  {...props}
+                />
+              );
+            },
             code: ({ inline, node, ...props }: any) => (
               <code
                 style={{
@@ -469,7 +730,7 @@ You can highlight ??important information?? or ??key concepts?? in your document
           }
         }}
 
-        commands={[customBoldCommand, commands.italic, commands.link, commands.code]} // Use custom bold command with new icon
+        commands={[customBoldCommand, commands.italic, commands.link, commands.code, customImageCommand]} // Use custom image command with upload popover
         hideToolbar={false}
       />
       {/* <hr /> */}
@@ -487,6 +748,28 @@ You can highlight ??important information?? or ??key concepts?? in your document
           }}
         >
           {popover.content}
+        </div>
+      )}
+
+      {/* Image Upload Popover Component */}
+      {imageUploadPopover.visible && (
+        <div
+          ref={imageUploadPopoverRef}
+          className="image-upload-popover"
+          style={{
+            left: imageUploadPopover.x,
+            top: imageUploadPopover.y,
+            transform: 'translateX(-50%)'
+          }}
+        >
+          <h3>Upload Image</h3>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            style={{ display: 'block', width: '100%' }}
+          />
         </div>
       )}
 
