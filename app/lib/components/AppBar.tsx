@@ -1,14 +1,16 @@
 "use client";
 
 import { useTheme } from "./ThemeProvider";
+import Logo from "./Logo";
 
 export default function AppBar() {
   const { theme, toggleTheme } = useTheme();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80">
-      <div className="container mx-auto flex h-16 items-center justify-between px-1 ">
-        <div className="flex items-center">
+      <div className="mx-auto flex h-16 items-center justify-between px-4">
+        <div className="flex items-center gap-1">
+          <Logo />
           <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
             Synapse
           </h1>

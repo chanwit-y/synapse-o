@@ -1,6 +1,6 @@
 'use client'
 
-import { testConnection } from "@/lib/db";
+import { testConnection } from "@/app/lib/db";
 import { createDevice } from "./action";
 
 export default function DbPage() {
