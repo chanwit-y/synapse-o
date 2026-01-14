@@ -823,8 +823,16 @@ You can highlight ??important information?? or ??key concepts?? in your document
            color: #636CCB !important;
         }
 
+        .dark .token.title.important {
+           color: #8B9AFF !important;
+        }
+
         .token.title.important > .token.punctuation {
            color: #636CCB !important;
+        }
+
+        .dark .token.title.important > .token.punctuation {
+           color: #8B9AFF !important;
         }
 
 
@@ -1277,7 +1285,8 @@ You can highlight ??important information?? or ??key concepts?? in your document
             code: ({ inline, node, ...props }: any) => (
               <code
                 style={{
-                  backgroundColor: inline ? 'lightgray' : 'transparent',
+                  backgroundColor: inline ? (theme === 'dark' ? '#2a2a2a' : 'lightgray') : 'transparent',
+                  color: inline && theme === 'dark' ? '#E5E5E5' : undefined,
                   padding: '0.2rem 0.4rem',
                   borderRadius: '4px',
                 }}
