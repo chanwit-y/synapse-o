@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronRight, ChevronDown, Folder, File, Star } from "lucide-react";
 import type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
 import TreeNodeItem from "./TreeNodeItem";
@@ -33,8 +33,26 @@ export default function TreeViewGroupItem({
   isFavorited,
   onToggleFavorite,
 }: TreeViewGroupItemProps) {
-  const { theme } = useTheme()
+  const { theme } = useTheme();
   const [isExpanded, setIsExpanded] = useState(true);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const [contentHeight, setContentHeight] = useState<number>(0);
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+
+    // Measure on mount + when toggling.
+    const measure = () => setContentHeight(el.scrollHeight);
+    measure();
+
+    // Keep height in sync when content changes (e.g., nodes added/removed).
+    const ro = new ResizeObserver(() => {
+      if (isExpanded) measure();
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isExpanded, group.directories]);
 
   return (
     <div className="">
@@ -87,16 +105,14 @@ export default function TreeViewGroupItem({
         </div>
       </div>
       <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "max-h-[10000px] opacity-100" : "max-h-0 opacity-0"
-          }`}
+        className="overflow-hidden transition-[height,opacity,transform] duration-300 ease-in-out will-change-[height,opacity,transform]"
         style={{
-          transitionProperty: "max-height, opacity",
+          height: isExpanded ? contentHeight : 0,
+          opacity: isExpanded ? 1 : 0,
+          transform: isExpanded ? "translateY(0px)" : "translateY(-8px)",
         }}
       >
-        <div
-          className={`pt-1 pl-4 transform transition-all duration-300 ease-in-out ${isExpanded ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
-            }`}
-        >
+        <div ref={contentRef} className="pt-1 pl-4">
           {group.directories.map((node, index) => (
             <TreeNodeItem
               key={`${node.name}-${index}`}
