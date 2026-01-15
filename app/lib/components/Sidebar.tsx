@@ -107,7 +107,7 @@ const sampleTreeData: TreeViewGroup[] = [
   },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) {
   const { theme } = useTheme();
   const [collections, setCollections] = useState<TreeViewGroup[]>(sampleTreeData);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -272,11 +272,15 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className={`w-64 border-r flex flex-col h-[calc(100vh-4rem)] ${
-        theme === "light" 
-          ? "bg-white border-gray-200" 
-          : "bg-gray-900 border-gray-800"
-      }`}>
+      <aside
+        className={[
+          "flex flex-col h-[calc(100vh-4rem)] transition-[width] duration-200 overflow-hidden",
+          collapsed ? "w-0 pointer-events-none" : "w-64",
+          collapsed ? "border-r-0" : "border-r",
+          theme === "light" ? "bg-white border-gray-200" : "bg-gray-900 border-gray-800",
+        ].join(" ")}
+        aria-hidden={collapsed}
+      >
         <div className={`flex items-center justify-between px-4 py-3 border-b ${
           theme === "light"
             ? "border-gray-200 bg-gray-50/50"
