@@ -4,6 +4,7 @@ import { useState } from "react";
 import { PlusIcon } from "lucide-react";
 import TreeView, { TreeNode, TreeViewGroup } from "./TreeView";
 import Modal from "./Modal";
+import { useTheme } from "./ThemeProvider";
 
 // Sample folder structure data - only .md files
 const sampleTreeData: TreeViewGroup[] = [
@@ -107,6 +108,7 @@ const sampleTreeData: TreeViewGroup[] = [
 ];
 
 export default function Sidebar() {
+  const { theme } = useTheme();
   const [collections, setCollections] = useState<TreeViewGroup[]>(sampleTreeData);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [collectionName, setCollectionName] = useState("");
@@ -270,14 +272,30 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="w-64 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col h-[calc(100vh-4rem)]">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+      <aside className={`w-64 border-r flex flex-col h-[calc(100vh-4rem)] ${
+        theme === "light" 
+          ? "bg-white border-gray-200" 
+          : "bg-gray-900 border-gray-800"
+      }`}>
+        <div className={`flex items-center justify-between px-4 py-3 border-b ${
+          theme === "light"
+            ? "border-gray-200 bg-gray-50/50"
+            : "border-gray-800 bg-gray-900"
+        }`}>
+          <h2 className={`text-sm font-semibold uppercase tracking-wide ${
+            theme === "light"
+              ? "text-gray-800"
+              : "text-gray-300"
+          }`}>
             Collection 
           </h2>
           <button 
             onClick={handleOpenModal}
-            className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+            className={`p-1.5 rounded-md transition-colors ${
+              theme === "light"
+                ? "text-gray-700 hover:bg-gray-200 hover:text-gray-900"
+                : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+            }`}
           >
             <PlusIcon className="w-4 h-4" />
           </button>
@@ -294,13 +312,17 @@ export default function Sidebar() {
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <h3 className={`text-lg font-semibold ${
+            theme === "light" ? "text-gray-900" : "text-gray-100"
+          }`}>
             Add Collection
           </h3>
           <div className="space-y-2">
             <label 
               htmlFor="collection-name"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              className={`block text-sm font-medium ${
+                theme === "light" ? "text-gray-700" : "text-gray-300"
+              }`}
             >
               Collection Name
             </label>
@@ -315,14 +337,22 @@ export default function Sidebar() {
                 }
               }}
               placeholder="Enter collection name"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                theme === "light"
+                  ? "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                  : "border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400"
+              }`}
               autoFocus
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <button
               onClick={handleCloseModal}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                theme === "light"
+                  ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
+                  : "text-gray-300 bg-gray-700 hover:bg-gray-600"
+              }`}
             >
               Cancel
             </button>
@@ -339,13 +369,17 @@ export default function Sidebar() {
 
       <Modal isOpen={isAddItemModalOpen} onClose={handleCloseAddItemModal}>
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <h3 className={`text-lg font-semibold ${
+            theme === "light" ? "text-gray-900" : "text-gray-100"
+          }`}>
             Add {itemType === "file" ? "File" : "Folder"}
           </h3>
           <div className="space-y-2">
             <label 
               htmlFor="item-name"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              className={`block text-sm font-medium ${
+                theme === "light" ? "text-gray-700" : "text-gray-300"
+              }`}
             >
               {itemType === "file" ? "File" : "Folder"} Name
             </label>
@@ -360,11 +394,17 @@ export default function Sidebar() {
                 }
               }}
               placeholder={`Enter ${itemType} name${itemType === "file" ? " (e.g., example.md)" : ""}`}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                theme === "light"
+                  ? "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
+                  : "border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400"
+              }`}
               autoFocus
             />
             {selectedNodeForAdd?.node && (
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className={`text-xs ${
+                theme === "light" ? "text-gray-500" : "text-gray-400"
+              }`}>
                 Will be added {selectedNodeForAdd.node.type === "folder" ? "inside" : "next to"} "{selectedNodeForAdd.node.name}"
               </p>
             )}
@@ -372,7 +412,11 @@ export default function Sidebar() {
           <div className="flex justify-end gap-2 pt-2">
             <button
               onClick={handleCloseAddItemModal}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                theme === "light"
+                  ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
+                  : "text-gray-300 bg-gray-700 hover:bg-gray-600"
+              }`}
             >
               Cancel
             </button>
