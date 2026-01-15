@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronRight, ChevronDown, Folder, FolderOpen, File } from "lucide-react";
 import type { TreeNode } from "./@types/treeViewTypes";
+import { useTheme } from "./ThemeProvider";
 
 export interface TreeNodeItemProps {
   node: TreeNode;
@@ -25,6 +26,7 @@ export default function TreeNodeItem({
   selectedNode,
   setSelectedNode,
 }: TreeNodeItemProps) {
+  const {theme} = useTheme()
   const [isExpanded, setIsExpanded] = useState(false);
   const hasChildren = node.children && node.children.length > 0;
   const isFolder = node.type === "folder";
@@ -48,8 +50,8 @@ export default function TreeNodeItem({
       <div
         className={`flex items-center gap-1 px-2 py-1.5 rounded cursor-pointer transition-colors group ${
           isSelected
-            ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-            : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+            ? theme === 'light' ? "bg-blue-100 text-blue-700 " : "bg-blue-900/30  text-blue-300"
+            : theme === 'light' ? "hover:bg-gray-100 text-gray-700" : "hover:bg-gray-800 hover:text-gray-300"
         }`}
         style={{ paddingLeft: `${indentLevel}px` }}
         onClick={handleClick}
@@ -57,21 +59,21 @@ export default function TreeNodeItem({
         {isFolder && hasChildren && (
           <span className="flex items-center justify-center w-4 h-4">
             {isExpanded ? (
-              <ChevronDown className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              <ChevronDown className={`w-3.5 h-3.5 ${theme === 'light' ? "text-gray-500" : "text-gray-400"}`} />
             ) : (
-              <ChevronRight className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              <ChevronRight className={`w-3.5 h-3.5 ${theme === 'light' ? "text-gray-500" : "text-gray-400"}`} />
             )}
           </span>
         )}
         {!isFolder && hasChildren && <span className="w-4 h-4" />}
         {isFolder ? (
           isExpanded ? (
-            <FolderOpen className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0" />
+            <FolderOpen className={`w-4 h-4 ${theme === 'light' ? "text-blue-500" : "text-blue-400"} shrink-0`} />
           ) : (
-            <Folder className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0" />
+            <Folder className={`w-4 h-4 ${theme === 'light' ? "text-blue-500" : "text-blue-400"} shrink-0`} />
           )
         ) : (
-          <File className="w-4 h-4 text-gray-500 dark:text-gray-400 shrink-0" />
+          <File className={`w-4 h-4 ${theme === 'light' ? "text-gray-500" : "text-gray-400"} shrink-0`} />
         )}
         <span className="text-sm truncate">{node.name}</span>
       </div>
