@@ -6,101 +6,129 @@ import TreeView, { TreeNode, TreeViewGroup } from "./TreeView";
 import Modal from "./Modal";
 import { useTheme } from "./ThemeProvider";
 
+const mockUuid = (() => {
+  let i = 0;
+  return () => `mock-uuid-${++i}`;
+})();
+
 // Sample folder structure data - only .md files
 const sampleTreeData: TreeViewGroup[] = [
   {
-    groupName: "group1",
+    id: mockUuid(),
+    name: "group1",
     directories: [
       {
+        id: mockUuid(),
         name: "docs",
         type: "folder",
         children: [
           {
+            id: mockUuid(),
             name: "getting-started",
             type: "folder",
             children: [
-              { name: "introduction.md", type: "file" },
-              { name: "installation.md", type: "file" },
-              { name: "quick-start.md", type: "file" },
+              { id: mockUuid(), name: "introduction.md", type: "file" },
+              { id: mockUuid(), name: "installation.md", type: "file" },
+              { id: mockUuid(), name: "quick-start.md", type: "file" },
             ],
           },
           {
+            id: mockUuid(),
             name: "guides",
             type: "folder",
             children: [
-              { name: "api-reference.md", type: "file" },
-              { name: "best-practices.md", type: "file" },
-              { name: "troubleshooting.md", type: "file" },
+              { id: mockUuid(), name: "api-reference.md", type: "file" },
+              { id: mockUuid(), name: "best-practices.md", type: "file" },
+              { id: mockUuid(), name: "troubleshooting.md", type: "file" },
             ],
           },
           {
+            id: mockUuid(),
             name: "examples",
             type: "folder",
             children: [
-              { name: "basic-usage.md", type: "file" },
-              { name: "advanced-features.md", type: "file" },
+              { id: mockUuid(), name: "basic-usage.md", type: "file" },
+              { id: mockUuid(), name: "advanced-features.md", type: "file" },
             ],
           },
-          { name: "changelog.md", type: "file" },
-          { name: "contributing.md", type: "file" },
+          { id: mockUuid(), name: "changelog.md", type: "file" },
+          { id: mockUuid(), name: "contributing.md", type: "file" },
         ],
       },
       {
+        id: mockUuid(),
         name: "notes",
         type: "folder",
         children: [
-          { name: "meeting-notes.md", type: "file" },
-          { name: "ideas.md", type: "file" },
-          { name: "todo.md", type: "file" },
+          { id: mockUuid(), name: "meeting-notes.md", type: "file" },
+          { id: mockUuid(), name: "ideas.md", type: "file" },
+          { id: mockUuid(), name: "todo.md", type: "file" },
           {
+            id: mockUuid(),
             name: "projects",
             type: "folder",
             children: [
-              { name: "project-alpha.md", type: "file" },
-              { name: "project-beta.md", type: "file" },
+              { id: mockUuid(), name: "project-alpha.md", type: "file" },
+              { id: mockUuid(), name: "project-beta.md", type: "file" },
             ],
           },
         ],
       },
       {
+        id: mockUuid(),
         name: "README.md",
         type: "file",
       },
     ],
   },
   {
-    groupName: "group2",
+    id: mockUuid(),
+    name: "group2",
     directories: [
       {
+        id: mockUuid(),
         name: "src",
         type: "folder",
         children: [
           {
+            id: mockUuid(),
             name: "components",
             type: "folder",
             children: [
-              { name: "Button.tsx", type: "file" },
-              { name: "Card.tsx", type: "file" },
-              { name: "Modal.tsx", type: "file" },
+              { id: mockUuid(), name: "Button.tsx", type: "file" },
+              { id: mockUuid(), name: "Card.tsx", type: "file" },
+              { id: mockUuid(), name: "Modal.tsx", type: "file" },
             ],
           },
           {
+            id: mockUuid(),
             name: "utils",
             type: "folder",
             children: [
-              { name: "helpers.ts", type: "file" },
-              { name: "constants.ts", type: "file" },
+              { id: mockUuid(), name: "helpers.ts", type: "file" },
+              { id: mockUuid(), name: "constants.ts", type: "file" },
             ],
           },
-          { name: "index.ts", type: "file" },
+          { id: mockUuid(), name: "index.ts", type: "file" },
         ],
       },
       {
+        id: mockUuid(),
         name: "tests",
         type: "folder",
         children: [
-          { name: "unit", type: "folder", children: [{ name: "test-utils.ts", type: "file" }] },
-          { name: "integration", type: "folder", children: [{ name: "api.test.ts", type: "file" }] },
+          {
+            id: mockUuid(),
+            name: "unit",
+            type: "folder",
+            children: [{ id: mockUuid(), name: "test-utils.ts", type: "file" }],
+          },
+          {
+            id: mockUuid(),
+            name: "integration",
+            type: "folder",
+            children: [{ id: mockUuid(), name: "api.test.ts", type: "file" }],
+          },
         ],
       },
     ],
@@ -125,7 +153,8 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
   const handleAddCollection = () => {
     if (collectionName.trim()) {
       const newCollection: TreeViewGroup = {
-        groupName: collectionName.trim(),
+        id: mockUuid(),
+        name: collectionName.trim(),
         directories: [],
       };
       setCollections([...collections, newCollection]);
@@ -167,6 +196,7 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
     if (!itemName.trim()) return;
 
     const newItem: TreeNode = {
+      id: mockUuid(),
       name: itemName.trim(),
       type: itemType,
       ...(itemType === "folder" ? { children: [] } : {}),
@@ -200,7 +230,7 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
               }
               if (dir.children && path.length > 1) {
                 return findNodeByPath(
-                  [{ groupName: "", directories: dir.children }],
+                  [{ id: "virtual", name: "", directories: dir.children }],
                   path.slice(1)
                 );
               }

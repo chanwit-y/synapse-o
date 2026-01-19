@@ -35,7 +35,7 @@ export default function TreeView({ data, onNodeClick, onAddFile, onAddFolder }: 
       <div className="py-2">
         {data.map((group, groupIndex) => (
           <TreeViewGroupItem
-            key={`group-${group.groupName}-${groupIndex}`}
+            key={group.id}
             group={group}
             groupIndex={groupIndex}
             onNodeClick={onNodeClick}

@@ -64,7 +64,7 @@ export default function TreeViewGroupItem({
           <span className="flex items-center justify-center w-4 h-4 transition-transform duration-200">
             {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
           </span>
-          <span>{group.groupName}</span>
+          <span>{group.name}</span>
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -115,7 +115,7 @@ export default function TreeViewGroupItem({
         <div ref={contentRef} className="pt-1 pl-4">
           {group.directories.map((node, index) => (
             <TreeNodeItem
-              key={`${node.name}-${index}`}
+              key={node.id}
               node={node}
               level={0}
               onNodeClick={onNodeClick}

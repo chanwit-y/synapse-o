@@ -93,7 +93,7 @@ export default function TreeNodeItem({
           >
             {node.children!.map((child, index) => (
               <TreeNodeItem
-                key={`${child.name}-${index}`}
+                key={child.id}
                 node={child}
                 level={level + 1}
                 onNodeClick={onNodeClick}

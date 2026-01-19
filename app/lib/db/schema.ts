@@ -1,6 +1,19 @@
-import { sqliteTable, text,  } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
+import { integer, sqliteTable, text,  } from "drizzle-orm/sqlite-core";
 
 export const collectionTable = sqliteTable("collection", {
-	name: text(),
+	id: text("id").primaryKey(),
+	name: text("name"),
 	directories: text("directories", { mode: "json" }),
+});
+
+export const fileTable = sqliteTable("file", {
+	id: text("id").primaryKey(),
+	collectionId: text("collection_id").references(() => collectionTable.id),
+	name: text("name"),
+	type: text("type"),
+	extension: text("extension"),
+	content: text("content"),
+	createdAt: integer("created_at").default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: integer("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
