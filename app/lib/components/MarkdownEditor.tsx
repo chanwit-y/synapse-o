@@ -618,7 +618,7 @@ export default function MarkdownEditor() {
   );
 
   return (
-    <div style={{ padding: '10px', width: '1200px', margin: '0 auto' }}>
+    <div style={{ padding: '10px', width: '100%', margin: '0 auto' }}>
       <style>{MARKDOWN_EDITOR_CSS}</style>
 
       <MDEditor
