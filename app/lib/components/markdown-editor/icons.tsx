@@ -78,4 +78,58 @@ export const HeadingIcon = () => (
   </IconBase>
 );
 
+export const SaveIcon = () => (
+  <IconBase>
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+    <polyline points="17 21 17 13 7 13 7 21" />
+    <polyline points="7 3 7 8 15 8" />
+  </IconBase>
+);
+
+export const ClearIcon = () => (
+  <IconBase>
+    {/* Eraser-style "clear" icon */}
+    <path d="M20 20H11" />
+    <path d="M3 14l7-7a2 2 0 0 1 3 0l5 5a2 2 0 0 1 0 3l-3 3H9L3 16a2 2 0 0 1 0-2z" />
+    <path d="M14 19l-5-5" />
+  </IconBase>
+);
+
+export const EditCodeIcon = () => (
+  <IconBase>
+    {/* Code brackets */}
+    <path d="M8 8L4 12l4 4" />
+    <path d="M16 8l4 4-4 4" />
+    {/* Pencil */}
+    <path d="M14.5 6.5l3 3" />
+    <path d="M11 10l6-6a2.1 2.1 0 0 1 3 3l-6 6-3 1 1-4z" />
+  </IconBase>
+);
+
+export const LiveCodeIcon = () => (
+  <IconBase>
+    {/* Play button */}
+    <polygon points="10 8 16 12 10 16 10 8" />
+    {/* Pulse line */}
+    <path d="M3 12h3l2-4 3 8 2-4h6" />
+  </IconBase>
+);
+
+export const PreviewIcon = () => (
+  <IconBase>
+    {/* Eye */}
+    <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" />
+    <circle cx="12" cy="12" r="2.5" />
+  </IconBase>
+);
+
+export const FullscreenIcon = () => (
+  <IconBase>
+    <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+    <path d="M16 3h3a2 2 0 0 1 2 2v3" />
+    <path d="M8 21H5a2 2 0 0 1-2-2v-3" />
+    <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+  </IconBase>
+);
+
 

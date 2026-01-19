@@ -5,17 +5,23 @@ import type {
   ReactNode,
 } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import MDEditor from '@uiw/react-md-editor';
+import MDEditor, { commands as mdCommands } from '@uiw/react-md-editor';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { useTheme } from './ThemeProvider';
 import { MARKDOWN_EDITOR_CSS } from './markdown-editor/editorCss';
 import {
   BoldIcon,
+  ClearIcon,
+  EditCodeIcon,
+  FullscreenIcon,
   HeadingIcon,
   ImageIcon,
   ItalicIcon,
+  LiveCodeIcon,
   LinkIcon,
+  PreviewIcon,
+  SaveIcon,
   StrikethroughIcon,
   UnderlineIcon,
 } from './markdown-editor/icons';
@@ -121,6 +127,8 @@ export default function MarkdownEditor() {
   const { theme } = useTheme();
 
   const [value, setValue] = useState(DEFAULT_MARKDOWN);
+  const [previewMode, setPreviewMode] = useState<'edit' | 'live' | 'preview'>('live');
+  const valueRef = useRef(value);
   const [tooltip, setTooltip] = useState<TooltipPopover>({
     visible: false,
     content: '',
@@ -157,6 +165,22 @@ export default function MarkdownEditor() {
 
   const commandCtxRef = useRef<EditorCommandCtx | null>(null);
 
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+
+  // Animate when switching between Edit / Live / Preview
+  useEffect(() => {
+    const targets = document.querySelectorAll('.w-md-editor-preview, .w-md-editor-text');
+    targets.forEach((el) => {
+      el.classList.remove('md-mode-switch-anim');
+      // Force reflow to restart animation.
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      (el as HTMLElement).offsetWidth;
+      el.classList.add('md-mode-switch-anim');
+    });
+  }, [previewMode]);
+
   const insertMarkdown = useCallback(
     (markdown: string) => {
       insertAtMdEditorCursor({
@@ -166,6 +190,57 @@ export default function MarkdownEditor() {
       });
     },
     [setValue]
+  );
+
+  const customCodeEditCommand: MdCommand = useMemo(
+    () => ({
+      ...(mdCommands.codeEdit as any),
+      buttonProps: { 'aria-label': 'Edit code' },
+      icon: <EditCodeIcon />,
+      execute: (_state: any, api: any, dispatch?: any) => {
+        api.textArea?.focus?.();
+        setPreviewMode('edit');
+        dispatch?.({ preview: 'edit' });
+      },
+    }),
+    []
+  );
+
+  const customCodeLiveCommand: MdCommand = useMemo(
+    () => ({
+      ...(mdCommands.codeLive as any),
+      buttonProps: { 'aria-label': 'Live code' },
+      icon: <LiveCodeIcon />,
+      execute: (_state: any, api: any, dispatch?: any) => {
+        api.textArea?.focus?.();
+        setPreviewMode('live');
+        dispatch?.({ preview: 'live' });
+      },
+    }),
+    []
+  );
+
+  const customCodePreviewCommand: MdCommand = useMemo(
+    () => ({
+      ...(mdCommands.codePreview as any),
+      buttonProps: { 'aria-label': 'Preview' },
+      icon: <PreviewIcon />,
+      execute: (_state: any, api: any, dispatch?: any) => {
+        api.textArea?.focus?.();
+        setPreviewMode('preview');
+        dispatch?.({ preview: 'preview' });
+      },
+    }),
+    []
+  );
+
+  const customFullscreenCommand: MdCommand = useMemo(
+    () => ({
+      ...(mdCommands.fullscreen as any),
+      buttonProps: { 'aria-label': 'Toggle fullscreen' },
+      icon: <FullscreenIcon />,
+    }),
+    []
   );
 
   const customBoldCommand: MdCommand = useMemo(
@@ -268,6 +343,38 @@ export default function MarkdownEditor() {
         const pos = getToolbarButtonCenter('Insert Heading');
         setHeadingPopover({ visible: true, x: pos.x, y: pos.y });
         setTimeout(() => headingSelectRef.current?.focus(), 100);
+      },
+    }),
+    []
+  );
+
+  const customSaveCommand: MdCommand = useMemo(
+    () => ({
+      name: 'save',
+      keyCommand: 'save',
+      buttonProps: { 'aria-label': 'Save' },
+      icon: <SaveIcon />,
+      execute: () => {
+        console.log('Save clicked:', valueRef.current);
+      },
+    }),
+    []
+  );
+
+  const customClearCommand: MdCommand = useMemo(
+    () => ({
+      name: 'clear',
+      keyCommand: 'clear',
+      buttonProps: { 'aria-label': 'Clear' },
+      icon: <ClearIcon />,
+      execute: () => {
+        setValue('');
+        valueRef.current = '';
+        setImageUploadPopover({ visible: false, x: 0, y: 0 });
+        setLinkPopover({ visible: false, x: 0, y: 0 });
+        setHeadingPopover({ visible: false, x: 0, y: 0 });
+        setLinkText('');
+        setLinkUrl('');
       },
     }),
     []
@@ -474,23 +581,40 @@ export default function MarkdownEditor() {
 
   const commands = useMemo(
     () => [
+      customSaveCommand,
+      customClearCommand,
+      mdCommands.divider as any,
       customBoldCommand,
       customItalicCommand,
       customUnderlineCommand,
       customStrikethroughCommand,
+      mdCommands.divider as any,
       customHeadingCommand,
       customImageCommand,
       customLinkCommand,
     ],
     [
       customBoldCommand,
+      customClearCommand,
       customHeadingCommand,
       customImageCommand,
       customItalicCommand,
       customLinkCommand,
+      customSaveCommand,
       customStrikethroughCommand,
       customUnderlineCommand,
     ]
+  );
+
+  const extraCommands = useMemo(
+    () => [
+      customCodeEditCommand,
+      customCodeLiveCommand,
+      customCodePreviewCommand,
+      mdCommands.divider as any,
+      customFullscreenCommand,
+    ],
+    [customCodeEditCommand, customCodeLiveCommand, customCodePreviewCommand, customFullscreenCommand]
   );
 
   return (
@@ -501,7 +625,7 @@ export default function MarkdownEditor() {
         value={value}
         onChange={(val) => setValue(val || '')}
         height="calc(100vh - 100px)"
-        preview="live"
+        preview={previewMode}
         data-color-mode={theme}
         visibleDragbar={false}
         previewOptions={{
@@ -510,6 +634,7 @@ export default function MarkdownEditor() {
           components: previewComponents as any,
         }}
         commands={commands as any}
+        extraCommands={extraCommands as any}
         hideToolbar={false}
       />
 

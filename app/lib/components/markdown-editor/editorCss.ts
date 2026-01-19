@@ -6,6 +6,21 @@ body .w-md-editor-text-input {
   line-height: 1.8 !important;
 }
 
+.md-mode-switch-anim {
+  animation: mdModeSwitch 180ms ease-out;
+}
+
+@keyframes mdModeSwitch {
+  from {
+    opacity: 0.35;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .code-line {
   color: #333 !important;
 }
