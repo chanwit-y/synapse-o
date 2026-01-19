@@ -1,11 +1,14 @@
-import type {
-  AnchorHTMLAttributes,
-  HTMLAttributes,
-  ImgHTMLAttributes,
-  ReactNode,
-} from 'react';
+'use client';
+
+import type { AnchorHTMLAttributes, HTMLAttributes, ImgHTMLAttributes, ReactElement } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import MDEditor, { commands as mdCommands } from '@uiw/react-md-editor';
+import MDEditor, {
+  commands as mdCommands,
+  type ExecuteState,
+  type ICommand,
+  type PreviewType,
+  type TextAreaTextApi,
+} from '@uiw/react-md-editor';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { useTheme } from './ThemeProvider';
@@ -32,14 +35,14 @@ import {
   normalizePublicPath,
 } from './markdown-editor/editorUtils';
 
-type TooltipPopover = {
+type TooltipState = {
   visible: boolean;
   content: string;
   x: number;
   y: number;
 };
 
-type PositionedPopover = {
+type PositionedPopoverState = {
   visible: boolean;
   x: number;
   y: number;
@@ -48,15 +51,6 @@ type PositionedPopover = {
 type EditorCommandCtx = {
   selectedText?: string;
   replaceSelection?: (text: string) => void;
-};
-
-type MdCommand = {
-  name: string;
-  keyCommand: string;
-  buttonProps: { 'aria-label': string };
-  icon: ReactNode;
-  execute: (state: { selectedText?: string }, api: { replaceSelection?: (text: string) => void }) => void;
-  shortcuts?: string;
 };
 
 const DEFAULT_MARKDOWN = `# Welcome to the Markdown Editor
@@ -123,30 +117,130 @@ You can highlight ??important information?? or ??key concepts?? in your document
 > This is a blockquote
 > Start writing your markdown here!
 `;
-export default function MarkdownEditor() {
-  const { theme } = useTheme();
 
-  const [value, setValue] = useState(DEFAULT_MARKDOWN);
-  const [previewMode, setPreviewMode] = useState<'edit' | 'live' | 'preview'>('live');
-  const valueRef = useRef(value);
-  const [tooltip, setTooltip] = useState<TooltipPopover>({
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+
+function useLatestRef<T>(value: T) {
+  const ref = useRef(value);
+  useEffect(() => {
+    ref.current = value;
+  }, [value]);
+  return ref;
+}
+
+function useModeSwitchAnimation(previewMode: PreviewType) {
+  useEffect(() => {
+    const targets = document.querySelectorAll('.w-md-editor-preview, .w-md-editor-text');
+    targets.forEach((el) => {
+      el.classList.remove('md-mode-switch-anim');
+      // Force reflow to restart animation.
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      (el as HTMLElement).offsetWidth;
+      el.classList.add('md-mode-switch-anim');
+    });
+  }, [previewMode]);
+}
+
+function useHighlightTooltip(): TooltipState {
+  const [tooltip, setTooltip] = useState<TooltipState>({
     visible: false,
     content: '',
     x: 0,
     y: 0,
   });
 
-  const [imageUploadPopover, setImageUploadPopover] = useState<PositionedPopover>({
+  useEffect(() => {
+    const handleMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.classList.contains('custom-highlight')) return;
+      const rect = target.getBoundingClientRect();
+      const content = target.getAttribute('data-popover') || '';
+      setTooltip({
+        visible: true,
+        content,
+        x: rect.left + rect.width / 2,
+        y: rect.top - 45,
+      });
+    };
+
+    const handleMouseOut = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.classList.contains('custom-highlight') || target.querySelector('.custom-highlight')) {
+        setTooltip((prev) => ({ ...prev, visible: false }));
+      }
+    };
+
+    document.addEventListener('mouseover', handleMouseOver);
+    document.addEventListener('mouseout', handleMouseOut);
+    return () => {
+      document.removeEventListener('mouseover', handleMouseOver);
+      document.removeEventListener('mouseout', handleMouseOut);
+    };
+  }, []);
+
+  return tooltip;
+}
+
+function createModeCommand(opts: {
+  base: ICommand;
+  ariaLabel: string;
+  icon: ReactElement;
+  mode: PreviewType;
+  setPreviewMode: (mode: PreviewType) => void;
+}): ICommand {
+  const { base, ariaLabel, icon, mode, setPreviewMode } = opts;
+  return {
+    ...base,
+    buttonProps: { 'aria-label': ariaLabel },
+    icon,
+    execute: (_state, api, dispatch) => {
+      api.textArea?.focus?.();
+      setPreviewMode(mode);
+      dispatch?.({ preview: mode });
+    },
+  };
+}
+
+function createInsertCommand(opts: {
+  name: string;
+  keyCommand: string;
+  ariaLabel: string;
+  icon: ReactElement;
+  onOpen: (selectedText: string | undefined, replaceSelection?: (text: string) => void) => void;
+}): ICommand {
+  const { name, keyCommand, ariaLabel, icon, onOpen } = opts;
+  return {
+    name,
+    keyCommand,
+    buttonProps: { 'aria-label': ariaLabel },
+    icon,
+    execute: (state: ExecuteState, api: TextAreaTextApi) => {
+      onOpen(state.selectedText, (text) => {
+        api.replaceSelection(text);
+      });
+    },
+  };
+}
+
+export default function MarkdownEditor() {
+  const { theme } = useTheme();
+
+  const [value, setValue] = useState(DEFAULT_MARKDOWN);
+  const [previewMode, setPreviewMode] = useState<PreviewType>('live');
+  const valueRef = useLatestRef(value);
+  const tooltip = useHighlightTooltip();
+
+  const [imageUploadPopover, setImageUploadPopover] = useState<PositionedPopoverState>({
     visible: false,
     x: 0,
     y: 0,
   });
-  const [linkPopover, setLinkPopover] = useState<PositionedPopover>({
+  const [linkPopover, setLinkPopover] = useState<PositionedPopoverState>({
     visible: false,
     x: 0,
     y: 0,
   });
-  const [headingPopover, setHeadingPopover] = useState<PositionedPopover>({
+  const [headingPopover, setHeadingPopover] = useState<PositionedPopoverState>({
     visible: false,
     x: 0,
     y: 0,
@@ -165,21 +259,7 @@ export default function MarkdownEditor() {
 
   const commandCtxRef = useRef<EditorCommandCtx | null>(null);
 
-  useEffect(() => {
-    valueRef.current = value;
-  }, [value]);
-
-  // Animate when switching between Edit / Live / Preview
-  useEffect(() => {
-    const targets = document.querySelectorAll('.w-md-editor-preview, .w-md-editor-text');
-    targets.forEach((el) => {
-      el.classList.remove('md-mode-switch-anim');
-      // Force reflow to restart animation.
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      (el as HTMLElement).offsetWidth;
-      el.classList.add('md-mode-switch-anim');
-    });
-  }, [previewMode]);
+  useModeSwitchAnimation(previewMode);
 
   const insertMarkdown = useCallback(
     (markdown: string) => {
@@ -192,163 +272,164 @@ export default function MarkdownEditor() {
     [setValue]
   );
 
-  const customCodeEditCommand: MdCommand = useMemo(
-    () => ({
-      ...(mdCommands.codeEdit as any),
-      buttonProps: { 'aria-label': 'Edit code' },
-      icon: <EditCodeIcon />,
-      execute: (_state: any, api: any, dispatch?: any) => {
-        api.textArea?.focus?.();
-        setPreviewMode('edit');
-        dispatch?.({ preview: 'edit' });
-      },
-    }),
+  const openAtToolbarButton = useCallback(
+    (ariaLabel: string, setPopover: (s: PositionedPopoverState) => void) => {
+      const pos = getToolbarButtonCenter(ariaLabel);
+      setPopover({ visible: true, x: pos.x, y: pos.y });
+    },
     []
   );
 
-  const customCodeLiveCommand: MdCommand = useMemo(
-    () => ({
-      ...(mdCommands.codeLive as any),
-      buttonProps: { 'aria-label': 'Live code' },
-      icon: <LiveCodeIcon />,
-      execute: (_state: any, api: any, dispatch?: any) => {
-        api.textArea?.focus?.();
-        setPreviewMode('live');
-        dispatch?.({ preview: 'live' });
-      },
-    }),
-    []
+  const codeEditCommand = useMemo(
+    () =>
+      createModeCommand({
+        base: mdCommands.codeEdit,
+        ariaLabel: 'Edit code',
+        icon: <EditCodeIcon />,
+        mode: 'edit',
+        setPreviewMode,
+      }),
+    [setPreviewMode]
   );
 
-  const customCodePreviewCommand: MdCommand = useMemo(
-    () => ({
-      ...(mdCommands.codePreview as any),
-      buttonProps: { 'aria-label': 'Preview' },
-      icon: <PreviewIcon />,
-      execute: (_state: any, api: any, dispatch?: any) => {
-        api.textArea?.focus?.();
-        setPreviewMode('preview');
-        dispatch?.({ preview: 'preview' });
-      },
-    }),
-    []
+  const codeLiveCommand = useMemo(
+    () =>
+      createModeCommand({
+        base: mdCommands.codeLive,
+        ariaLabel: 'Live code',
+        icon: <LiveCodeIcon />,
+        mode: 'live',
+        setPreviewMode,
+      }),
+    [setPreviewMode]
   );
 
-  const customFullscreenCommand: MdCommand = useMemo(
+  const codePreviewCommand = useMemo(
+    () =>
+      createModeCommand({
+        base: mdCommands.codePreview,
+        ariaLabel: 'Preview',
+        icon: <PreviewIcon />,
+        mode: 'preview',
+        setPreviewMode,
+      }),
+    [setPreviewMode]
+  );
+
+  const fullscreenCommand = useMemo<ICommand>(
     () => ({
-      ...(mdCommands.fullscreen as any),
+      ...mdCommands.fullscreen,
       buttonProps: { 'aria-label': 'Toggle fullscreen' },
       icon: <FullscreenIcon />,
     }),
     []
   );
 
-  const customBoldCommand: MdCommand = useMemo(
+  const boldCommand = useMemo<ICommand>(
     () => ({
       name: 'bold',
       keyCommand: 'bold',
       buttonProps: { 'aria-label': 'Bold (Ctrl+B)' },
       icon: <BoldIcon />,
       shortcuts: 'ctrl+b',
-      execute: (state, api) => {
-        api.replaceSelection?.(`**${state.selectedText || 'Bold Text'}**`);
+      execute: (state: ExecuteState, api: TextAreaTextApi) => {
+        api.replaceSelection(`**${state.selectedText || 'Bold Text'}**`);
       },
     }),
     []
   );
 
-  const customItalicCommand: MdCommand = useMemo(
+  const italicCommand = useMemo<ICommand>(
     () => ({
       name: 'italic',
       keyCommand: 'italic',
       buttonProps: { 'aria-label': 'Italic (Ctrl+I)' },
       icon: <ItalicIcon />,
       shortcuts: 'ctrl+i',
-      execute: (state, api) => {
-        api.replaceSelection?.(`*${state.selectedText || 'Italic Text'}*`);
+      execute: (state: ExecuteState, api: TextAreaTextApi) => {
+        api.replaceSelection(`*${state.selectedText || 'Italic Text'}*`);
       },
     }),
     []
   );
 
-  const customUnderlineCommand: MdCommand = useMemo(
+  const underlineCommand = useMemo<ICommand>(
     () => ({
       name: 'underline',
       keyCommand: 'underline',
       buttonProps: { 'aria-label': 'Underline (Ctrl+U)' },
       icon: <UnderlineIcon />,
       shortcuts: 'ctrl+u',
-      execute: (state, api) => {
-        api.replaceSelection?.(`<u>${state.selectedText || 'Underline Text'}</u>`);
+      execute: (state: ExecuteState, api: TextAreaTextApi) => {
+        api.replaceSelection(`<u>${state.selectedText || 'Underline Text'}</u>`);
       },
     }),
     []
   );
 
-  const customStrikethroughCommand: MdCommand = useMemo(
+  const strikethroughCommand = useMemo<ICommand>(
     () => ({
       name: 'strikethrough',
       keyCommand: 'strikethrough',
       buttonProps: { 'aria-label': 'Strikethrough' },
       icon: <StrikethroughIcon />,
-      execute: (state, api) => {
-        api.replaceSelection?.(`~~${state.selectedText || 'Strikethrough Text'}~~`);
+      execute: (state: ExecuteState, api: TextAreaTextApi) => {
+        api.replaceSelection(`~~${state.selectedText || 'Strikethrough Text'}~~`);
       },
     }),
     []
   );
 
-  const customImageCommand: MdCommand = useMemo(
-    () => ({
-      name: 'image',
-      keyCommand: 'image',
-      buttonProps: { 'aria-label': 'Insert Image' },
-      icon: <ImageIcon />,
-      execute: (state, api) => {
-        commandCtxRef.current = { selectedText: state.selectedText, replaceSelection: api.replaceSelection };
-        const pos = getToolbarButtonCenter('Insert Image');
-        setImageUploadPopover({ visible: true, x: pos.x, y: pos.y });
-      },
-    }),
-    []
+  const imageCommand = useMemo(
+    () =>
+      createInsertCommand({
+        name: 'image',
+        keyCommand: 'image',
+        ariaLabel: 'Insert Image',
+        icon: <ImageIcon />,
+        onOpen: (selectedText, replaceSelection) => {
+          commandCtxRef.current = { selectedText, replaceSelection };
+          openAtToolbarButton('Insert Image', setImageUploadPopover);
+        },
+      }),
+    [openAtToolbarButton]
   );
 
-  const customLinkCommand: MdCommand = useMemo(
-    () => ({
-      name: 'link',
-      keyCommand: 'link',
-      buttonProps: { 'aria-label': 'Insert Link' },
-      icon: <LinkIcon />,
-      execute: (state, api) => {
-        commandCtxRef.current = { selectedText: state.selectedText, replaceSelection: api.replaceSelection };
-        const pos = getToolbarButtonCenter('Insert Link');
-        setLinkPopover({ visible: true, x: pos.x, y: pos.y });
-
-        setLinkText(state.selectedText || '');
-        setLinkUrl('');
-        setTimeout(() => linkTextInputRef.current?.focus(), 100);
-      },
-    }),
-    []
+  const linkCommand = useMemo(
+    () =>
+      createInsertCommand({
+        name: 'link',
+        keyCommand: 'link',
+        ariaLabel: 'Insert Link',
+        icon: <LinkIcon />,
+        onOpen: (selectedText, replaceSelection) => {
+          commandCtxRef.current = { selectedText, replaceSelection };
+          openAtToolbarButton('Insert Link', setLinkPopover);
+          setLinkText(selectedText || '');
+          setLinkUrl('');
+          setTimeout(() => linkTextInputRef.current?.focus(), 100);
+        },
+      }),
+    [openAtToolbarButton]
   );
 
-  const customHeadingCommand: MdCommand = useMemo(
-    () => ({
-      name: 'heading',
-      keyCommand: 'heading',
-      buttonProps: { 'aria-label': 'Insert Heading' },
-      icon: <HeadingIcon />,
-      execute: (state, api) => {
-        commandCtxRef.current = { selectedText: state.selectedText, replaceSelection: api.replaceSelection };
-        const pos = getToolbarButtonCenter('Insert Heading');
-        setHeadingPopover({ visible: true, x: pos.x, y: pos.y });
-        setTimeout(() => headingSelectRef.current?.focus(), 100);
-      },
-    }),
-    []
+  const headingCommand = useMemo(
+    () =>
+      createInsertCommand({
+        name: 'heading',
+        keyCommand: 'heading',
+        ariaLabel: 'Insert Heading',
+        icon: <HeadingIcon />,
+        onOpen: (selectedText, replaceSelection) => {
+          commandCtxRef.current = { selectedText, replaceSelection };
+          openAtToolbarButton('Insert Heading', setHeadingPopover);
+          setTimeout(() => headingSelectRef.current?.focus(), 100);
+        },
+      }),
+    [openAtToolbarButton]
   );
 
-  const customSaveCommand: MdCommand = useMemo(
+  const saveCommand = useMemo<ICommand>(
     () => ({
       name: 'save',
       keyCommand: 'save',
@@ -358,10 +439,10 @@ export default function MarkdownEditor() {
         console.log('Save clicked:', valueRef.current);
       },
     }),
-    []
+    [valueRef]
   );
 
-  const customClearCommand: MdCommand = useMemo(
+  const clearCommand = useMemo<ICommand>(
     () => ({
       name: 'clear',
       keyCommand: 'clear',
@@ -369,7 +450,6 @@ export default function MarkdownEditor() {
       icon: <ClearIcon />,
       execute: () => {
         setValue('');
-        valueRef.current = '';
         setImageUploadPopover({ visible: false, x: 0, y: 0 });
         setLinkPopover({ visible: false, x: 0, y: 0 });
         setHeadingPopover({ visible: false, x: 0, y: 0 });
@@ -390,8 +470,7 @@ export default function MarkdownEditor() {
         return;
       }
 
-      const maxSize = 10 * 1024 * 1024;
-      if (file.size > maxSize) {
+      if (file.size > MAX_IMAGE_BYTES) {
         alert('Image file is too large. Please select an image smaller than 10MB.');
         if (fileInputRef.current) fileInputRef.current.value = '';
         return;
@@ -501,36 +580,6 @@ export default function MarkdownEditor() {
     return () => document.removeEventListener('mousedown', onMouseDown);
   }, [headingPopover.visible, imageUploadPopover.visible, linkPopover.visible]);
 
-  // Tooltip for ??highlight??
-  useEffect(() => {
-    const handleMouseOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.classList.contains('custom-highlight')) return;
-      const rect = target.getBoundingClientRect();
-      const content = target.getAttribute('data-popover') || '';
-      setTooltip({
-        visible: true,
-        content,
-        x: rect.left + rect.width / 2,
-        y: rect.top - 45,
-      });
-    };
-
-    const handleMouseOut = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.classList.contains('custom-highlight') || target.querySelector('.custom-highlight')) {
-        setTooltip((prev) => ({ ...prev, visible: false }));
-      }
-    };
-
-    document.addEventListener('mouseover', handleMouseOver);
-    document.addEventListener('mouseout', handleMouseOut);
-    return () => {
-      document.removeEventListener('mouseover', handleMouseOver);
-      document.removeEventListener('mouseout', handleMouseOut);
-    };
-  }, []);
-
   const previewComponents = useMemo(
     () => ({
       h1: ({ ...props }: HTMLAttributes<HTMLHeadingElement>) => (
@@ -581,40 +630,40 @@ export default function MarkdownEditor() {
 
   const commands = useMemo(
     () => [
-      customSaveCommand,
-      customClearCommand,
-      mdCommands.divider as any,
-      customBoldCommand,
-      customItalicCommand,
-      customUnderlineCommand,
-      customStrikethroughCommand,
-      mdCommands.divider as any,
-      customHeadingCommand,
-      customImageCommand,
-      customLinkCommand,
+      saveCommand,
+      clearCommand,
+      mdCommands.divider,
+      boldCommand,
+      italicCommand,
+      underlineCommand,
+      strikethroughCommand,
+      mdCommands.divider,
+      headingCommand,
+      imageCommand,
+      linkCommand,
     ],
     [
-      customBoldCommand,
-      customClearCommand,
-      customHeadingCommand,
-      customImageCommand,
-      customItalicCommand,
-      customLinkCommand,
-      customSaveCommand,
-      customStrikethroughCommand,
-      customUnderlineCommand,
+      boldCommand,
+      clearCommand,
+      headingCommand,
+      imageCommand,
+      italicCommand,
+      linkCommand,
+      saveCommand,
+      strikethroughCommand,
+      underlineCommand,
     ]
   );
 
   const extraCommands = useMemo(
     () => [
-      customCodeEditCommand,
-      customCodeLiveCommand,
-      customCodePreviewCommand,
-      mdCommands.divider as any,
-      customFullscreenCommand,
+      codeEditCommand,
+      codeLiveCommand,
+      codePreviewCommand,
+      mdCommands.divider,
+      fullscreenCommand,
     ],
-    [customCodeEditCommand, customCodeLiveCommand, customCodePreviewCommand, customFullscreenCommand]
+    [codeEditCommand, codeLiveCommand, codePreviewCommand, fullscreenCommand]
   );
 
   return (
@@ -633,8 +682,8 @@ export default function MarkdownEditor() {
           remarkPlugins: [remarkMath, remarkHighlight],
           components: previewComponents as any,
         }}
-        commands={commands as any}
-        extraCommands={extraCommands as any}
+        commands={commands}
+        extraCommands={extraCommands}
         hideToolbar={false}
       />
 
