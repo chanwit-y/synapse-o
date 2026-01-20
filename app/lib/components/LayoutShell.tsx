@@ -1,17 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import AppBar from "./AppBar";
-import Sidebar from "./Sidebar";
 import { useTheme } from "./ThemeProvider";
 
 export default function LayoutShell({
   children,
+  sidebar,
 }: {
   children: React.ReactNode;
+  sidebar?: React.ReactNode;
 }) {
   const { theme } = useTheme();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   return (
     <div
@@ -24,10 +23,7 @@ export default function LayoutShell({
     >
       <AppBar />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar
-          collapsed={isSidebarCollapsed}
-          onToggleCollapsed={() => setIsSidebarCollapsed((v) => !v)}
-        />
+        {sidebar}
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </div>

@@ -1,139 +1,166 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PanelLeftClose, PanelLeftOpen, PlusIcon } from "lucide-react";
 import TreeView, { TreeNode, TreeViewGroup } from "./TreeView";
 import Modal from "./Modal";
 import { useTheme } from "./ThemeProvider";
+import { createCollection, findAllCollections, updateCollectionDirectories } from "@/app/ui/action";
 
 const mockUuid = (() => {
   let i = 0;
   return () => `mock-uuid-${++i}`;
 })();
 
-// Sample folder structure data - only .md files
-const sampleTreeData: TreeViewGroup[] = [
-  {
-    id: mockUuid(),
-    name: "group1",
-    directories: [
-      {
-        id: mockUuid(),
-        name: "docs",
-        type: "folder",
-        children: [
-          {
-            id: mockUuid(),
-            name: "getting-started",
-            type: "folder",
-            children: [
-              { id: mockUuid(), name: "introduction.md", type: "file" },
-              { id: mockUuid(), name: "installation.md", type: "file" },
-              { id: mockUuid(), name: "quick-start.md", type: "file" },
-            ],
-          },
-          {
-            id: mockUuid(),
-            name: "guides",
-            type: "folder",
-            children: [
-              { id: mockUuid(), name: "api-reference.md", type: "file" },
-              { id: mockUuid(), name: "best-practices.md", type: "file" },
-              { id: mockUuid(), name: "troubleshooting.md", type: "file" },
-            ],
-          },
-          {
-            id: mockUuid(),
-            name: "examples",
-            type: "folder",
-            children: [
-              { id: mockUuid(), name: "basic-usage.md", type: "file" },
-              { id: mockUuid(), name: "advanced-features.md", type: "file" },
-            ],
-          },
-          { id: mockUuid(), name: "changelog.md", type: "file" },
-          { id: mockUuid(), name: "contributing.md", type: "file" },
-        ],
-      },
-      {
-        id: mockUuid(),
-        name: "notes",
-        type: "folder",
-        children: [
-          { id: mockUuid(), name: "meeting-notes.md", type: "file" },
-          { id: mockUuid(), name: "ideas.md", type: "file" },
-          { id: mockUuid(), name: "todo.md", type: "file" },
-          {
-            id: mockUuid(),
-            name: "projects",
-            type: "folder",
-            children: [
-              { id: mockUuid(), name: "project-alpha.md", type: "file" },
-              { id: mockUuid(), name: "project-beta.md", type: "file" },
-            ],
-          },
-        ],
-      },
-      {
-        id: mockUuid(),
-        name: "README.md",
-        type: "file",
-      },
-    ],
-  },
-  {
-    id: mockUuid(),
-    name: "group2",
-    directories: [
-      {
-        id: mockUuid(),
-        name: "src",
-        type: "folder",
-        children: [
-          {
-            id: mockUuid(),
-            name: "components",
-            type: "folder",
-            children: [
-              { id: mockUuid(), name: "Button.tsx", type: "file" },
-              { id: mockUuid(), name: "Card.tsx", type: "file" },
-              { id: mockUuid(), name: "Modal.tsx", type: "file" },
-            ],
-          },
-          {
-            id: mockUuid(),
-            name: "utils",
-            type: "folder",
-            children: [
-              { id: mockUuid(), name: "helpers.ts", type: "file" },
-              { id: mockUuid(), name: "constants.ts", type: "file" },
-            ],
-          },
-          { id: mockUuid(), name: "index.ts", type: "file" },
-        ],
-      },
-      {
-        id: mockUuid(),
-        name: "tests",
-        type: "folder",
-        children: [
-          {
-            id: mockUuid(),
-            name: "unit",
-            type: "folder",
-            children: [{ id: mockUuid(), name: "test-utils.ts", type: "file" }],
-          },
-          {
-            id: mockUuid(),
-            name: "integration",
-            type: "folder",
-            children: [{ id: mockUuid(), name: "api.test.ts", type: "file" }],
-          },
-        ],
-      },
-    ],
-  },
-];
+function parseDirectories(raw: unknown): TreeNode[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw as TreeNode[];
+
+  if (typeof raw === "string") {
+    // Tolerate historical double-encoding (JSON string inside JSON string).
+    try {
+      const once = JSON.parse(raw) as unknown;
+      if (Array.isArray(once)) return once as TreeNode[];
+      if (typeof once === "string") {
+        try {
+          const twice = JSON.parse(once) as unknown;
+          return Array.isArray(twice) ? (twice as TreeNode[]) : [];
+        } catch {
+          return [];
+        }
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
+
+  return [];
+}
+
+// // Sample folder structure data - only .md files
+// const sampleTreeData: TreeViewGroup[] = [
+//   {
+//     id: mockUuid(),
+//     name: "group1",
+//     directories: [
+//       {
+//         id: mockUuid(),
+//         name: "docs",
+//         type: "folder",
+//         children: [
+//           {
+//             id: mockUuid(),
+//             name: "getting-started",
+//             type: "folder",
+//             children: [
+//               { id: mockUuid(), name: "introduction.md", type: "file" },
+//               { id: mockUuid(), name: "installation.md", type: "file" },
+//               { id: mockUuid(), name: "quick-start.md", type: "file" },
+//             ],
+//           },
+//           {
+//             id: mockUuid(),
+//             name: "guides",
+//             type: "folder",
+//             children: [
+//               { id: mockUuid(), name: "api-reference.md", type: "file" },
+//               { id: mockUuid(), name: "best-practices.md", type: "file" },
+//               { id: mockUuid(), name: "troubleshooting.md", type: "file" },
+//             ],
+//           },
+//           {
+//             id: mockUuid(),
+//             name: "examples",
+//             type: "folder",
+//             children: [
+//               { id: mockUuid(), name: "basic-usage.md", type: "file" },
+//               { id: mockUuid(), name: "advanced-features.md", type: "file" },
+//             ],
+//           },
+//           { id: mockUuid(), name: "changelog.md", type: "file" },
+//           { id: mockUuid(), name: "contributing.md", type: "file" },
+//         ],
+//       },
+//       {
+//         id: mockUuid(),
+//         name: "notes",
+//         type: "folder",
+//         children: [
+//           { id: mockUuid(), name: "meeting-notes.md", type: "file" },
+//           { id: mockUuid(), name: "ideas.md", type: "file" },
+//           { id: mockUuid(), name: "todo.md", type: "file" },
+//           {
+//             id: mockUuid(),
+//             name: "projects",
+//             type: "folder",
+//             children: [
+//               { id: mockUuid(), name: "project-alpha.md", type: "file" },
+//               { id: mockUuid(), name: "project-beta.md", type: "file" },
+//             ],
+//           },
+//         ],
+//       },
+//       {
+//         id: mockUuid(),
+//         name: "README.md",
+//         type: "file",
+//       },
+//     ],
+//   },
+//   {
+//     id: mockUuid(),
+//     name: "group2",
+//     directories: [
+//       {
+//         id: mockUuid(),
+//         name: "src",
+//         type: "folder",
+//         children: [
+//           {
+//             id: mockUuid(),
+//             name: "components",
+//             type: "folder",
+//             children: [
+//               { id: mockUuid(), name: "Button.tsx", type: "file" },
+//               { id: mockUuid(), name: "Card.tsx", type: "file" },
+//               { id: mockUuid(), name: "Modal.tsx", type: "file" },
+//             ],
+//           },
+//           {
+//             id: mockUuid(),
+//             name: "utils",
+//             type: "folder",
+//             children: [
+//               { id: mockUuid(), name: "helpers.ts", type: "file" },
+//               { id: mockUuid(), name: "constants.ts", type: "file" },
+//             ],
+//           },
+//           { id: mockUuid(), name: "index.ts", type: "file" },
+//         ],
+//       },
+//       {
+//         id: mockUuid(),
+//         name: "tests",
+//         type: "folder",
+//         children: [
+//           {
+//             id: mockUuid(),
+//             name: "unit",
+//             type: "folder",
+//             children: [{ id: mockUuid(), name: "test-utils.ts", type: "file" }],
+//           },
+//           {
+//             id: mockUuid(),
+//             name: "integration",
+//             type: "folder",
+//             children: [{ id: mockUuid(), name: "api.test.ts", type: "file" }],
+//           },
+//         ],
+//       },
+//     ],
+//   },
+// ];
 
 export default function Sidebar({
   collapsed = false,
@@ -143,29 +170,108 @@ export default function Sidebar({
   onToggleCollapsed: () => void;
 }) {
   const { theme } = useTheme();
-  const [collections, setCollections] = useState<TreeViewGroup[]>(sampleTreeData);
+  const [collections, setCollections] = useState<TreeViewGroup[]>([]);
+  const [isLoadingCollections, setIsLoadingCollections] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [collectionName, setCollectionName] = useState("");
+  const [isSavingCollection, setIsSavingCollection] = useState(false);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [itemName, setItemName] = useState("");
   const [itemType, setItemType] = useState<"file" | "folder">("file");
+  const [isSavingItem, setIsSavingItem] = useState(false);
   const [selectedNodeForAdd, setSelectedNodeForAdd] = useState<{ node: TreeNode | null; path: string | null; groupIndex: number } | null>(null);
+
+
+  useEffect(() => {
+    let isMounted = true;
+
+    (async () => {
+      try {
+        const collections = await findAllCollections();
+        if (!isMounted) return;
+
+        setCollections(
+          collections.map((collection) => {
+            const directories = parseDirectories(collection.directories);
+
+            return {
+              id: collection.id,
+              name: collection.name ?? "",
+              directories,
+            };
+          })
+        );
+      } finally {
+        if (isMounted) setIsLoadingCollections(false);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const SkeletonTree = ({ rows = 10 }: { rows?: number }) => (
+    <div className="px-3 py-3 space-y-3">
+      <div className="space-y-2">
+        <div
+          className={[
+            "h-4 w-32 rounded animate-pulse",
+            theme === "light" ? "bg-gray-200" : "bg-gray-800",
+          ].join(" ")}
+        />
+        <div
+          className={[
+            "h-3 w-24 rounded animate-pulse",
+            theme === "light" ? "bg-gray-200" : "bg-gray-800",
+          ].join(" ")}
+        />
+      </div>
+
+      <div className="space-y-2">
+        {Array.from({ length: rows }).map((_, idx) => (
+          <div key={idx} className="flex items-center gap-2">
+            <div
+              className={[
+                "h-3 w-3 rounded-sm animate-pulse",
+                theme === "light" ? "bg-gray-200" : "bg-gray-800",
+              ].join(" ")}
+            />
+            <div
+              className={[
+                "h-3 rounded animate-pulse",
+                theme === "light" ? "bg-gray-200" : "bg-gray-800",
+              ].join(" ")}
+              style={{ width: `${Math.max(90, 160 - idx * 6)}px` }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   const handleNodeClick = (node: TreeNode) => {
     console.log("Node clicked:", node);
     // You can add custom logic here, like opening files, etc.
   };
 
-  const handleAddCollection = () => {
-    if (collectionName.trim()) {
+  const handleAddCollection = async () => {
+    const name = collectionName.trim();
+    if (!name || isSavingCollection) return;
+
+    setIsSavingCollection(true);
+    try {
+      const created = await createCollection(name);
       const newCollection: TreeViewGroup = {
-        id: mockUuid(),
-        name: collectionName.trim(),
-        directories: [],
+        id: created.id,
+        name: created.name ?? name,
+        directories: parseDirectories(created.directories),
       };
-      setCollections([...collections, newCollection]);
+      setCollections((prev) => [...prev, newCollection]);
       setCollectionName("");
       setIsModalOpen(false);
+    } finally {
+      setIsSavingCollection(false);
     }
   };
 
@@ -198,112 +304,78 @@ export default function Sidebar({
     setSelectedNodeForAdd(null);
   };
 
-  const handleAddItem = () => {
-    if (!itemName.trim()) return;
+  const handleAddItem = async () => {
+    const name = itemName.trim();
+    if (!name || isSavingItem) return;
+    if (!selectedNodeForAdd) return;
 
     const newItem: TreeNode = {
-      id: mockUuid(),
-      name: itemName.trim(),
+      id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : mockUuid(),
+      name,
       type: itemType,
       ...(itemType === "folder" ? { children: [] } : {}),
     };
 
-    setCollections((prevCollections) => {
-      const updatedCollections = JSON.parse(JSON.stringify(prevCollections)); // Deep clone
+    const targetGroupIndex = selectedNodeForAdd.groupIndex ?? 0;
+    const existingGroup = collections[targetGroupIndex];
+    if (!existingGroup) return;
 
-      if (!selectedNodeForAdd?.node || !selectedNodeForAdd?.path) {
-        // If no node is selected, add to the specific collection (group) where the button was clicked
-        const targetGroupIndex = selectedNodeForAdd?.groupIndex ?? 0;
-        if (targetGroupIndex >= 0 && targetGroupIndex < updatedCollections.length) {
-          updatedCollections[targetGroupIndex].directories.push(newItem);
-        }
-        return updatedCollections;
-      }
+    const updatedCollections: TreeViewGroup[] = JSON.parse(JSON.stringify(collections)); // Deep clone
+    const group = updatedCollections[targetGroupIndex];
 
+    const findNodeByPath = (nodes: TreeNode[], path: string[]): TreeNode | null => {
+      if (path.length === 0) return null;
+      const [head, ...rest] = path;
+      const current = nodes.find((n) => n.name === head) ?? null;
+      if (!current) return null;
+      if (rest.length === 0) return current;
+      if (current.type !== "folder") return null;
+      return findNodeByPath(current.children ?? [], rest);
+    };
+
+    if (!selectedNodeForAdd.node || !selectedNodeForAdd.path) {
+      group.directories.push(newItem);
+    } else {
       const selectedNode = selectedNodeForAdd.node;
-      const selectedPath = selectedNodeForAdd.path;
-      const pathSegments = selectedPath.split("/");
+      const pathSegments = selectedNodeForAdd.path.split("/");
 
-      // Helper function to find node by path
-      const findNodeByPath = (groups: TreeViewGroup[], path: string[]): TreeNode | null => {
-        if (path.length === 0) return null;
-
-        for (const group of groups) {
-          for (const dir of group.directories) {
-            if (dir.name === path[0]) {
-              if (path.length === 1) {
-                return dir;
-              }
-              if (dir.children && path.length > 1) {
-                return findNodeByPath(
-                  [{ id: "virtual", name: "", directories: dir.children }],
-                  path.slice(1)
-                );
-              }
-            }
-          }
-        }
-        return null;
-      };
-
-      // If selected node is a folder, add to its children
       if (selectedNode.type === "folder") {
-        const targetFolder = findNodeByPath(updatedCollections, pathSegments);
-        if (targetFolder) {
-          if (!targetFolder.children) {
-            targetFolder.children = [];
-          }
-          targetFolder.children.push(newItem);
+        const folder = findNodeByPath(group.directories, pathSegments);
+        if (folder && folder.type === "folder") {
+          folder.children = folder.children ?? [];
+          folder.children.push(newItem);
         } else {
-          // Fallback: add to the collection where the button was clicked
-          const targetGroupIndex = selectedNodeForAdd?.groupIndex ?? 0;
-          if (targetGroupIndex >= 0 && targetGroupIndex < updatedCollections.length) {
-            updatedCollections[targetGroupIndex].directories.push(newItem);
-          }
+          group.directories.push(newItem);
         }
       } else {
-        // If selected node is a file, add to its parent folder
         if (pathSegments.length > 1) {
-          // Get parent path (remove last segment)
           const parentPath = pathSegments.slice(0, -1);
-          const parentFolder = findNodeByPath(updatedCollections, parentPath);
-          
-          if (parentFolder && parentFolder.type === "folder") {
-            if (!parentFolder.children) {
-              parentFolder.children = [];
-            }
-            parentFolder.children.push(newItem);
+          const parent = findNodeByPath(group.directories, parentPath);
+          if (parent && parent.type === "folder") {
+            parent.children = parent.children ?? [];
+            parent.children.push(newItem);
           } else {
-            // Fallback: add to the collection where the button was clicked
-            const targetGroupIndex = selectedNodeForAdd?.groupIndex ?? 0;
-            if (targetGroupIndex >= 0 && targetGroupIndex < updatedCollections.length) {
-              updatedCollections[targetGroupIndex].directories.push(newItem);
-            }
+            group.directories.push(newItem);
           }
         } else {
-          // File is at root level, add to same group's root
-          // Find which group contains this file
-          for (const group of updatedCollections) {
-            const fileIndex = group.directories.findIndex(
-              (dir: TreeNode) => dir.name === pathSegments[0] && dir.type === "file"
-            );
-            if (fileIndex !== -1) {
-              group.directories.push(newItem);
-              return updatedCollections;
-            }
-          }
-          // Fallback: add to the collection where the button was clicked
-          const targetGroupIndex = selectedNodeForAdd?.groupIndex ?? 0;
-          if (targetGroupIndex >= 0 && targetGroupIndex < updatedCollections.length) {
-            updatedCollections[targetGroupIndex].directories.push(newItem);
-          }
+          group.directories.push(newItem);
         }
       }
+    }
 
-      return updatedCollections;
-    });
-
+    setCollections(updatedCollections);
     handleCloseAddItemModal();
+
+    setIsSavingItem(true);
+    try {
+      await updateCollectionDirectories(group.id, group.directories);
+    } catch (err) {
+      console.error("Failed to update collection directories:", err);
+      // Best-effort rollback (to pre-click UI state)
+      setCollections(collections);
+    } finally {
+      setIsSavingItem(false);
+    }
   };
 
   const footerButtonLabel = collapsed ? "Show sidebar" : "Hide sidebar";
@@ -378,12 +450,16 @@ export default function Sidebar({
           ].join(" ")}
         >
           <div className="flex-1 overflow-hidden">
-            <TreeView
-              data={collections}
-              onNodeClick={handleNodeClick}
-              onAddFile={handleAddFile}
-              onAddFolder={handleAddFolder}
-            />
+            {isLoadingCollections ? (
+              <SkeletonTree />
+            ) : (
+              <TreeView
+                data={collections}
+                onNodeClick={handleNodeClick}
+                onAddFile={handleAddFile}
+                onAddFolder={handleAddFolder}
+              />
+            )}
           </div>
         </div>
       </aside>
@@ -436,10 +512,10 @@ export default function Sidebar({
             </button>
             <button
               onClick={handleAddCollection}
-              disabled={!collectionName.trim()}
+              disabled={!collectionName.trim() || isSavingCollection}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md transition-colors"
             >
-              Add
+              {isSavingCollection ? "Adding..." : "Add"}
             </button>
           </div>
         </div>
@@ -500,10 +576,10 @@ export default function Sidebar({
             </button>
             <button
               onClick={handleAddItem}
-              disabled={!itemName.trim()}
+              disabled={!itemName.trim() || isSavingItem}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md transition-colors"
             >
-              Add
+              {isSavingItem ? "Adding..." : "Add"}
             </button>
           </div>
         </div>

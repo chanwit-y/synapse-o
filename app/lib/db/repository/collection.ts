@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use server";
+import "server-only";
 
 import { collectionTable } from "@/app/lib/db/schema";
 import { BaseRepository, type RepoOptions } from "@/app/lib/db/repository/base";
