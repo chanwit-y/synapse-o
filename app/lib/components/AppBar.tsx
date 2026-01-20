@@ -1,17 +1,10 @@
 "use client";
 
-import { MenuIcon } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import Logo from "./Logo";
 import ThemeToggleIcon from "./ThemeToggleIcon";
 
-export default function AppBar({
-  isSidebarCollapsed,
-  onToggleSidebar,
-}: {
-  isSidebarCollapsed: boolean;
-  onToggleSidebar: () => void;
-}) {
+export default function AppBar() {
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -26,16 +19,6 @@ export default function AppBar({
     >
       <div className="mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-1">
-          <button
-            onClick={onToggleSidebar}
-            className={[
-              "mr-1 flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-              theme === "light" ? "hover:bg-gray-100" : "hover:bg-gray-800",
-            ].join(" ")}
-            aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            <MenuIcon className="h-5 w-5" />
-          </button>
           <Logo />
           <h1
             className={[
@@ -46,7 +29,7 @@ export default function AppBar({
             Synapse
           </h1>
         </div>
-        
+
         <button
           onClick={toggleTheme}
           className={[

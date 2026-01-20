@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PlusIcon } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, PlusIcon } from "lucide-react";
 import TreeView, { TreeNode, TreeViewGroup } from "./TreeView";
 import Modal from "./Modal";
 import { useTheme } from "./ThemeProvider";
@@ -135,7 +135,13 @@ const sampleTreeData: TreeViewGroup[] = [
   },
 ];
 
-export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) {
+export default function Sidebar({
+  collapsed = false,
+  onToggleCollapsed,
+}: {
+  collapsed?: boolean;
+  onToggleCollapsed: () => void;
+}) {
   const { theme } = useTheme();
   const [collections, setCollections] = useState<TreeViewGroup[]>(sampleTreeData);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -300,47 +306,85 @@ export default function Sidebar({ collapsed = false }: { collapsed?: boolean }) 
     handleCloseAddItemModal();
   };
 
+  const footerButtonLabel = collapsed ? "Show sidebar" : "Hide sidebar";
+
   return (
     <>
       <aside
         className={[
           "flex flex-col h-[calc(100vh-4rem)] transition-[width] duration-200 overflow-hidden",
-          collapsed ? "w-0 pointer-events-none" : "w-64",
-          collapsed ? "border-r-0" : "border-r",
+          collapsed ? "w-12" : "w-64",
+          "border-r",
           theme === "light" ? "bg-white border-gray-200" : "bg-gray-900 border-gray-800",
         ].join(" ")}
-        aria-hidden={collapsed}
       >
-        <div className={`flex items-center justify-between px-4 py-3 border-b ${
-          theme === "light"
-            ? "border-gray-200 bg-gray-50/50"
-            : "border-gray-800 bg-gray-900"
-        }`}>
-          <h2 className={`text-sm font-semibold uppercase tracking-wide ${
+        <div
+          className={`flex items-center justify-between border-b ${
+            collapsed ? "px-2 py-3" : "px-4 py-3"
+          } ${
             theme === "light"
-              ? "text-gray-800"
-              : "text-gray-300"
-          }`}>
-            Collection 
-          </h2>
-          <button 
+              ? "border-gray-200 bg-gray-50/50"
+              : "border-gray-800 bg-gray-900"
+          }`}
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              onClick={onToggleCollapsed}
+              aria-label={footerButtonLabel}
+              className={[
+                "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+                theme === "light"
+                  ? "text-gray-700 hover:bg-gray-200 hover:text-gray-900"
+                  : "text-gray-300 hover:bg-gray-800 hover:text-gray-100",
+              ].join(" ")}
+            >
+              {collapsed ? (
+                <PanelLeftOpen className="h-4 w-4" />
+              ) : (
+                <PanelLeftClose className="h-4 w-4" />
+              )}
+            </button>
+
+            <h2
+              className={[
+                "text-sm font-semibold uppercase tracking-wide truncate",
+                collapsed ? "sr-only" : "",
+                theme === "light" ? "text-gray-800" : "text-gray-300",
+              ].join(" ")}
+            >
+              Collection
+            </h2>
+          </div>
+
+          <button
             onClick={handleOpenModal}
-            className={`p-1.5 rounded-md transition-colors ${
+            className={[
+              "p-1.5 rounded-md transition-colors",
+              collapsed ? "sr-only" : "",
               theme === "light"
                 ? "text-gray-700 hover:bg-gray-200 hover:text-gray-900"
-                : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
-            }`}
+                : "text-gray-400 hover:bg-gray-800 hover:text-gray-200",
+            ].join(" ")}
           >
             <PlusIcon className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex-1 overflow-hidden">
-          <TreeView 
-            data={collections} 
-            onNodeClick={handleNodeClick}
-            onAddFile={handleAddFile}
-            onAddFolder={handleAddFolder}
-          />
+
+        <div
+          className={[
+            "flex flex-col flex-1 min-h-0",
+            collapsed ? "opacity-0 pointer-events-none" : "opacity-100",
+          ].join(" ")}
+        >
+          <div className="flex-1 overflow-hidden">
+            <TreeView
+              data={collections}
+              onNodeClick={handleNodeClick}
+              onAddFile={handleAddFile}
+              onAddFolder={handleAddFolder}
+            />
+          </div>
         </div>
       </aside>
 

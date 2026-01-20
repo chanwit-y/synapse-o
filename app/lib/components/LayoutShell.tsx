@@ -22,12 +22,12 @@ export default function LayoutShell({
           : "bg-gray-900 text-gray-100",
       ].join(" ")}
     >
-      <AppBar
-        isSidebarCollapsed={isSidebarCollapsed}
-        onToggleSidebar={() => setIsSidebarCollapsed((v) => !v)}
-      />
+      <AppBar />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar collapsed={isSidebarCollapsed} />
+        <Sidebar
+          collapsed={isSidebarCollapsed}
+          onToggleCollapsed={() => setIsSidebarCollapsed((v) => !v)}
+        />
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </div>
