@@ -44,19 +44,22 @@ const createFolder = (
 const createFile = (
   name: string,
   collectionId: string,
-  content: string | null = null
+  content?: string | null
 ): TreeNode => {
   const timestamp = Date.now();
-  return {
+  const file: TreeNode = {
     id: mockUuid(),
     collectionId,
     name,
     type: "file",
     extension: getExtension(name),
-    content,
     createdAt: timestamp,
     updatedAt: timestamp,
   };
+  if (content !== undefined) {
+    file.content = content;
+  }
+  return file;
 };
 
 const group1Id = "fec70d55-7391-45fd-8b07-706878b4b81d";

@@ -38,6 +38,19 @@ function parseDirectories(raw: unknown): TreeNode[] {
   return [];
 }
 
+function assignCollectionId(nodes: TreeNode[], collectionId: string): TreeNode[] {
+  return nodes.map((node) => {
+    const next: TreeNode = {
+      ...node,
+      collectionId: node.collectionId || collectionId,
+    };
+    if (next.type === "folder" && next.children?.length) {
+      next.children = assignCollectionId(next.children, collectionId);
+    }
+    return next;
+  });
+}
+
 // // Sample folder structure data - only .md files
 // const sampleTreeData: TreeViewGroup[] = [
 //   {
@@ -165,9 +178,11 @@ function parseDirectories(raw: unknown): TreeNode[] {
 export default function Sidebar({
   collapsed = false,
   onToggleCollapsed,
+  onSelectFile,
 }: {
   collapsed?: boolean;
   onToggleCollapsed: () => void;
+  onSelectFile?: (file: TreeNode) => void;
 }) {
   const { theme } = useTheme();
   const [collections, setCollections] = useState<TreeViewGroup[]>([]);
@@ -192,7 +207,10 @@ export default function Sidebar({
 
         setCollections(
           collections.map((collection) => {
-            const directories = parseDirectories(collection.directories);
+            const directories = assignCollectionId(
+              parseDirectories(collection.directories),
+              collection.id
+            );
 
             return {
               id: collection.id,
@@ -251,8 +269,9 @@ export default function Sidebar({
   );
 
   const handleNodeClick = (node: TreeNode) => {
-    console.log("Node clicked:", node);
-    // You can add custom logic here, like opening files, etc.
+    if (node.type === "file") {
+      onSelectFile?.(node);
+    }
   };
 
   const handleAddCollection = async () => {
@@ -327,6 +346,7 @@ export default function Sidebar({
 
     const updatedCollections: TreeViewGroup[] = JSON.parse(JSON.stringify(collections)); // Deep clone
     const group = updatedCollections[targetGroupIndex];
+    newItem.collectionId = group.id;
 
     const findNodeByPath = (nodes: TreeNode[], path: string[]): TreeNode | null => {
       if (path.length === 0) return null;

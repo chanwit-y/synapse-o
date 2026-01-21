@@ -34,6 +34,7 @@ import {
   insertAtMdEditorCursor,
   normalizePublicPath,
 } from './markdown-editor/editorUtils';
+import type { TreeNode } from './@types/treeViewTypes';
 
 type TooltipState = {
   visible: boolean;
@@ -222,7 +223,7 @@ function createInsertCommand(opts: {
   };
 }
 
-export default function MarkdownEditor() {
+export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNode | null }) {
   const { theme } = useTheme();
 
   const [value, setValue] = useState(DEFAULT_MARKDOWN);
@@ -258,6 +259,7 @@ export default function MarkdownEditor() {
   const headingSelectRef = useRef<HTMLSelectElement>(null);
 
   const commandCtxRef = useRef<EditorCommandCtx | null>(null);
+  const fileIdRef = useRef<string | null>(null);
 
   useModeSwitchAnimation(previewMode);
 
@@ -429,6 +431,66 @@ export default function MarkdownEditor() {
     [openAtToolbarButton]
   );
 
+  const saveCurrentContent = useCallback(async () => {
+    try {
+      if (!selectedFile) {
+        alert('Please select a file to save.');
+        return;
+      }
+
+      const response = await fetch('/api/file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: fileIdRef.current,
+          name: selectedFile.name || 'untitled.md',
+          collectionId: selectedFile.collectionId,
+          content: valueRef.current,
+        }),
+      });
+
+      const result = (await response.json()) as { success?: boolean; id?: string; error?: string };
+      if (!response.ok || !result.success || !result.id) {
+        throw new Error(result.error || 'Failed to save file');
+      }
+
+      fileIdRef.current = result.id;
+      console.log('Saved file:', result.id);
+    } catch (error) {
+      console.error('Error saving file:', error);
+      alert(error instanceof Error ? error.message : 'Error saving file. Please try again.');
+    }
+  }, [selectedFile, valueRef]);
+
+  useEffect(() => {
+    if (!selectedFile?.id) return;
+    fileIdRef.current = selectedFile.id;
+
+    (async () => {
+      try {
+        const response = await fetch(`/api/file?id=${encodeURIComponent(selectedFile.id)}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            setValue(selectedFile.content ?? '');
+            return;
+          }
+          const errorBody = (await response.json()) as { error?: string };
+          throw new Error(errorBody.error || 'Failed to load file');
+        }
+
+        const result = (await response.json()) as { success?: boolean; file?: { content?: string | null } };
+        if (!result.success) {
+          throw new Error('Failed to load file');
+        }
+
+        setValue(result.file?.content ?? '');
+      } catch (error) {
+        console.error('Error loading file:', error);
+        alert(error instanceof Error ? error.message : 'Error loading file. Please try again.');
+      }
+    })();
+  }, [selectedFile?.content, selectedFile?.id]);
+
   const saveCommand = useMemo<ICommand>(
     () => ({
       name: 'save',
@@ -436,10 +498,10 @@ export default function MarkdownEditor() {
       buttonProps: { 'aria-label': 'Save' },
       icon: <SaveIcon />,
       execute: () => {
-        console.log('Save clicked:', valueRef.current);
+        void saveCurrentContent();
       },
     }),
-    [valueRef]
+    [saveCurrentContent]
   );
 
   const clearCommand = useMemo<ICommand>(
