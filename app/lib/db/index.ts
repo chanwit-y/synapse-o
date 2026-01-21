@@ -3,7 +3,7 @@
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { sql } from "drizzle-orm";
 import Database from "better-sqlite3";
-import { TreeViewGroup } from "../components/TreeView";
+import type { TreeNode, TreeViewGroup } from "../components/TreeView";
 import { collectionTable } from "./schema";
 
 export async function testConnection() {
@@ -18,125 +18,107 @@ const mockUuid = (() => {
   return () => `mock-uuid-${++i}`;
 })();
 
+const getExtension = (name: string) => {
+  const lastDotIndex = name.lastIndexOf(".");
+  if (lastDotIndex === -1 || lastDotIndex === name.length - 1) {
+    return null;
+  }
+  return name.slice(lastDotIndex + 1);
+};
+
+const createFolder = (
+  name: string,
+  collectionId: string,
+  children: TreeNode[] = []
+): TreeNode => {
+  return {
+    id: mockUuid(),
+    collectionId,
+    name,
+    type: "folder",
+    extension: null,
+    children,
+  };
+};
+
+const createFile = (
+  name: string,
+  collectionId: string,
+  content: string | null = null
+): TreeNode => {
+  const timestamp = Date.now();
+  return {
+    id: mockUuid(),
+    collectionId,
+    name,
+    type: "file",
+    extension: getExtension(name),
+    content,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+};
+
+const group1Id = "fec70d55-7391-45fd-8b07-706878b4b81d";
+const group2Id = mockUuid();
+
 const sampleTreeData: TreeViewGroup[] = [
   {
-    id: mockUuid(),
+    id: group1Id,
     name: "group1",
     directories: [
-      {
-        id: mockUuid(),
-        name: "docs",
-        type: "folder",
-        children: [
-          {
-            id: mockUuid(),
-            name: "getting-started",
-            type: "folder",
-            children: [
-              { id: mockUuid(), name: "introduction.md", type: "file" },
-              { id: mockUuid(), name: "installation.md", type: "file" },
-              { id: mockUuid(), name: "quick-start.md", type: "file" },
-            ],
-          },
-          {
-            id: mockUuid(),
-            name: "guides",
-            type: "folder",
-            children: [
-              { id: mockUuid(), name: "api-reference.md", type: "file" },
-              { id: mockUuid(), name: "best-practices.md", type: "file" },
-              { id: mockUuid(), name: "troubleshooting.md", type: "file" },
-            ],
-          },
-          {
-            id: mockUuid(),
-            name: "examples",
-            type: "folder",
-            children: [
-              { id: mockUuid(), name: "basic-usage.md", type: "file" },
-              { id: mockUuid(), name: "advanced-features.md", type: "file" },
-            ],
-          },
-          { id: mockUuid(), name: "changelog.md", type: "file" },
-          { id: mockUuid(), name: "contributing.md", type: "file" },
-        ],
-      },
-      {
-        id: mockUuid(),
-        name: "notes",
-        type: "folder",
-        children: [
-          { id: mockUuid(), name: "meeting-notes.md", type: "file" },
-          { id: mockUuid(), name: "ideas.md", type: "file" },
-          { id: mockUuid(), name: "todo.md", type: "file" },
-          {
-            id: mockUuid(),
-            name: "projects",
-            type: "folder",
-            children: [
-              { id: mockUuid(), name: "project-alpha.md", type: "file" },
-              { id: mockUuid(), name: "project-beta.md", type: "file" },
-            ],
-          },
-        ],
-      },
-      {
-        id: mockUuid(),
-        name: "README.md",
-        type: "file",
-      },
+      createFolder("docs", group1Id, [
+        createFolder("getting-started", group1Id, [
+          createFile("introduction.md", group1Id),
+          createFile("installation.md", group1Id),
+          createFile("quick-start.md", group1Id),
+        ]),
+        createFolder("guides", group1Id, [
+          createFile("api-reference.md", group1Id),
+          createFile("best-practices.md", group1Id),
+          createFile("troubleshooting.md", group1Id),
+        ]),
+        createFolder("examples", group1Id, [
+          createFile("basic-usage.md", group1Id),
+          createFile("advanced-features.md", group1Id),
+        ]),
+        createFile("changelog.md", group1Id),
+        createFile("contributing.md", group1Id),
+      ]),
+      createFolder("notes", group1Id, [
+        createFile("meeting-notes.md", group1Id),
+        createFile("ideas.md", group1Id),
+        createFile("todo.md", group1Id),
+        createFolder("projects", group1Id, [
+          createFile("project-alpha.md", group1Id),
+          createFile("project-beta.md", group1Id),
+        ]),
+      ]),
+      createFile("README.md", group1Id),
     ],
   },
   {
-    id: mockUuid(),
+    id: group2Id,
     name: "group2",
     directories: [
-      {
-        id: mockUuid(),
-        name: "src",
-        type: "folder",
-        children: [
-          {
-            id: mockUuid(),
-            name: "components",
-            type: "folder",
-            children: [
-              { id: mockUuid(), name: "Button.tsx", type: "file" },
-              { id: mockUuid(), name: "Card.tsx", type: "file" },
-              { id: mockUuid(), name: "Modal.tsx", type: "file" },
-            ],
-          },
-          {
-            id: mockUuid(),
-            name: "utils",
-            type: "folder",
-            children: [
-              { id: mockUuid(), name: "helpers.ts", type: "file" },
-              { id: mockUuid(), name: "constants.ts", type: "file" },
-            ],
-          },
-          { id: mockUuid(), name: "index.ts", type: "file" },
-        ],
-      },
-      {
-        id: mockUuid(),
-        name: "tests",
-        type: "folder",
-        children: [
-          {
-            id: mockUuid(),
-            name: "unit",
-            type: "folder",
-            children: [{ id: mockUuid(), name: "test-utils.ts", type: "file" }],
-          },
-          {
-            id: mockUuid(),
-            name: "integration",
-            type: "folder",
-            children: [{ id: mockUuid(), name: "api.test.ts", type: "file" }],
-          },
-        ],
-      },
+      createFolder("src", group2Id, [
+        createFolder("components", group2Id, [
+          createFile("Button.tsx", group2Id),
+          createFile("Card.tsx", group2Id),
+          createFile("Modal.tsx", group2Id),
+        ]),
+        createFolder("utils", group2Id, [
+          createFile("helpers.ts", group2Id),
+          createFile("constants.ts", group2Id),
+        ]),
+        createFile("index.ts", group2Id),
+      ]),
+      createFolder("tests", group2Id, [
+        createFolder("unit", group2Id, [createFile("test-utils.ts", group2Id)]),
+        createFolder("integration", group2Id, [
+          createFile("api.test.ts", group2Id),
+        ]),
+      ]),
     ],
   },
 ];

@@ -314,6 +314,11 @@ export default function Sidebar({
       name,
       type: itemType,
       ...(itemType === "folder" ? { children: [] } : {}),
+      collectionId: "",
+      extension: null,
+      content: null,
+      createdAt: 0,
+      updatedAt: 0
     };
 
     const targetGroupIndex = selectedNodeForAdd.groupIndex ?? 0;

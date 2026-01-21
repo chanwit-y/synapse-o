@@ -1,7 +1,12 @@
 export interface TreeNode {
   id: string;
+  collectionId: string;
   name: string;
   type: "folder" | "file";
+  extension: string | null;
+  content?: string | null;
+  createdAt?: number;
+  updatedAt?: number;
   children?: TreeNode[];
 }
 
