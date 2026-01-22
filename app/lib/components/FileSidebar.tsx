@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { PanelLeftClose, PanelLeftOpen, PlusIcon } from "lucide-react";
 import TreeView, { TreeNode, TreeViewGroup } from "./TreeView";
-import Modal from "./Modal";
+import FileSidebarModals from "./FileSidebarModals";
+import { useSnackbar } from "./Snackbar";
 import { useTheme } from "./ThemeProvider";
 import { createCollection, findAllCollections, updateCollectionDirectories } from "@/app/ui/doc/action";
 
@@ -185,6 +186,7 @@ export default function FileSidebar({
   onSelectFile?: (file: TreeNode) => void;
 }) {
   const { theme } = useTheme();
+  const { showSnackbar } = useSnackbar();
   const [collections, setCollections] = useState<TreeViewGroup[]>([]);
   const [isLoadingCollections, setIsLoadingCollections] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -289,6 +291,16 @@ export default function FileSidebar({
       setCollections((prev) => [...prev, newCollection]);
       setCollectionName("");
       setIsModalOpen(false);
+      showSnackbar({
+        variant: "success",
+        message: `Collection "${created.name ?? name}" added.`,
+      });
+    } catch (error) {
+      console.error("Failed to create collection:", error);
+      showSnackbar({
+        variant: "error",
+        message: "Failed to add collection. Please try again.",
+      });
     } finally {
       setIsSavingCollection(false);
     }
@@ -394,10 +406,18 @@ export default function FileSidebar({
     setIsSavingItem(true);
     try {
       await updateCollectionDirectories(group.id, group.directories);
+      showSnackbar({
+        variant: "success",
+        message: `${itemType === "file" ? "File" : "Folder"} "${name}" added.`,
+      });
     } catch (err) {
       console.error("Failed to update collection directories:", err);
       // Best-effort rollback (to pre-click UI state)
       setCollections(collections);
+      showSnackbar({
+        variant: "error",
+        message: `Failed to add ${itemType}. Please try again.`,
+      });
     } finally {
       setIsSavingItem(false);
     }
@@ -489,126 +509,23 @@ export default function FileSidebar({
         </div>
       </aside>
 
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <div className="space-y-4">
-          <h3 className={`text-lg font-semibold ${
-            theme === "light" ? "text-gray-900" : "text-gray-100"
-          }`}>
-            Add Collection
-          </h3>
-          <div className="space-y-2">
-            <label 
-              htmlFor="collection-name"
-              className={`block text-sm font-medium ${
-                theme === "light" ? "text-gray-700" : "text-gray-300"
-              }`}
-            >
-              Collection Name
-            </label>
-            <input
-              id="collection-name"
-              type="text"
-              value={collectionName}
-              onChange={(e) => setCollectionName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleAddCollection();
-                }
-              }}
-              placeholder="Enter collection name"
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                theme === "light"
-                  ? "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
-                  : "border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400"
-              }`}
-              autoFocus
-            />
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              onClick={handleCloseModal}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                theme === "light"
-                  ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
-                  : "text-gray-300 bg-gray-700 hover:bg-gray-600"
-              }`}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleAddCollection}
-              disabled={!collectionName.trim() || isSavingCollection}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md transition-colors"
-            >
-              {isSavingCollection ? "Adding..." : "Add"}
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal isOpen={isAddItemModalOpen} onClose={handleCloseAddItemModal}>
-        <div className="space-y-4">
-          <h3 className={`text-lg font-semibold ${
-            theme === "light" ? "text-gray-900" : "text-gray-100"
-          }`}>
-            Add {itemType === "file" ? "File" : "Folder"}
-          </h3>
-          <div className="space-y-2">
-            <label 
-              htmlFor="item-name"
-              className={`block text-sm font-medium ${
-                theme === "light" ? "text-gray-700" : "text-gray-300"
-              }`}
-            >
-              {itemType === "file" ? "File" : "Folder"} Name
-            </label>
-            <input
-              id="item-name"
-              type="text"
-              value={itemName}
-              onChange={(e) => setItemName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleAddItem();
-                }
-              }}
-              placeholder={`Enter ${itemType} name${itemType === "file" ? " (e.g., example.md)" : ""}`}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                theme === "light"
-                  ? "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
-                  : "border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400"
-              }`}
-              autoFocus
-            />
-            {selectedNodeForAdd?.node && (
-              <p className={`text-xs ${
-                theme === "light" ? "text-gray-500" : "text-gray-400"
-              }`}>
-                Will be added {selectedNodeForAdd.node.type === "folder" ? "inside" : "next to"} "{selectedNodeForAdd.node.name}"
-              </p>
-            )}
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              onClick={handleCloseAddItemModal}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                theme === "light"
-                  ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
-                  : "text-gray-300 bg-gray-700 hover:bg-gray-600"
-              }`}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleAddItem}
-              disabled={!itemName.trim() || isSavingItem}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md transition-colors"
-            >
-              {isSavingItem ? "Adding..." : "Add"}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      <FileSidebarModals
+        theme={theme}
+        isCollectionModalOpen={isModalOpen}
+        onCloseCollectionModal={handleCloseModal}
+        collectionName={collectionName}
+        onChangeCollectionName={setCollectionName}
+        onSubmitCollection={handleAddCollection}
+        isSavingCollection={isSavingCollection}
+        isAddItemModalOpen={isAddItemModalOpen}
+        onCloseAddItemModal={handleCloseAddItemModal}
+        itemType={itemType}
+        itemName={itemName}
+        onChangeItemName={setItemName}
+        onSubmitItem={handleAddItem}
+        isSavingItem={isSavingItem}
+        selectedNodeForAdd={selectedNodeForAdd}
+      />
     </>
   );
 }

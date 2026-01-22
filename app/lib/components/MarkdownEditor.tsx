@@ -12,6 +12,7 @@ import MDEditor, {
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { useTheme } from './ThemeProvider';
+import { useSnackbar } from './Snackbar';
 import { MARKDOWN_EDITOR_CSS } from './markdown-editor/editorCss';
 import {
   BoldIcon,
@@ -225,6 +226,7 @@ function createInsertCommand(opts: {
 
 export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNode | null }) {
   const { theme } = useTheme();
+  const { showSnackbar } = useSnackbar();
 
   const [value, setValue] = useState("");
   const [previewMode, setPreviewMode] = useState<PreviewType>('live');
@@ -456,11 +458,16 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
 
       fileIdRef.current = result.id;
       console.log('Saved file:', result.id);
+      showSnackbar({
+        title: 'Saved',
+        message: `Saved "${selectedFile.name || 'untitled.md'}"`,
+        variant: 'success',
+      });
     } catch (error) {
       console.error('Error saving file:', error);
       alert(error instanceof Error ? error.message : 'Error saving file. Please try again.');
     }
-  }, [selectedFile, valueRef]);
+  }, [selectedFile, showSnackbar, valueRef]);
 
   useEffect(() => {
     if (!selectedFile?.id) return;

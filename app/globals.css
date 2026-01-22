@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./lib/components/Snackbar.css";
 /* 
 :root {
   --background: #ffffff;
