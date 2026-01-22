@@ -1,13 +1,11 @@
 "use client";
 
-import { useSidebar } from "./SidebarContext";
 import { useTheme } from "./ThemeProvider";
 import Logo from "./Logo";
 import ThemeToggleIcon from "./ThemeToggleIcon";
 
 export default function AppBar() {
   const { theme, toggleTheme } = useTheme();
-  const { isCollapsed, toggleSidebar } = useSidebar();
 
   return (
     // <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/80">
@@ -21,29 +19,6 @@ export default function AppBar() {
     >
       <div className="mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <button
-            onClick={toggleSidebar}
-            className={[
-              "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-              theme === "light" ? "hover:bg-gray-100" : "hover:bg-gray-800",
-            ].join(" ")}
-            aria-label="Toggle sidebar"
-            aria-pressed={!isCollapsed}
-          >
-            <svg
-              className="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
           <Logo />
           <h1
             className={[

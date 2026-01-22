@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
 import { useTheme } from "./ThemeProvider";
 
@@ -22,7 +23,7 @@ export default function SidebarMenu({
 }) {
   const pathname = usePathname();
   const { theme } = useTheme();
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, toggleSidebar } = useSidebar();
   const activeHref =
     items
       .filter((item) =>
@@ -111,6 +112,32 @@ export default function SidebarMenu({
             );
           })}
         </nav>
+        <div
+          className={[
+            "mt-auto pt-3 border-t",
+            isCollapsed ? "flex justify-center" : "",
+            theme === "light" ? "border-gray-200" : "border-gray-800",
+          ].join(" ")}
+        >
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            className={[
+              "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+              theme === "light"
+                ? "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                : "text-gray-300 hover:bg-gray-800 hover:text-gray-100",
+            ].join(" ")}
+            aria-label={isCollapsed ? "Show menu" : "Hide menu"}
+            aria-pressed={!isCollapsed}
+          >
+            {isCollapsed ? (
+              <PanelLeftOpen className="h-5 w-5" />
+            ) : (
+              <PanelLeftClose className="h-5 w-5" />
+            )}
+          </button>
+        </div>
       </div>
     </aside>
   );

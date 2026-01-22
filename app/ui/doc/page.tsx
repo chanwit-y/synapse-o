@@ -22,7 +22,10 @@ export default function Home() {
         />
         <main className="flex-1 w-dvw overflow-auto">
           {selectedFile ? (
-            <div className="flex h-full justify-center font-sans p-4">
+            <div
+              key={selectedFile.id}
+              className="flex h-full justify-center font-sans p-4 markdown-fade-in"
+            >
               <MarkdownEditor selectedFile={selectedFile} />
             </div>
           ) : (
