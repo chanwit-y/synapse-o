@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { MouseEvent } from "react";
 import TreeViewGroupItem from "./TreeViewGroupItem";
 import type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
 
@@ -18,6 +19,13 @@ export default function TreeView({ data, onNodeClick, onAddFile, onAddFolder }: 
   const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
   const [favoritedGroups, setFavoritedGroups] = useState<Set<number>>(new Set());
 
+  const handleBackgroundClick = (event: MouseEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement;
+    if (target.closest('[data-tree-interactive="true"]')) return;
+    setSelectedNode(null);
+    setSelectedNodePath(null);
+  };
+
   const handleToggleFavorite = (groupIndex: number) => {
     setFavoritedGroups((prev) => {
       const newSet = new Set(prev);
@@ -31,7 +39,7 @@ export default function TreeView({ data, onNodeClick, onAddFile, onAddFolder }: 
   };
 
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto" onClick={handleBackgroundClick}>
       <div className="py-2">
         {data.map((group, groupIndex) => (
           <TreeViewGroupItem

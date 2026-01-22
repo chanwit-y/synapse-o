@@ -55,6 +55,7 @@ export default function TreeNodeItem({
         }`}
         style={{ paddingLeft: `${indentLevel}px` }}
         onClick={handleClick}
+        data-tree-interactive="true"
       >
         {isFolder && hasChildren && (
           <span className="flex items-center justify-center w-4 h-4">

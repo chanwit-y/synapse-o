@@ -59,6 +59,7 @@ export default function TreeViewGroupItem({
       <div
         className={`flex items-center justify-between px-2 py-2 text-xs font-semibold text-gray-500 ${theme === 'light' ? "text-gray-500" : "text-gray-400"} uppercase tracking-wide hover:bg-gray-100 ${theme === 'light' ? "hover:bg-gray-100" : "hover:bg-gray-800"} rounded cursor-pointer transition-colors`}
         onClick={() => setIsExpanded(!isExpanded)}
+        data-tree-interactive="true"
       >
         <div className="flex items-center gap-1">
           <span className="flex items-center justify-center w-4 h-4 transition-transform duration-200">
