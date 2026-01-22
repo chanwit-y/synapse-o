@@ -1,6 +1,7 @@
 "use client";
 
 import AppBar from "./AppBar";
+import { SidebarProvider } from "./SidebarContext";
 import { useTheme } from "./ThemeProvider";
 
 export default function LayoutShell({
@@ -21,12 +22,14 @@ export default function LayoutShell({
           : "bg-gray-900 text-gray-100",
       ].join(" ")}
     >
-      <AppBar />
-      <div className="flex flex-1 overflow-hidden">
-        {/* {sidebar} */}
-        {/* <main className="flex-1 overflow-auto">{children}</main> */}
-        {children}
-      </div>
+      <SidebarProvider>
+        <AppBar />
+        <div className="flex overflow-hidden">
+          {/* {sidebar} */}
+          {/* <main className="flex-1 overflow-auto">{children}</main> */}
+          {children}
+        </div>
+      </SidebarProvider>
     </div>
   );
 }

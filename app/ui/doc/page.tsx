@@ -13,22 +13,14 @@ export default function Home() {
   const [selectedFile, setSelectedFile] = useState<TreeNode | null>(null);
 
   return (
-    <LayoutShell
-    // sidebar={
-    //   <FileSidebar
-    //     collapsed={isSidebarCollapsed}
-    //     onToggleCollapsed={() => setIsSidebarCollapsed((v) => !v)}
-    //     onSelectFile={(node) => setSelectedFile(node)}
-    //   />
-    // }
-    >
+    // <LayoutShell>
       <>
         <FileSidebar
           collapsed={isSidebarCollapsed}
           onToggleCollapsed={() => setIsSidebarCollapsed((v) => !v)}
           onSelectFile={(node) => setSelectedFile(node)}
         />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 w-dvw overflow-auto">
           {selectedFile ? (
             <div className="flex h-full justify-center font-sans p-4">
               <MarkdownEditor selectedFile={selectedFile} />
@@ -45,7 +37,7 @@ export default function Home() {
           )}
         </main>
       </>
-    </LayoutShell>
+    // </LayoutShell>
   );
 }
 
