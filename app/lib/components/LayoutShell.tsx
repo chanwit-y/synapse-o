@@ -5,10 +5,10 @@ import { useTheme } from "./ThemeProvider";
 
 export default function LayoutShell({
   children,
-  sidebar,
+  // sidebar,
 }: {
   children: React.ReactNode;
-  sidebar?: React.ReactNode;
+  // sidebar?: React.ReactNode;
 }) {
   const { theme } = useTheme();
 
@@ -23,8 +23,9 @@ export default function LayoutShell({
     >
       <AppBar />
       <div className="flex flex-1 overflow-hidden">
-        {sidebar}
-        <main className="flex-1 overflow-auto">{children}</main>
+        {/* {sidebar} */}
+        {/* <main className="flex-1 overflow-auto">{children}</main> */}
+        {children}
       </div>
     </div>
   );

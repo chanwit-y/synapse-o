@@ -14,28 +14,37 @@ export default function Home() {
 
   return (
     <LayoutShell
-      sidebar={
+    // sidebar={
+    //   <FileSidebar
+    //     collapsed={isSidebarCollapsed}
+    //     onToggleCollapsed={() => setIsSidebarCollapsed((v) => !v)}
+    //     onSelectFile={(node) => setSelectedFile(node)}
+    //   />
+    // }
+    >
+      <>
         <FileSidebar
           collapsed={isSidebarCollapsed}
           onToggleCollapsed={() => setIsSidebarCollapsed((v) => !v)}
           onSelectFile={(node) => setSelectedFile(node)}
         />
-      }
-    >
-      {selectedFile ? (
-        <div className="flex h-full justify-center font-sans p-4">
-          <MarkdownEditor selectedFile={selectedFile} />
-        </div>
-      ) : (
-        <div className="flex h-full items-center justify-center">
-          <Image
-            src={emptyBox}
-            alt="Empty state"
-            width={120}
-            height={120}
-          />
-        </div>
-      )}
+        <main className="flex-1 overflow-auto">
+          {selectedFile ? (
+            <div className="flex h-full justify-center font-sans p-4">
+              <MarkdownEditor selectedFile={selectedFile} />
+            </div>
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <Image
+                src={emptyBox}
+                alt="Empty state"
+                width={120}
+                height={120}
+              />
+            </div>
+          )}
+        </main>
+      </>
     </LayoutShell>
   );
 }
