@@ -5,7 +5,7 @@ import { PanelLeftClose, PanelLeftOpen, PlusIcon } from "lucide-react";
 import TreeView, { TreeNode, TreeViewGroup } from "./TreeView";
 import Modal from "./Modal";
 import { useTheme } from "./ThemeProvider";
-import { createCollection, findAllCollections, updateCollectionDirectories } from "@/app/ui/action";
+import { createCollection, findAllCollections, updateCollectionDirectories } from "@/app/ui/doc/action";
 
 const mockUuid = (() => {
   let i = 0;

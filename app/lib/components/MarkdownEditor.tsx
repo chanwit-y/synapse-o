@@ -54,70 +54,70 @@ type EditorCommandCtx = {
   replaceSelection?: (text: string) => void;
 };
 
-const DEFAULT_MARKDOWN = `# Welcome to the Markdown Editor
+// const DEFAULT_MARKDOWN = `# Welcome to the Markdown Editor
 
-## Features
-- **Live preview** - See your formatted text in real-time
-- **Syntax highlighting** - Code blocks with syntax highlighting
-- **Toolbar** - Easy formatting with toolbar buttons
-- **Fullscreen mode** - Focus on your writing
-- **Math support** - KaTeX for mathematical expressions
-- **Custom highlight** - Use ??text?? to highlight important text
+// ## Features
+// - **Live preview** - See your formatted text in real-time
+// - **Syntax highlighting** - Code blocks with syntax highlighting
+// - **Toolbar** - Easy formatting with toolbar buttons
+// - **Fullscreen mode** - Focus on your writing
+// - **Math support** - KaTeX for mathematical expressions
+// - **Custom highlight** - Use ??text?? to highlight important text
 
-## Math Examples
+// ## Math Examples
 
-### Inline Math
-The quadratic formula is $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$
+// ### Inline Math
+// The quadratic formula is $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$
 
-### Block Math
-$$c = \pm\sqrt{a^2 + b^2}$$
+// ### Block Math
+// $$c = \pm\sqrt{a^2 + b^2}$$
 
-More complex equation:
-$$\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$$
+// More complex equation:
+// $$\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$$
 
-## Example Code Block
+// ## Example Code Block
 
-\`\`\`javascript
-function greet(name) {
-  console.log(\`Hello, \${name}!\`);
-}
+// \`\`\`javascript
+// function greet(name) {
+//   console.log(\`Hello, \${name}!\`);
+// }
 
-greet('World');
-\`\`\`
+// greet('World');
+// \`\`\`
 
-## Lists
+// ## Lists
 
-### Unordered List
-- Item 1
-- Item 2
-- Item 3
+// ### Unordered List
+// - Item 1
+// - Item 2
+// - Item 3
 
-### Ordered List
-1. First item
-2. Second item
-3. Third item
+// ### Ordered List
+// 1. First item
+// 2. Second item
+// 3. Third item
 
-## Custom Highlight Examples
+// ## Custom Highlight Examples
 
-This is normal text with ??highlighted text?? using our custom syntax.
+// This is normal text with ??highlighted text?? using our custom syntax.
 
-You can highlight ??important information?? or ??key concepts?? in your documents.
+// You can highlight ??important information?? or ??key concepts?? in your documents.
 
-## Links and Images
+// ## Links and Images
 
-[Visit GitHub](https://github.com)
+// [Visit GitHub](https://github.com)
 
-## Tables
+// ## Tables
 
-| Feature | Supported |
-|---------|-----------|
-| Bold | ✓ |
-| Italic | ✓ |
-| Code | ✓ |
+// | Feature | Supported |
+// |---------|-----------|
+// | Bold | ✓ |
+// | Italic | ✓ |
+// | Code | ✓ |
 
-> This is a blockquote
-> Start writing your markdown here!
-`;
+// > This is a blockquote
+// > Start writing your markdown here!
+// `;
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
@@ -226,7 +226,7 @@ function createInsertCommand(opts: {
 export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNode | null }) {
   const { theme } = useTheme();
 
-  const [value, setValue] = useState(DEFAULT_MARKDOWN);
+  const [value, setValue] = useState("");
   const [previewMode, setPreviewMode] = useState<PreviewType>('live');
   const valueRef = useLatestRef(value);
   const tooltip = useHighlightTooltip();
