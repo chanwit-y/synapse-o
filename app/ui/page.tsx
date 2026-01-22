@@ -3,7 +3,7 @@
 import { useState } from "react";
 import LayoutShell from "../lib/components/LayoutShell";
 import MarkdownEditor from "../lib/components/MarkdownEditor";
-import Sidebar from "../lib/components/Sidebar";
+import FileSidebar from "../lib/components/FileSidebar";
 import type { TreeNode } from "../lib/components/TreeView";
 
 export default function Home() {
@@ -13,7 +13,7 @@ export default function Home() {
   return (
     <LayoutShell
       sidebar={
-        <Sidebar
+        <FileSidebar
           collapsed={isSidebarCollapsed}
           onToggleCollapsed={() => setIsSidebarCollapsed((v) => !v)}
           onSelectFile={(node) => setSelectedFile(node)}

@@ -175,7 +175,7 @@ function assignCollectionId(nodes: TreeNode[], collectionId: string): TreeNode[]
 //   },
 // ];
 
-export default function Sidebar({
+export default function FileSidebar({
   collapsed = false,
   onToggleCollapsed,
   onSelectFile,
