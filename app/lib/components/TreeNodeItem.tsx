@@ -98,7 +98,9 @@ export default function TreeNodeItem({
             <File className={`w-4 h-4 ${theme === 'light' ? "text-gray-500" : "text-gray-400"} shrink-0`} />
           )
         )}
-        <span className="text-sm truncate flex-1 min-w-0">{node.name}</span>
+        <span className="text-sm truncate flex-1 min-w-0" title={node.name}>
+          {node.name}
+        </span>
         <button
           type="button"
           className={`ml-2 p-1 rounded transition-colors opacity-0 group-hover:opacity-100 ${theme === "light"

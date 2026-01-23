@@ -67,7 +67,7 @@ export default function TreeViewGroupItem({
           <span className="flex items-center justify-center w-4 h-4 transition-transform duration-200">
             {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
           </span>
-          <span>{group.name}</span>
+          <span title={group.name}>{group.name}</span>
         </div>
         <div className="flex items-center gap-1">
           <button
