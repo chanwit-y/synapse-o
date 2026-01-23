@@ -26,7 +26,7 @@ export default function Home() {
         <main className="flex-1 w-dvw overflow-auto animate-fade-in">
           {selectedFile ? (
             <>
-              <div className="flex items-center gap-2 pt-6 pl-6 text-2xl font-bold text-gray-300">
+              <div className="flex items-center gap-1 pt-6 pl-6 text-2xl font-bold text-gray-300">
                 <IconPopover
                   value={selectedIconId}
                   options={iconOptions}
