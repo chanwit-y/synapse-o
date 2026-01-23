@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PanelLeftClose, PanelLeftOpen, PlusIcon } from "lucide-react";
 import TreeView, { TreeNode, TreeViewGroup } from "./TreeView";
 import FileSidebarModals from "./FileSidebarModals";
@@ -70,6 +70,28 @@ function applyIconsToNodes(nodes: TreeNode[], iconsById: Record<string, string |
     if (next.type === "folder" && next.children?.length) {
       next.children = applyIconsToNodes(next.children, iconsById);
     }
+    return next;
+  });
+}
+
+function applyIconOverrides(nodes: TreeNode[], overrides: Record<string, string | null>): TreeNode[] {
+  return nodes.map((node) => {
+    const hasOverride = Object.prototype.hasOwnProperty.call(overrides, node.id);
+    const icon = node.type === "file"
+      ? hasOverride
+        ? overrides[node.id] ?? null
+        : node.icon ?? null
+      : node.icon ?? null;
+
+    const next: TreeNode = {
+      ...node,
+      icon,
+    };
+
+    if (next.type === "folder" && next.children?.length) {
+      next.children = applyIconOverrides(next.children, overrides);
+    }
+
     return next;
   });
 }
@@ -201,10 +223,12 @@ function applyIconsToNodes(nodes: TreeNode[], iconsById: Record<string, string |
 export default function FileSidebar({
   collapsed = false,
   onToggleCollapsed,
+  iconOverrides,
   onSelectFile,
 }: {
   collapsed?: boolean;
   onToggleCollapsed: () => void;
+  iconOverrides?: Record<string, string | null>;
   onSelectFile?: (file: TreeNode) => void;
 }) {
   const { theme } = useTheme();
@@ -222,6 +246,16 @@ export default function FileSidebar({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeletingItem, setIsDeletingItem] = useState(false);
   const [selectedNodeForDelete, setSelectedNodeForDelete] = useState<{ node: TreeNode; path: string; groupIndex: number } | null>(null);
+
+  const resolvedCollections = useMemo(() => {
+    if (!iconOverrides || Object.keys(iconOverrides).length === 0) {
+      return collections;
+    }
+    return collections.map((collection) => ({
+      ...collection,
+      directories: applyIconOverrides(collection.directories, iconOverrides),
+    }));
+  }, [collections, iconOverrides]);
 
 
   useEffect(() => {
@@ -612,7 +646,7 @@ export default function FileSidebar({
               <SkeletonTree />
             ) : (
               <TreeView
-                data={collections}
+                data={resolvedCollections}
                 onNodeClick={handleNodeClick}
                 onAddFile={handleAddFile}
                 onAddFolder={handleAddFolder}

@@ -9,19 +9,29 @@ import type { TreeNode } from "../../lib/components/TreeView";
 import IconPopover from "../../lib/components/IconPopover";
 import { iconOptions } from "../../lib/components/iconOptions";
 import emptyBox from "../../asset/empty-box.svg";
-import { updateFileIcon } from "./action";
+
+const updateFileIconClient = async (fileId: string, icon: string | null) => {
+  await fetch("/api/file/icon", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: fileId, icon }),
+  });
+};
 
 export default function Home() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [selectedFile, setSelectedFile] = useState<TreeNode | null>(null);
   const [selectedIconId, setSelectedIconId] = useState("file");
+  const [iconOverrides, setIconOverrides] = useState<Record<string, string | null>>({});
   const [, startTransition] = useTransition();
 
   const handleIconChange = (iconId: string) => {
     setSelectedIconId(iconId);
     if (!selectedFile) return;
+    setIconOverrides((prev) => ({ ...prev, [selectedFile.id]: iconId }));
+    setSelectedFile((prev) => (prev ? { ...prev, icon: iconId } : prev));
     startTransition(() => {
-      void updateFileIcon(selectedFile.id, iconId);
+      void updateFileIconClient(selectedFile.id, iconId);
     });
   };
 
@@ -31,9 +41,11 @@ export default function Home() {
         <FileSidebar
           collapsed={isSidebarCollapsed}
           onToggleCollapsed={() => setIsSidebarCollapsed((v) => !v)}
+          iconOverrides={iconOverrides}
           onSelectFile={(node) => {
             setSelectedFile(node);
-            setSelectedIconId(node.icon ?? "file");
+            const resolvedIcon = iconOverrides[node.id] ?? node.icon ?? "file";
+            setSelectedIconId(resolvedIcon);
           }}
         />
         <main className="flex-1 w-dvw overflow-auto animate-fade-in">
