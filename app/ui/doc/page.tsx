@@ -33,7 +33,7 @@ export default function Home() {
                   onChange={setSelectedIconId}
                   ariaLabel="Change file icon"
                 />
-                <span>{selectedFile.name}</span>
+                <span className="">{selectedFile.name}</span>
               </div>
               <div
                 key={selectedFile.id}

@@ -62,7 +62,7 @@ export default function IconPopover({
     <div ref={containerRef} className="relative inline-flex">
       <button
         type="button"
-        className="flex items-center gap-1 rounded-md p-1 text-gray-300 transition-colors hover:bg-gray-800/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 cursor-pointer"
+        className="flex items-center gap-1 rounded-md p-1.5 text-gray-300 transition-colors hover:bg-gray-600/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 cursor-pointer"
         onClick={() => setIsOpen((open) => !open)}
         aria-label={ariaLabel}
         aria-haspopup="true"
@@ -104,7 +104,7 @@ export default function IconPopover({
                     "flex h-9 w-9 items-center justify-center rounded-md transition-colors",
                     isSelected
                       ? "bg-sky-500/20 text-sky-200"
-                      : "text-gray-300 hover:bg-gray-800",
+                      : "text-gray-300 hover:bg-gray-600",
                   ].join(" ")}
                   aria-pressed={isSelected}
                   title={option.label}
