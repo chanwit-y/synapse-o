@@ -37,7 +37,7 @@ export default function Home() {
               </div>
               <div
                 key={selectedFile.id}
-                className="flex h-full justify-center font-sans px-4 py-2 markdown-fade-in"
+                className="flex  justify-center font-sans px-4 py-2 markdown-fade-in"
               >
                 <MarkdownEditor selectedFile={selectedFile} />
               </div>

@@ -742,7 +742,7 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
       <MDEditor
         value={value}
         onChange={(val) => setValue(val || '')}
-        height="calc(100vh - 100px)"
+        height="calc(100vh - 160px)"
         preview={previewMode}
         data-color-mode={theme}
         visibleDragbar={false}
