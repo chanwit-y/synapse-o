@@ -29,7 +29,7 @@ export default function SidebarMenu({
       .filter((item) =>
         pathname
           ? pathname === item.href ||
-            (item.href !== "/" && pathname.startsWith(item.href))
+          (item.href !== "/" && pathname.startsWith(item.href))
           : false,
       )
       .sort((a, b) => b.href.length - a.href.length)[0]?.href ?? null;
@@ -42,11 +42,12 @@ export default function SidebarMenu({
         theme === "light"
           ? "border-gray-200 bg-white"
           : "border-gray-800 bg-gray-900",
+        "h-[calc(100vh-4rem)]",
       ].join(" ")}
       aria-label="Sidebar menu"
       aria-expanded={!isCollapsed}
     >
-      <div className="flex h-full flex-col gap-3 p-4">
+      <div className="flex h-full min-h-0 flex-col gap-3 p-4">
         {!isCollapsed ? (
           <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">
             {title}
@@ -54,22 +55,27 @@ export default function SidebarMenu({
         ) : null}
         <nav
           className={[
-            "flex flex-col gap-1",
-            "transition-all duration-300",
+            "flex flex-1 min-h-0 flex-col gap-1 overflow-auto",
+            "transition-all duration-300 ease-in-out",
             isCollapsed ? "items-center" : "",
           ].join(" ")}
         >
-          {items.map((item) => {
+          {items.map((item, index) => {
             const isActive = activeHref === item.href;
 
             return (
               <Link
-                key={item.href}
+                key={`${item.href}-${isCollapsed ? "collapsed" : "expanded"}`}
                 href={item.href}
                 title={isCollapsed ? item.label : undefined}
+                // 2. Added animation delay style for the staggered effect
+                // style={{ animationDelay: `${index * 0.05}s` }} 
+                style={{ animationDelay: `${index * 150}ms` }}
                 className={[
-                  "rounded-md px-3 py-2 text-sm transition-all duration-300",
-                  "transition-opacity",
+                  "animate-slide-in-left opacity-0", 
+                  "rounded-xl px-3 py-2 text-sm",
+                  "opacity-0 animate-fade-in",
+                  "transition-all duration-500 ease-in-out",
                   isCollapsed ? "w-10 text-center" : "w-full",
                   isActive
                     ? theme === "light"
@@ -89,22 +95,25 @@ export default function SidebarMenu({
                   ].join(" ")}
                 >
                   {item.icon ? (
-                    <span className="text-base leading-none">{item.icon}</span>
+                    <span className="text-base leading-none shrink-0">{item.icon}</span>
                   ) : null}
+
                   <span
                     className={[
-                      "font-medium whitespace-nowrap",
-                      "transition-all duration-300 origin-left",
+                      "font-medium whitespace-nowrap overflow-hidden",
+                      // 5. Refined text transition for smoother fade in/out on collapse
+                      "transition-all duration-500 ease-in-out origin-left",
                       isCollapsed
-                        ? "scale-90 opacity-0 max-w-0"
-                        : "scale-100 opacity-100 max-w-48",
+                        ? "w-0 scale-90 opacity-0 translate-x-[-10px]" // Fades out and slides left
+                        : "w-auto scale-100 opacity-100 translate-x-0",
                     ].join(" ")}
                   >
                     {item.label}
                   </span>
                 </div>
+
                 {!isCollapsed && item.description ? (
-                  <div className="text-xs text-gray-500 transition-opacity duration-300">
+                  <div className="text-xs text-gray-500 transition-opacity duration-500 animate-fade-in">
                     {item.description}
                   </div>
                 ) : null}
@@ -112,7 +121,7 @@ export default function SidebarMenu({
             );
           })}
         </nav>
-        <div
+        <footer
           className={[
             "mt-auto pt-3 border-t",
             isCollapsed ? "flex justify-center" : "",
@@ -137,7 +146,7 @@ export default function SidebarMenu({
               <PanelLeftClose className="h-5 w-5" />
             )}
           </button>
-        </div>
+        </footer>
       </div>
     </aside>
   );
