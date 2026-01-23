@@ -10,6 +10,7 @@ export const collectionTable = sqliteTable("collection", {
 export const fileTable = sqliteTable("file", {
 	id: text("id").primaryKey(),
 	collectionId: text("collection_id").references(() => collectionTable.id),
+	icon: text("icon"),
 	name: text("name"),
 	type: text("type"),
 	extension: text("extension"),

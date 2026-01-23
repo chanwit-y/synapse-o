@@ -6,7 +6,7 @@ import TreeView, { TreeNode, TreeViewGroup } from "./TreeView";
 import FileSidebarModals from "./FileSidebarModals";
 import { useSnackbar } from "./Snackbar";
 import { useTheme } from "./ThemeProvider";
-import { createCollection, findAllCollections, updateCollectionDirectories } from "@/app/ui/doc/action";
+import { createCollection, findAllCollections, findFileIconsByIds, updateCollectionDirectories } from "@/app/ui/doc/action";
 
 const mockUuid = (() => {
   let i = 0;
@@ -47,6 +47,28 @@ function assignCollectionId(nodes: TreeNode[], collectionId: string): TreeNode[]
     };
     if (next.type === "folder" && next.children?.length) {
       next.children = assignCollectionId(next.children, collectionId);
+    }
+    return next;
+  });
+}
+
+function collectFileIds(nodes: TreeNode[], acc: Set<string>) {
+  nodes.forEach((node) => {
+    if (node.type === "file") acc.add(node.id);
+    if (node.type === "folder" && node.children?.length) {
+      collectFileIds(node.children, acc);
+    }
+  });
+}
+
+function applyIconsToNodes(nodes: TreeNode[], iconsById: Record<string, string | null>): TreeNode[] {
+  return nodes.map((node) => {
+    const next: TreeNode = {
+      ...node,
+      icon: node.type === "file" ? iconsById[node.id] ?? node.icon ?? null : node.icon ?? null,
+    };
+    if (next.type === "folder" && next.children?.length) {
+      next.children = applyIconsToNodes(next.children, iconsById);
     }
     return next;
   });
@@ -210,19 +232,31 @@ export default function FileSidebar({
         const collections = await findAllCollections();
         if (!isMounted) return;
 
-        setCollections(
-          collections.map((collection) => {
-            const directories = assignCollectionId(
-              parseDirectories(collection.directories),
-              collection.id
-            );
+        const hydratedCollections = collections.map((collection) => {
+          const directories = assignCollectionId(
+            parseDirectories(collection.directories),
+            collection.id
+          );
 
-            return {
-              id: collection.id,
-              name: collection.name ?? "",
-              directories,
-            };
-          })
+          return {
+            id: collection.id,
+            name: collection.name ?? "",
+            directories,
+          };
+        });
+
+        const fileIds = new Set<string>();
+        hydratedCollections.forEach((collection) => {
+          collectFileIds(collection.directories, fileIds);
+        });
+
+        const iconsById = fileIds.size > 0 ? await findFileIconsByIds([...fileIds]) : {};
+
+        setCollections(
+          hydratedCollections.map((collection) => ({
+            ...collection,
+            directories: applyIconsToNodes(collection.directories, iconsById),
+          }))
         );
       } finally {
         if (isMounted) setIsLoadingCollections(false);

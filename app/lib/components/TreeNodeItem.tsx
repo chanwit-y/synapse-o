@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { cloneElement, isValidElement, useState } from "react";
 import { ChevronRight, ChevronDown, Folder, FolderOpen, File, Trash2 } from "lucide-react";
 import type { TreeNode } from "./@types/treeViewTypes";
 import { useTheme } from "./ThemeProvider";
+import { iconOptions } from "./iconOptions";
+
+const iconMap = new Map(iconOptions.map((option) => [option.id, option.icon]));
 
 export interface TreeNodeItemProps {
   node: TreeNode;
@@ -30,7 +33,7 @@ export default function TreeNodeItem({
   groupIndex,
   onRequestDeleteNode,
 }: TreeNodeItemProps) {
-  const {theme} = useTheme()
+  const { theme } = useTheme()
   const [isExpanded, setIsExpanded] = useState(false);
   const hasChildren = node.children && node.children.length > 0;
   const isFolder = node.type === "folder";
@@ -39,6 +42,20 @@ export default function TreeNodeItem({
 
   // Check if this node is selected by comparing the nodePath
   const isSelected = selectedNodePath === nodePath;
+  const iconClassName = `w-4 h-4 ${theme === 'light' ? "text-gray-500" : "text-gray-400"} shrink-0`;
+
+  const resolvedIcon = node.type === "file" ? iconMap.get(node.icon ?? "") : null;
+  const customFileIcon = isValidElement(resolvedIcon)
+    ? cloneElement(resolvedIcon as React.ReactElement<any>, {
+        className: [
+          // (resolvedIcon as React.ReactElement<any>).props?.className ?? "", 
+          iconClassName,
+        ]
+          .filter(Boolean)
+          .join(" "),
+        "aria-hidden": true,
+      })
+    : resolvedIcon ?? null;
 
   const handleClick = () => {
     if (isFolder && hasChildren) {
@@ -52,11 +69,10 @@ export default function TreeNodeItem({
   return (
     <div>
       <div
-        className={`flex items-center gap-1 px-2 py-1.5 rounded cursor-pointer transition-colors group ${
-          isSelected
+        className={`flex items-center gap-1 px-2 py-1.5 rounded cursor-pointer transition-colors group ${isSelected
             ? theme === 'light' ? "bg-blue-100 text-blue-700 " : "bg-blue-900/30  text-blue-300"
             : theme === 'light' ? "hover:bg-gray-100 text-gray-700" : "hover:bg-gray-800 hover:text-gray-300"
-        }`}
+          }`}
         style={{ paddingLeft: `${indentLevel}px` }}
         onClick={handleClick}
         data-tree-interactive="true"
@@ -78,16 +94,17 @@ export default function TreeNodeItem({
             <Folder className={`w-4 h-4 ${theme === 'light' ? "text-blue-500" : "text-blue-400"} shrink-0`} />
           )
         ) : (
-          <File className={`w-4 h-4 ${theme === 'light' ? "text-gray-500" : "text-gray-400"} shrink-0`} />
+          customFileIcon ?? (
+            <File className={`w-4 h-4 ${theme === 'light' ? "text-gray-500" : "text-gray-400"} shrink-0`} />
+          )
         )}
         <span className="text-sm truncate flex-1 min-w-0">{node.name}</span>
         <button
           type="button"
-          className={`ml-2 p-1 rounded transition-colors opacity-0 group-hover:opacity-100 ${
-            theme === "light"
+          className={`ml-2 p-1 rounded transition-colors opacity-0 group-hover:opacity-100 ${theme === "light"
               ? "text-gray-500 hover:text-red-600 hover:bg-red-50"
               : "text-gray-400 hover:text-red-400 hover:bg-red-900/20"
-          }`}
+            }`}
           onClick={(event) => {
             event.stopPropagation();
             onRequestDeleteNode?.(node, nodePath, groupIndex);
@@ -100,17 +117,15 @@ export default function TreeNodeItem({
       </div>
       {hasChildren && (
         <div
-          className={`overflow-hidden transition-all duration-300 ease-in-out ${
-            isExpanded ? "max-h-[10000px] opacity-100" : "max-h-0 opacity-0"
-          }`}
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? "max-h-[10000px] opacity-100" : "max-h-0 opacity-0"
+            }`}
           style={{
             transitionProperty: "max-height, opacity",
           }}
         >
           <div
-            className={`transform transition-all duration-300 ease-in-out ${
-              isExpanded ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
-            }`}
+            className={`transform transition-all duration-300 ease-in-out ${isExpanded ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
+              }`}
           >
             {node.children!.map((child, index) => (
               <TreeNodeItem

@@ -3,6 +3,7 @@ export interface TreeNode {
   collectionId: string;
   name: string;
   type: "folder" | "file";
+  icon?: string | null;
   extension: string | null;
   content?: string | null;
   createdAt?: number;

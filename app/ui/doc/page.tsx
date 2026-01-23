@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Image from "next/image";
 import LayoutShell from "../../lib/components/LayoutShell";
 import MarkdownEditor from "../../lib/components/MarkdownEditor";
@@ -9,11 +9,21 @@ import type { TreeNode } from "../../lib/components/TreeView";
 import IconPopover from "../../lib/components/IconPopover";
 import { iconOptions } from "../../lib/components/iconOptions";
 import emptyBox from "../../asset/empty-box.svg";
+import { updateFileIcon } from "./action";
 
 export default function Home() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [selectedFile, setSelectedFile] = useState<TreeNode | null>(null);
   const [selectedIconId, setSelectedIconId] = useState("file");
+  const [, startTransition] = useTransition();
+
+  const handleIconChange = (iconId: string) => {
+    setSelectedIconId(iconId);
+    if (!selectedFile) return;
+    startTransition(() => {
+      void updateFileIcon(selectedFile.id, iconId);
+    });
+  };
 
   return (
     // <LayoutShell>
@@ -21,7 +31,10 @@ export default function Home() {
         <FileSidebar
           collapsed={isSidebarCollapsed}
           onToggleCollapsed={() => setIsSidebarCollapsed((v) => !v)}
-          onSelectFile={(node) => setSelectedFile(node)}
+          onSelectFile={(node) => {
+            setSelectedFile(node);
+            setSelectedIconId(node.icon ?? "file");
+          }}
         />
         <main className="flex-1 w-dvw overflow-auto animate-fade-in">
           {selectedFile ? (
@@ -30,7 +43,7 @@ export default function Home() {
                 <IconPopover
                   value={selectedIconId}
                   options={iconOptions}
-                  onChange={setSelectedIconId}
+                  onChange={handleIconChange}
                   ariaLabel="Change file icon"
                 />
                 <span className="">{selectedFile.name}</span>
