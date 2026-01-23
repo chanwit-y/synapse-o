@@ -16,6 +16,7 @@ export interface TreeViewGroupItemProps {
   setSelectedNode: (node: TreeNode | null) => void;
   onAddFile?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
   onAddFolder?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
+  onRequestDeleteNode?: (node: TreeNode, nodePath: string, groupIndex: number) => void;
   isFavorited: boolean;
   onToggleFavorite: (groupIndex: number) => void;
 }
@@ -30,6 +31,7 @@ export default function TreeViewGroupItem({
   setSelectedNode,
   onAddFile,
   onAddFolder,
+  onRequestDeleteNode,
   isFavorited,
   onToggleFavorite,
 }: TreeViewGroupItemProps) {
@@ -125,6 +127,8 @@ export default function TreeViewGroupItem({
               nodePath={node.name}
               selectedNode={selectedNode}
               setSelectedNode={setSelectedNode}
+              groupIndex={groupIndex}
+              onRequestDeleteNode={onRequestDeleteNode}
             />
           ))}
         </div>

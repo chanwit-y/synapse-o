@@ -7,6 +7,10 @@ type SelectedNodeForAdd =
   | { node: TreeNode | null; path: string | null; groupIndex: number }
   | null;
 
+type SelectedNodeForDelete =
+  | { node: TreeNode; path: string; groupIndex: number }
+  | null;
+
 type FileSidebarModalsProps = {
   theme: string;
   isCollectionModalOpen: boolean;
@@ -23,6 +27,11 @@ type FileSidebarModalsProps = {
   onSubmitItem: () => void;
   isSavingItem: boolean;
   selectedNodeForAdd: SelectedNodeForAdd;
+  isDeleteModalOpen: boolean;
+  onCloseDeleteModal: () => void;
+  onConfirmDelete: () => void;
+  isDeletingItem: boolean;
+  selectedNodeForDelete: SelectedNodeForDelete;
 };
 
 export default function FileSidebarModals({
@@ -41,7 +50,16 @@ export default function FileSidebarModals({
   onSubmitItem,
   isSavingItem,
   selectedNodeForAdd,
+  isDeleteModalOpen,
+  onCloseDeleteModal,
+  onConfirmDelete,
+  isDeletingItem,
+  selectedNodeForDelete,
 }: FileSidebarModalsProps) {
+  const isDeleteBlocked =
+    selectedNodeForDelete?.node.type === "folder" &&
+    (selectedNodeForDelete.node.children?.length ?? 0) > 0;
+
   return (
     <>
       <Modal isOpen={isCollectionModalOpen} onClose={onCloseCollectionModal}>
@@ -172,6 +190,53 @@ export default function FileSidebarModals({
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md transition-colors"
             >
               {isSavingItem ? "Adding..." : "Add"}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal isOpen={isDeleteModalOpen} onClose={onCloseDeleteModal}>
+        <div className="space-y-4">
+          <h3
+            className={`text-lg font-semibold ${
+              theme === "light" ? "text-gray-900" : "text-gray-100"
+            }`}
+          >
+            Delete {selectedNodeForDelete?.node.type === "folder" ? "Folder" : "File"}
+          </h3>
+          {isDeleteBlocked ? (
+            <p className={theme === "light" ? "text-sm text-gray-600" : "text-sm text-gray-300"}>
+              This folder is not empty. Remove its contents before deleting.
+            </p>
+          ) : (
+            <p className={theme === "light" ? "text-sm text-gray-600" : "text-sm text-gray-300"}>
+              This will permanently delete{" "}
+              <span className="font-semibold">
+                "{selectedNodeForDelete?.node.name ?? "this item"}"
+              </span>
+              {selectedNodeForDelete?.node.type === "folder"
+                ? " and all of its contents."
+                : "."}
+            </p>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              onClick={onCloseDeleteModal}
+              disabled={isDeletingItem}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                theme === "light"
+                  ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
+                  : "text-gray-300 bg-gray-700 hover:bg-gray-600"
+              } disabled:opacity-70`}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirmDelete}
+              disabled={isDeletingItem || isDeleteBlocked}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md transition-colors"
+            >
+              {isDeletingItem ? "Deleting..." : "Delete"}
             </button>
           </div>
         </div>

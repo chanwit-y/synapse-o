@@ -12,9 +12,10 @@ interface TreeViewProps {
   onNodeClick?: (node: TreeNode) => void;
   onAddFile?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
   onAddFolder?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
+  onRequestDeleteNode?: (node: TreeNode, nodePath: string, groupIndex: number) => void;
 }
 
-export default function TreeView({ data, onNodeClick, onAddFile, onAddFolder }: TreeViewProps) {
+export default function TreeView({ data, onNodeClick, onAddFile, onAddFolder, onRequestDeleteNode }: TreeViewProps) {
   const [selectedNodePath, setSelectedNodePath] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
   const [favoritedGroups, setFavoritedGroups] = useState<Set<number>>(new Set());
@@ -53,6 +54,7 @@ export default function TreeView({ data, onNodeClick, onAddFile, onAddFolder }: 
             setSelectedNode={setSelectedNode}
             onAddFile={onAddFile}
             onAddFolder={onAddFolder}
+            onRequestDeleteNode={onRequestDeleteNode}
             isFavorited={favoritedGroups.has(groupIndex)}
             onToggleFavorite={handleToggleFavorite}
           />

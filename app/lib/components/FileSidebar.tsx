@@ -197,6 +197,9 @@ export default function FileSidebar({
   const [itemType, setItemType] = useState<"file" | "folder">("file");
   const [isSavingItem, setIsSavingItem] = useState(false);
   const [selectedNodeForAdd, setSelectedNodeForAdd] = useState<{ node: TreeNode | null; path: string | null; groupIndex: number } | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeletingItem, setIsDeletingItem] = useState(false);
+  const [selectedNodeForDelete, setSelectedNodeForDelete] = useState<{ node: TreeNode; path: string; groupIndex: number } | null>(null);
 
 
   useEffect(() => {
@@ -423,6 +426,82 @@ export default function FileSidebar({
     }
   };
 
+  const handleRequestDeleteNode = (node: TreeNode, nodePath: string, groupIndex: number) => {
+    setSelectedNodeForDelete({ node, path: nodePath, groupIndex });
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    if (isDeletingItem) return;
+    setIsDeleteModalOpen(false);
+    setSelectedNodeForDelete(null);
+  };
+
+  const removeNodeByIdInPlace = (nodes: TreeNode[], nodeId: string): boolean => {
+    const index = nodes.findIndex((item) => item.id === nodeId);
+    if (index !== -1) {
+      nodes.splice(index, 1);
+      return true;
+    }
+
+    for (const node of nodes) {
+      if (node.type === "folder" && node.children?.length) {
+        const removed = removeNodeByIdInPlace(node.children, nodeId);
+        if (removed) return true;
+      }
+    }
+
+    return false;
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedNodeForDelete || isDeletingItem) return;
+
+    const target = selectedNodeForDelete;
+    if (target.node.type === "folder" && (target.node.children?.length ?? 0) > 0) {
+      showSnackbar({
+        variant: "error",
+        message: "Folder is not empty. Remove items before deleting.",
+      });
+      return;
+    }
+    const targetGroupIndex = selectedNodeForDelete.groupIndex ?? 0;
+    const existingGroup = collections[targetGroupIndex];
+    if (!existingGroup) return;
+
+    const previousCollections = collections;
+    const updatedCollections: TreeViewGroup[] = JSON.parse(JSON.stringify(collections));
+    const group = updatedCollections[targetGroupIndex];
+    const removed = removeNodeByIdInPlace(group.directories, selectedNodeForDelete.node.id);
+
+    if (!removed) {
+      handleCloseDeleteModal();
+      return;
+    }
+
+    setCollections(updatedCollections);
+    setIsDeleteModalOpen(false);
+    setSelectedNodeForDelete(null);
+
+    setIsDeletingItem(true);
+    try {
+      await updateCollectionDirectories(group.id, group.directories);
+      showSnackbar({
+        variant: "success",
+        message: `${target.node.type === "file" ? "File" : "Folder"} "${target.node.name}" deleted.`,
+      });
+    } catch (err) {
+      console.error("Failed to delete item:", err);
+      setCollections(previousCollections);
+      showSnackbar({
+        variant: "error",
+        message: `Failed to delete ${target.node.type}. Please try again.`,
+      });
+    } finally {
+      setIsDeletingItem(false);
+    }
+  };
+
   const footerButtonLabel = collapsed ? "Show sidebar" : "Hide sidebar";
 
   return (
@@ -503,6 +582,7 @@ export default function FileSidebar({
                 onNodeClick={handleNodeClick}
                 onAddFile={handleAddFile}
                 onAddFolder={handleAddFolder}
+                onRequestDeleteNode={handleRequestDeleteNode}
               />
             )}
           </div>
@@ -525,6 +605,11 @@ export default function FileSidebar({
         onSubmitItem={handleAddItem}
         isSavingItem={isSavingItem}
         selectedNodeForAdd={selectedNodeForAdd}
+        isDeleteModalOpen={isDeleteModalOpen}
+        onCloseDeleteModal={handleCloseDeleteModal}
+        onConfirmDelete={handleConfirmDelete}
+        isDeletingItem={isDeletingItem}
+        selectedNodeForDelete={selectedNodeForDelete}
       />
     </>
   );

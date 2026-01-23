@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRight, ChevronDown, Folder, FolderOpen, File } from "lucide-react";
+import { ChevronRight, ChevronDown, Folder, FolderOpen, File, Trash2 } from "lucide-react";
 import type { TreeNode } from "./@types/treeViewTypes";
 import { useTheme } from "./ThemeProvider";
 
@@ -14,6 +14,8 @@ export interface TreeNodeItemProps {
   nodePath: string;
   selectedNode: TreeNode | null;
   setSelectedNode: (node: TreeNode | null) => void;
+  groupIndex: number;
+  onRequestDeleteNode?: (node: TreeNode, nodePath: string, groupIndex: number) => void;
 }
 
 export default function TreeNodeItem({
@@ -25,6 +27,8 @@ export default function TreeNodeItem({
   nodePath,
   selectedNode,
   setSelectedNode,
+  groupIndex,
+  onRequestDeleteNode,
 }: TreeNodeItemProps) {
   const {theme} = useTheme()
   const [isExpanded, setIsExpanded] = useState(false);
@@ -76,7 +80,23 @@ export default function TreeNodeItem({
         ) : (
           <File className={`w-4 h-4 ${theme === 'light' ? "text-gray-500" : "text-gray-400"} shrink-0`} />
         )}
-        <span className="text-sm truncate">{node.name}</span>
+        <span className="text-sm truncate flex-1 min-w-0">{node.name}</span>
+        <button
+          type="button"
+          className={`ml-2 p-1 rounded transition-colors opacity-0 group-hover:opacity-100 ${
+            theme === "light"
+              ? "text-gray-500 hover:text-red-600 hover:bg-red-50"
+              : "text-gray-400 hover:text-red-400 hover:bg-red-900/20"
+          }`}
+          onClick={(event) => {
+            event.stopPropagation();
+            onRequestDeleteNode?.(node, nodePath, groupIndex);
+          }}
+          aria-label={`Delete ${node.type}`}
+          title={`Delete ${node.type}`}
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
       </div>
       {hasChildren && (
         <div
@@ -103,6 +123,8 @@ export default function TreeNodeItem({
                 nodePath={`${nodePath}/${child.name}`}
                 selectedNode={selectedNode}
                 setSelectedNode={setSelectedNode}
+                groupIndex={groupIndex}
+                onRequestDeleteNode={onRequestDeleteNode}
               />
             ))}
           </div>
