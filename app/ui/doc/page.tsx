@@ -10,6 +10,7 @@ import type { TreeNode } from "../../lib/components/TreeView";
 import IconPopover from "../../lib/components/IconPopover";
 import { iconOptions } from "../../lib/components/iconOptions";
 import Drawer from "../../lib/components/Drawer";
+import TagEditor from "../../lib/components/TagEditor";
 import { useTheme } from "../../lib/components/ThemeProvider";
 import emptyBox from "../../asset/empty-box.svg";
 
@@ -84,9 +85,9 @@ export default function Home() {
               isOpen={isDrawerOpen}
               onClose={() => setIsDrawerOpen(false)}
               position="right"
-              title="Drawer"
+              title="Properties"
             >
-              <div className="text-sm text-gray-400">Drawer content</div>
+              <TagEditor />
             </Drawer>
             <div
               key={selectedFile.id}
