@@ -759,7 +759,7 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
       {tooltip.visible && (
         <div
           className="popover"
-          style={{ left: tooltip.x, top: tooltip.y, transform: 'translateX(-50%)' }}
+          style={{ left: `${tooltip.x}px`, top: `${tooltip.y}px`, transform: 'translateX(-50%)' }}
         >
           {tooltip.content}
         </div>
@@ -769,7 +769,7 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
         <div
           ref={imageUploadPopoverRef}
           className="image-upload-popover"
-          style={{ left: imageUploadPopover.x, top: imageUploadPopover.y, transform: 'translateX(-50%)' }}
+          style={{ left: `${imageUploadPopover.x - 320}px`, top: `${imageUploadPopover.y - 60}px`, transform: 'translateX(-50%)' }}
         >
           <h3>Upload Image</h3>
           <input
@@ -786,7 +786,7 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
         <div
           ref={linkPopoverRef}
           className="link-popover"
-          style={{ left: linkPopover.x, top: linkPopover.y, transform: 'translateX(-50%)' }}
+          style={{ left: `${linkPopover.x - 320}px`, top: `${linkPopover.y - 60}px`, transform: 'translateX(-50%)' }}
         >
           <h3>Insert Link</h3>
           <form onSubmit={handleLinkSubmit}>
@@ -817,7 +817,7 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
         <div
           ref={headingPopoverRef}
           className="heading-popover"
-          style={{ left: headingPopover.x, top: headingPopover.y, transform: 'translateX(-50%)' }}
+          style={{ left: `${headingPopover.x - 320}px`, top: `${headingPopover.y - 60}px`, transform: 'translateX(-50%)' }}
         >
           <h3>Insert Heading</h3>
           <label htmlFor="heading-level">Heading Level</label>
