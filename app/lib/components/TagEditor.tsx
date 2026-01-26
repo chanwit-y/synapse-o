@@ -98,14 +98,13 @@ export default function TagEditor() {
           >
             {tags.map((tag) => {
               const textColor = getReadableTextColor(tag.color);
-              const isTagPickerOpen = activeTagId === tag.id;
               return (
                 <div
                   key={tag.id}
                   ref={(node) => {
                     tagRefs.current[tag.id] = node;
                   }}
-                  className="relative flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold"
+                  className="relative flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold"
                   style={{ backgroundColor: tag.color, color: textColor }}
                   onDoubleClick={() => setActiveTagId(tag.id)}
                   role="button"
@@ -129,62 +128,6 @@ export default function TagEditor() {
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
-                  {isTagPickerOpen ? (
-                    <div
-                      ref={colorPickerRef}
-                      className={[
-                        "absolute left-0 top-full z-20 mt-2 w-48 rounded-md border p-3 shadow-lg",
-                        isDark
-                          ? "border-gray-700 bg-gray-900"
-                          : "border-gray-200 bg-white",
-                      ].join(" ")}
-                    >
-                      <div className="flex flex-wrap gap-2">
-                        {PRESET_COLORS.map((preset) => (
-                          <button
-                            key={preset}
-                            type="button"
-                            onClick={() => {
-                              setTags((prev) =>
-                                prev.map((item) =>
-                                  item.id === tag.id
-                                    ? { ...item, color: preset }
-                                    : item,
-                                ),
-                              );
-                              setActiveTagId(null);
-                            }}
-                            className={[
-                              "h-6 w-6 rounded-full border transition-transform",
-                              preset === tag.color
-                                ? "scale-110 border-gray-400"
-                                : "border-gray-300",
-                            ].join(" ")}
-                            style={{ backgroundColor: preset }}
-                            aria-label={`Select ${preset} tag color`}
-                          />
-                        ))}
-                      </div>
-                      <div className="mt-3">
-                        <input
-                          type="color"
-                          value={tag.color}
-                          onChange={(event) => {
-                            const nextColor = event.target.value;
-                            setTags((prev) =>
-                              prev.map((item) =>
-                                item.id === tag.id
-                                  ? { ...item, color: nextColor }
-                                  : item,
-                              ),
-                            );
-                          }}
-                          className="h-8 w-full cursor-pointer rounded-md border border-gray-300 bg-transparent p-1"
-                          aria-label={`Custom color for ${tag.label}`}
-                        />
-                      </div>
-                    </div>
-                  ) : null}
                 </div>
               );
             })}
@@ -237,7 +180,7 @@ export default function TagEditor() {
               id="tag-suggestions"
               role="listbox"
               className={[
-                "absolute left-0 top-full z-20 mt-1 w-full rounded-md border py-1 text-sm shadow-lg",
+                "absolute left-0 top-full z-20 mt-1 w-full rounded-md border p-1.5 text-sm shadow-lg",
                 isDark
                   ? "border-gray-700 bg-gray-900 text-gray-100"
                   : "border-gray-200 bg-white text-gray-900",
@@ -254,10 +197,10 @@ export default function TagEditor() {
                     onMouseEnter={() => setHighlightedIndex(index)}
                     onClick={() => handleAddTag(suggestion)}
                     className={[
-                      "flex w-full items-center px-2 py-1 text-left",
+                      "flex w-full items-center p-2 rounded-md text-left",
                       isActive
                         ? isDark
-                          ? "bg-gray-800"
+                          ? "bg-gray-700"
                           : "bg-gray-100"
                         : "bg-transparent",
                     ].join(" ")}
@@ -268,6 +211,72 @@ export default function TagEditor() {
               })}
             </div>
           ) : null}
+          {activeTagId && (() => {
+            const activeTag = tags.find((t) => t.id === activeTagId);
+            const activeTagElement = tagRefs.current[activeTagId];
+            if (!activeTag || !activeTagElement) return null;
+            
+            return (
+              <div
+                ref={colorPickerRef}
+                className={[
+                  "absolute z-30 mt-2 w-48 rounded-md border p-3 shadow-lg",
+                  isDark
+                    ? "border-gray-700 bg-gray-900"
+                    : "border-gray-200 bg-white",
+                ].join(" ")}
+                style={{
+                  top: activeTagElement.offsetTop + activeTagElement.offsetHeight,
+                  left: activeTagElement.offsetLeft,
+                }}
+              >
+                <div className="flex flex-wrap gap-2">
+                  {PRESET_COLORS.map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => {
+                        setTags((prev) =>
+                          prev.map((item) =>
+                            item.id === activeTagId
+                              ? { ...item, color: preset }
+                              : item,
+                          ),
+                        );
+                        setActiveTagId(null);
+                      }}
+                      className={[
+                        "h-6 w-6 rounded-full border transition-transform",
+                        preset === activeTag.color
+                          ? "scale-110 border-gray-400"
+                          : "border-gray-300",
+                      ].join(" ")}
+                      style={{ backgroundColor: preset }}
+                      aria-label={`Select ${preset} tag color`}
+                    />
+                  ))}
+                </div>
+                <div className="mt-3">
+                  <input
+                    type="color"
+                    value={activeTag.color}
+                    onChange={(event) => {
+                      const nextColor = event.target.value;
+                      setTags((prev) =>
+                        prev.map((item) =>
+                          item.id === activeTagId
+                            ? { ...item, color: nextColor }
+                            : item,
+                        ),
+                      );
+                    }}
+                    className="h-8 w-full cursor-pointer rounded-md border border-gray-300 bg-transparent p-1"
+                    aria-label={`Custom color for ${activeTag.label}`}
+                  />
+                </div>
+              </div>
+            );
+          })()}
         </div>
         <div className="relative" ref={colorPickerRef}>
           {/* <button
@@ -287,7 +296,7 @@ export default function TagEditor() {
             />
             <span>Color</span>
           </button> */}
-          {isColorPickerOpen ? (
+          {/* {isColorPickerOpen ? (
             <div
               className={[
                 "absolute left-0 top-full z-10 mt-2 w-48 rounded-md border p-3 shadow-lg",
@@ -326,7 +335,7 @@ export default function TagEditor() {
                 />
               </div>
             </div>
-          ) : null}
+          ) : null} */}
         </div>
       </div>
     </div>

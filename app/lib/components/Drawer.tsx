@@ -129,7 +129,7 @@ export default function Drawer({
             ) : null}
           </div>
         )}
-        <div className="h-full overflow-auto p-4">{children}</div>
+        <div className="h-[calc(100%-3.5rem)] overflow-auto p-4">{children}</div>
       </div>
     </div>
   );
