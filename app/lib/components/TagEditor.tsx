@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { PRESET_COLORS, TAG_SUGGESTIONS } from "../const";
+import { updateFileTags } from "@/app/ui/doc/action";
 
 type Tag = {
   id: string;
@@ -28,10 +29,15 @@ const getReadableTextColor = (hexColor: string) => {
   return luminance > 0.62 ? "#111827" : "#ffffff";
 };
 
-export default function TagEditor() {
+interface TagEditorProps {
+  fileId: string;
+  fileTags: Tag[];
+}
+
+export default function TagEditor({ fileId, fileTags }: TagEditorProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [tags, setTags] = useState<Tag[]>(fileTags);
   const [label, setLabel] = useState("");
   const [color, setColor] = useState(DEFAULT_COLOR);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
@@ -40,15 +46,23 @@ export default function TagEditor() {
   const colorPickerRef = useRef<HTMLDivElement | null>(null);
   const [activeTagId, setActiveTagId] = useState<string | null>(null);
 
-  const handleAddTag = (nextLabel?: string) => {
-    const trimmed = (nextLabel ?? label).trim();
-    if (!trimmed) return;
-    setTags((prev) => [
-      ...prev,
-      { id: createId(), label: trimmed, color },
-    ]);
-    setLabel("");
-    setHighlightedIndex(0);
+  const handleTagAction = async (
+    action: "add" | "remove",
+    payload: { label?: string; tagId?: string }
+  ) => {
+    if (action === "add") {
+      const trimmed = (payload.label ?? label).trim();
+      if (!trimmed) return;
+      const newTags = [...tags, { id: createId(), label: trimmed, color }];
+      setTags(newTags);
+      setLabel("");
+      setHighlightedIndex(0);
+      await updateFileTags(fileId, newTags.map((item) => item.label));
+    } else if (action === "remove" && payload.tagId) {
+      const newTags = tags.filter((item) => item.id !== payload.tagId);
+      setTags(newTags);
+      await updateFileTags(fileId, newTags.map((item) => item.label));
+    }
   };
 
   const filteredSuggestions = TAG_SUGGESTIONS.filter((suggestion) =>
@@ -118,9 +132,7 @@ export default function TagEditor() {
                   <span>{tag.label}</span>
                   <button
                     type="button"
-                    onClick={() =>
-                      setTags((prev) => prev.filter((item) => item.id !== tag.id))
-                    }
+                    onClick={() => handleTagAction("remove", { tagId: tag.id })}
                     className="rounded-full p-0.5 transition-opacity hover:opacity-80"
                     style={{ color: textColor }}
                     aria-label={`Remove ${tag.label}`}
@@ -153,10 +165,10 @@ export default function TagEditor() {
                   if (event.key === "Enter") {
                     event.preventDefault();
                     if (showSuggestions) {
-                      handleAddTag(filteredSuggestions[highlightedIndex]);
+                      handleTagAction("add", { label: filteredSuggestions[highlightedIndex] });
                       return;
                     }
-                    handleAddTag();
+                    handleTagAction("add", {});
                   }
                   if (event.key === "Escape") {
                     setLabel("");
@@ -194,7 +206,7 @@ export default function TagEditor() {
                     role="option"
                     aria-selected={isActive}
                     onMouseEnter={() => setHighlightedIndex(index)}
-                    onClick={() => handleAddTag(suggestion)}
+                    onClick={() => handleTagAction("add", { label: suggestion })}
                     className={[
                       "flex w-full items-center p-2 rounded-md text-left",
                       isActive
@@ -278,63 +290,6 @@ export default function TagEditor() {
           })()}
         </div>
         <div className="relative" ref={colorPickerRef}>
-          {/* <button
-            type="button"
-            onClick={() => setIsColorPickerOpen((prev) => !prev)}
-            className={[
-              "flex items-center gap-2 rounded-md border px-2 py-1 text-xs font-semibold transition-colors",
-              isDark
-                ? "border-gray-700 bg-gray-900 text-gray-100"
-                : "border-gray-200 bg-white text-gray-900",
-            ].join(" ")}
-            aria-label="Open tag color picker"
-          >
-            <span
-              className="h-4 w-4 rounded-full border border-gray-300"
-              style={{ backgroundColor: color }}
-            />
-            <span>Color</span>
-          </button> */}
-          {/* {isColorPickerOpen ? (
-            <div
-              className={[
-                "absolute left-0 top-full z-10 mt-2 w-48 rounded-md border p-3 shadow-lg",
-                isDark
-                  ? "border-gray-700 bg-gray-900"
-                  : "border-gray-200 bg-white",
-              ].join(" ")}
-            >
-              <div className="flex flex-wrap gap-2">
-                {PRESET_COLORS.map((preset) => (
-                  <button
-                    key={preset}
-                    type="button"
-                    onClick={() => {
-                      setColor(preset);
-                      setIsColorPickerOpen(false);
-                    }}
-                    className={[
-                      "h-6 w-6 rounded-full border transition-transform",
-                      preset === color
-                        ? "scale-110 border-gray-400"
-                        : "border-gray-300",
-                    ].join(" ")}
-                    style={{ backgroundColor: preset }}
-                    aria-label={`Select ${preset} tag color`}
-                  />
-                ))}
-              </div>
-              <div className="mt-3">
-                <input
-                  type="color"
-                  value={color}
-                  onChange={(event) => setColor(event.target.value)}
-                  className="h-8 w-full cursor-pointer rounded-md border border-gray-300 bg-transparent p-1"
-                  aria-label="Custom tag color"
-                />
-              </div>
-            </div>
-          ) : null} */}
         </div>
       </div>
     </div>

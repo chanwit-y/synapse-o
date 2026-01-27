@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { PanelRightOpen } from "lucide-react";
 import Image from "next/image";
-import LayoutShell from "../../lib/components/LayoutShell";
 import MarkdownEditor from "../../lib/components/MarkdownEditor";
 import FileSidebar from "../../lib/components/FileSidebar";
 import type { TreeNode } from "../../lib/components/TreeView";
@@ -28,6 +27,7 @@ export default function Home() {
   const [selectedIconId, setSelectedIconId] = useState("file");
   const [iconOverrides, setIconOverrides] = useState<Record<string, string | null>>({});
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isLoadingFile, setIsLoadingFile] = useState(false);
   const { theme } = useTheme();
   const [, startTransition] = useTransition();
 
@@ -41,6 +41,37 @@ export default function Home() {
     });
   };
 
+  const handleSelectFile = async (node: TreeNode) => {
+    // Set the initial node data immediately for responsive UI
+    setSelectedFile(node);
+    const resolvedIcon = iconOverrides[node.id] ?? node.icon ?? "file";
+    setSelectedIconId(resolvedIcon);
+
+    // Fetch the full file data from the API
+    setIsLoadingFile(true);
+    try {
+      const response = await fetch(`/api/file?id=${encodeURIComponent(node.id)}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch file");
+      }
+      const data = await response.json();
+      if (data.success && data.file) {
+        // Merge the fetched file data with the node data
+        setSelectedFile({
+          ...node,
+          ...data.file,
+          icon: data.file.icon ?? node.icon,
+          tags: data.file.tags ?? [],
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching file:", error);
+      // Keep the initial node data if API call fails
+    } finally {
+      setIsLoadingFile(false);
+    }
+  };
+
   return (
     // <LayoutShell>
     <>
@@ -48,11 +79,7 @@ export default function Home() {
         collapsed={isSidebarCollapsed}
         onToggleCollapsed={() => setIsSidebarCollapsed((v) => !v)}
         iconOverrides={iconOverrides}
-        onSelectFile={(node) => {
-          setSelectedFile(node);
-          const resolvedIcon = iconOverrides[node.id] ?? node.icon ?? "file";
-          setSelectedIconId(resolvedIcon);
-        }}
+        onSelectFile={handleSelectFile}
       />
       <main className="flex-1 w-dvw overflow-auto animate-fade-in">
         {selectedFile ? (
@@ -87,7 +114,7 @@ export default function Home() {
               position="right"
               title="Properties"
             >
-              <TagEditor />
+              <TagEditor fileId={selectedFile.id} fileTags={(selectedFile.tags ?? []).map((tag: any) => ({ id: tag, label: tag, color: "gray" }))} />
             </Drawer>
             <div
               key={selectedFile.id}

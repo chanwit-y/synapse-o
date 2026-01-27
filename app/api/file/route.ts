@@ -82,11 +82,21 @@ export async function GET(request: Request) {
 
 		const fileRepo = new FileRepository();
 		const file = await fileRepo.findById(id);
+		// console.log('file', file)
 		if (!file) {
 			return NextResponse.json({ error: "File not found" }, { status: 404 });
 		}
 
-		return NextResponse.json({ success: true, file });
+		// Ensure tags is always a string array
+		const tags = Array.isArray(file.tags) ? file.tags : [];
+
+		return NextResponse.json({ 
+			success: true, 
+			file: {
+				...file,
+				tags
+			}
+		});
 	} catch (error) {
 		console.error("Error loading file:", error);
 		return NextResponse.json({ error: "Failed to load file" }, { status: 500 });

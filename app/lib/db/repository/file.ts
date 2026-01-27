@@ -26,5 +26,9 @@ export class FileRepository extends BaseRepository<typeof fileTable, string> {
 		if (!ids.length) return [];
 		return await this.db.select().from(this.table).where(inArray(fileTable.id, ids)).all();
 	}
+
+	public async updateTags(id: string, tags: string[]) {
+		return await this.update(id, { tags });
+	}
 }
 

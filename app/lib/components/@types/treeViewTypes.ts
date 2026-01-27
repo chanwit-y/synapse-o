@@ -1,4 +1,5 @@
 export interface TreeNode {
+  tags: never[];
   id: string;
   collectionId: string;
   name: string;

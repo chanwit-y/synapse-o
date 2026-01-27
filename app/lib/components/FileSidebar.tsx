@@ -263,6 +263,7 @@ export default function FileSidebar({
 
     (async () => {
       try {
+        // const collections = await findAllCollections();
         const collections = await findAllCollections();
         if (!isMounted) return;
 
@@ -414,6 +415,7 @@ export default function FileSidebar({
     const newItem: TreeNode = {
       id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : mockUuid(),
       name,
+      tags: [],
       type: itemType,
       ...(itemType === "folder" ? { children: [] } : {}),
       collectionId: "",
