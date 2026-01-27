@@ -15,6 +15,13 @@
       "when": 1769160479740,
       "tag": "0001_tidy_mordo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1769480962042,
+      "tag": "0002_talented_dorian_gray",
+      "breakpoints": true
     }
   ]
 }

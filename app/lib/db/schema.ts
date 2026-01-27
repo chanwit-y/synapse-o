@@ -13,6 +13,7 @@ export const fileTable = sqliteTable("file", {
 	icon: text("icon"),
 	name: text("name"),
 	type: text("type"),
+	tags: text("tags", { mode: "json" }),
 	extension: text("extension"),
 	content: text("content"),
 	createdAt: integer("created_at").default(sql`CURRENT_TIMESTAMP`),

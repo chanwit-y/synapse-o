@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
+import { PRESET_COLORS, TAG_SUGGESTIONS } from "../const";
 
 type Tag = {
   id: string;
@@ -11,8 +12,6 @@ type Tag = {
 };
 
 const DEFAULT_COLOR = "#60a5fa";
-const PRESET_COLORS = ["#60a5fa", "#34d399", "#fbbf24", "#f87171", "#a78bfa"];
-const TAG_SUGGESTIONS = ["User story", "Topic", "Eng"];
 
 const createId = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
