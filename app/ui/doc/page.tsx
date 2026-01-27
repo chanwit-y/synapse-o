@@ -10,6 +10,7 @@ import IconPopover from "../../lib/components/IconPopover";
 import { iconOptions } from "../../lib/components/iconOptions";
 import Drawer from "../../lib/components/Drawer";
 import TagEditor from "../../lib/components/TagEditor";
+import ToolsPanel from "../../lib/components/ToolsPanel";
 import { useTheme } from "../../lib/components/ThemeProvider";
 import emptyBox from "../../asset/empty-box.svg";
 
@@ -115,6 +116,10 @@ export default function Home() {
               title="Properties"
             >
               <TagEditor fileId={selectedFile.id} fileTags={(selectedFile.tags ?? []).map((tag: any) => ({ id: tag, label: tag, color: "gray" }))} />
+              
+              <div className="mt-6">
+                <ToolsPanel fileId={selectedFile.id} fileName={selectedFile.name} />
+              </div>
             </Drawer>
             <div
               key={selectedFile.id}
