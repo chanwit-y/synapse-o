@@ -115,7 +115,13 @@ export default function Home() {
               position="right"
               title="Properties"
             >
-              <TagEditor fileId={selectedFile.id} fileTags={(selectedFile.tags ?? [])} />
+              <TagEditor 
+                fileId={selectedFile.id} 
+                fileTags={(selectedFile.tags ?? [])} 
+                onTagsChange={(newTags) => {
+                  setSelectedFile((prev) => prev ? { ...prev, tags: newTags } : prev);
+                }}
+              />
               
               <div className="mt-6">
                 <ToolsPanel fileId={selectedFile.id} fileName={selectedFile.name} />

@@ -24,7 +24,7 @@ const getReadableTextColor = (hexColor: string) => {
   return luminance > 0.62 ? "#111827" : "#ffffff";
 };
 
-export default function TagEditor({ fileId, fileTags }: TagEditorProps) {
+export default function TagEditor({ fileId, fileTags, onTagsChange }: TagEditorProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [tags, setTags] = useState<Tag[]>(fileTags);
@@ -35,6 +35,7 @@ export default function TagEditor({ fileId, fileTags }: TagEditorProps) {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement | null>(null);
   const [activeTagId, setActiveTagId] = useState<string | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleTagAction = async (
     action: "add" | "remove",
@@ -48,22 +49,26 @@ export default function TagEditor({ fileId, fileTags }: TagEditorProps) {
       setLabel("");
       setHighlightedIndex(0);
       await updateFileTags(fileId, newTags);
+      onTagsChange?.(newTags);
     } else if (action === "remove" && payload.tagId) {
       const newTags = tags.filter((item) => item.id !== payload.tagId);
       setTags(newTags);
       await updateFileTags(fileId, newTags);
+      onTagsChange?.(newTags);
     }
   };
 
-  const filteredSuggestions = TAG_SUGGESTIONS.filter((suggestion) =>
-    suggestion.toLowerCase().includes(label.trim().toLowerCase()),
-  );
-  const showSuggestions = label.trim().length > 0 && filteredSuggestions.length > 0;
+  const filteredSuggestions = TAG_SUGGESTIONS.filter((suggestion) => {
+    const matchesSearch = suggestion.toLowerCase().includes(label.trim().toLowerCase());
+    const notAlreadyAdded = !tags.some((tag) => tag.label.toLowerCase() === suggestion.toLowerCase());
+    return matchesSearch && notAlreadyAdded;
+  });
+  const showSuggestions = isFocused && filteredSuggestions.length > 0;
 
   useEffect(() => {
     if (!showSuggestions) return;
     setHighlightedIndex(0);
-  }, [label, showSuggestions]);
+  }, [label, showSuggestions, isFocused]);
 
   useEffect(() => {
     if (!isColorPickerOpen && !activeTagId) return;
@@ -139,6 +144,11 @@ export default function TagEditor({ fileId, fileTags }: TagEditorProps) {
                 type="text"
                 value={label}
                 onChange={(event) => setLabel(event.target.value)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => {
+                  // Delay blur to allow click events on suggestions to fire
+                  setTimeout(() => setIsFocused(false), 150);
+                }}
                 onKeyDown={(event) => {
                   if (event.key === "ArrowDown" && showSuggestions) {
                     event.preventDefault();
@@ -164,6 +174,7 @@ export default function TagEditor({ fileId, fileTags }: TagEditorProps) {
                   }
                   if (event.key === "Escape") {
                     setLabel("");
+                    setIsFocused(false);
                   }
                 }}
                 placeholder={tags.length === 0 ? "Add a tag" : ""}
@@ -245,8 +256,8 @@ export default function TagEditor({ fileId, fileTags }: TagEditorProps) {
                             : item,
                         );
                         setTags(newTags);
-                        console.log('new tags', newTags)
                         await updateFileTags(fileId, newTags);
+                        onTagsChange?.(newTags);
                         setActiveTagId(null);
                       }}
                       className={[

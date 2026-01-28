@@ -5,7 +5,7 @@ import { SnackbarProvider } from "../lib/components/Snackbar";
 import { ThemeProvider } from "../lib/components/ThemeProvider";
 import LayoutShell from "../lib/components/LayoutShell";
 import SidebarMenu from "../lib/components/SidebarMenu";
-import { Workflow } from "lucide-react";
+import { Workflow, Settings, Key } from "lucide-react";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -95,6 +95,19 @@ const menuItems = [
     href: "/ui/flow",
     description: "Flow tools and setup",
     icon: workflowIcon,
+  },
+  {
+    label: "Settings",
+    description: "App configuration",
+    icon: <Settings className="h-4 w-4" />,
+    submenu: [
+      {
+        label: "AI API Key",
+        href: "/ui/settings/api-key",
+        description: "Configure AI API credentials",
+        icon: <Key className="h-4 w-4" />,
+      },
+    ],
   },
 ];
 

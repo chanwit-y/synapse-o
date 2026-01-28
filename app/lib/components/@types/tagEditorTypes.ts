@@ -7,5 +7,6 @@ export type Tag = {
 export interface TagEditorProps {
   fileId: string;
   fileTags: Tag[];
+  onTagsChange?: (tags: Tag[]) => void;
 }
 
