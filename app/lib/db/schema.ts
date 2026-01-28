@@ -19,3 +19,12 @@ export const fileTable = sqliteTable("file", {
 	createdAt: integer("created_at").default(sql`CURRENT_TIMESTAMP`),
 	updatedAt: integer("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const apiKeyTable = sqliteTable("api_key", {
+	id: text("id").primaryKey(),
+	name: text("name").notNull(),
+	description: text("description"),
+	apiKey: text("api_key").notNull(),
+	createdAt: integer("created_at").default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: integer("updated_at").default(sql`CURRENT_TIMESTAMP`),
+});
