@@ -16,9 +16,12 @@ export default function ApiKeySettingsPage() {
   const [apiKeys, setApiKeys] = useState<ApiKeyRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
+  const [isAnimating, setIsAnimating] = useState(true);
 
   useEffect(() => {
     loadApiKeys();
+    // Trigger animation on mount
+    setIsAnimating(false);
   }, []);
 
   const loadApiKeys = async () => {
@@ -73,7 +76,14 @@ export default function ApiKeySettingsPage() {
 
   return (
     <div className="flex-1  overflow-y-auto">
-      <div className="mx-auto max-w-4xl p-8">
+      <div 
+        className="mx-auto max-w-4xl p-8"
+        style={{
+          opacity: isAnimating ? 0 : 1,
+          transform: isAnimating ? 'translateY(20px)' : 'translateY(0)',
+          transition: 'opacity 0.5s ease-out, transform 0.5s ease-out'
+        }}
+      >
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Key className="h-6 w-6" />
