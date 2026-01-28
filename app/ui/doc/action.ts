@@ -1,5 +1,6 @@
 "use server";
 
+import { Tag } from "@/app/lib/components/@types/tagEditorTypes";
 import type { TreeNode } from "@/app/lib/components/@types/treeViewTypes";
 import { CollectionRepository, type CollectionRow } from "@/app/lib/db/repository/collection";
 import { FileRepository, type FileRow } from "@/app/lib/db/repository/file";
@@ -63,6 +64,6 @@ export async function findFileIconsByIds(ids: string[]): Promise<Record<string, 
 	}, {});
 }
 
-export async function updateFileTags(fileId: string, tags: string[]): Promise<FileRow | null> {
+export async function updateFileTags(fileId: string, tags: Tag[]): Promise<FileRow | null> {
 	return await fileRepo.updateTags(fileId, tags);
 }

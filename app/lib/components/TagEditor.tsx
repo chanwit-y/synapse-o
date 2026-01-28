@@ -5,12 +5,7 @@ import { X } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { PRESET_COLORS, TAG_SUGGESTIONS } from "../const";
 import { updateFileTags } from "@/app/ui/doc/action";
-
-type Tag = {
-  id: string;
-  label: string;
-  color: string;
-};
+import type { Tag, TagEditorProps } from "./@types/tagEditorTypes";
 
 const DEFAULT_COLOR = "#60a5fa";
 
@@ -28,11 +23,6 @@ const getReadableTextColor = (hexColor: string) => {
   const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
   return luminance > 0.62 ? "#111827" : "#ffffff";
 };
-
-interface TagEditorProps {
-  fileId: string;
-  fileTags: Tag[];
-}
 
 export default function TagEditor({ fileId, fileTags }: TagEditorProps) {
   const { theme } = useTheme();
@@ -57,11 +47,11 @@ export default function TagEditor({ fileId, fileTags }: TagEditorProps) {
       setTags(newTags);
       setLabel("");
       setHighlightedIndex(0);
-      await updateFileTags(fileId, newTags.map((item) => item.label));
+      await updateFileTags(fileId, newTags);
     } else if (action === "remove" && payload.tagId) {
       const newTags = tags.filter((item) => item.id !== payload.tagId);
       setTags(newTags);
-      await updateFileTags(fileId, newTags.map((item) => item.label));
+      await updateFileTags(fileId, newTags);
     }
   };
 
@@ -118,7 +108,8 @@ export default function TagEditor({ fileId, fileTags }: TagEditorProps) {
                     tagRefs.current[tag.id] = node;
                   }}
                   className="relative flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold"
-                  style={{ backgroundColor: tag.color, color: textColor }}
+                  // style={{ backgroundColor: tag.color, color: textColor }}
+                  style={{ backgroundColor: tag.color, color: tag.color }}
                   onDoubleClick={() => setActiveTagId(tag.id)}
                   role="button"
                   tabIndex={0}
@@ -129,12 +120,13 @@ export default function TagEditor({ fileId, fileTags }: TagEditorProps) {
                     }
                   }}
                 >
-                  <span>{tag.label}</span>
+                  <span className="text-white">{tag.label}</span>
                   <button
                     type="button"
                     onClick={() => handleTagAction("remove", { tagId: tag.id })}
-                    className="rounded-full p-0.5 transition-opacity hover:opacity-80"
-                    style={{ color: textColor }}
+                    className="rounded-full p-0.5 transition-opacity hover:opacity-80 text-white"
+                    // style={{ color: textColor }}
+                    // style={{ color: tag.color }}
                     aria-label={`Remove ${tag.label}`}
                   >
                     <X className="h-3.5 w-3.5" />
@@ -246,14 +238,15 @@ export default function TagEditor({ fileId, fileTags }: TagEditorProps) {
                     <button
                       key={preset}
                       type="button"
-                      onClick={() => {
-                        setTags((prev) =>
-                          prev.map((item) =>
-                            item.id === activeTagId
-                              ? { ...item, color: preset }
-                              : item,
-                          ),
+                      onClick={async () => {
+                        const newTags = tags.map((item) =>
+                          item.id === activeTagId
+                            ? { ...item, color: preset }
+                            : item,
                         );
+                        setTags(newTags);
+                        console.log('new tags', newTags)
+                        await updateFileTags(fileId, newTags);
                         setActiveTagId(null);
                       }}
                       className={[

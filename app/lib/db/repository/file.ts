@@ -4,6 +4,7 @@ import "server-only";
 import { inArray } from "drizzle-orm";
 import { fileTable } from "@/app/lib/db/schema";
 import { BaseRepository, type RepoOptions } from "@/app/lib/db/repository/base";
+import { Tag } from "../../components/@types/tagEditorTypes";
 
 export type FileRow = typeof fileTable.$inferSelect;
 export type FileInsert = typeof fileTable.$inferInsert;
@@ -27,7 +28,7 @@ export class FileRepository extends BaseRepository<typeof fileTable, string> {
 		return await this.db.select().from(this.table).where(inArray(fileTable.id, ids)).all();
 	}
 
-	public async updateTags(id: string, tags: string[]) {
+	public async updateTags(id: string, tags: Tag[]) {
 		return await this.update(id, { tags });
 	}
 }

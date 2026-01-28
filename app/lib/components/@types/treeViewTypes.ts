@@ -1,5 +1,7 @@
+import { Tag } from "./tagEditorTypes";
+
 export interface TreeNode {
-  tags: never[];
+  tags: Tag[];
   id: string;
   collectionId: string;
   name: string;
