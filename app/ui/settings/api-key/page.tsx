@@ -442,7 +442,7 @@ export default function ApiKeySettingsPage() {
           </div>
         )}
 
-        <div
+        {/* <div
           className={[
             "mt-6 rounded-lg border p-4",
             theme === "light"
@@ -462,7 +462,7 @@ export default function ApiKeySettingsPage() {
             <li>Generate a new API key</li>
             <li>Copy and paste it into the field above</li>
           </ol>
-        </div>
+        </div> */}
       </div>
 
       {/* Delete Confirmation Modal */}
