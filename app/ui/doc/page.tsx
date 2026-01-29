@@ -13,14 +13,7 @@ import TagEditor from "../../lib/components/TagEditor";
 import ToolsPanel from "../../lib/components/ToolsPanel";
 import { useTheme } from "../../lib/components/ThemeProvider";
 import emptyBox from "../../asset/empty-box.svg";
-
-const updateFileIconClient = async (fileId: string, icon: string | null) => {
-  await fetch("/api/file/icon", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id: fileId, icon }),
-  });
-};
+import { fileService } from "../../lib/services/fileService";
 
 export default function Home() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -38,7 +31,7 @@ export default function Home() {
     setIconOverrides((prev) => ({ ...prev, [selectedFile.id]: iconId }));
     setSelectedFile((prev) => (prev ? { ...prev, icon: iconId } : prev));
     startTransition(() => {
-      void updateFileIconClient(selectedFile.id, iconId);
+      void fileService.updateFileIcon(selectedFile.id, iconId);
     });
   };
 
@@ -51,18 +44,14 @@ export default function Home() {
     // Fetch the full file data from the API
     setIsLoadingFile(true);
     try {
-      const response = await fetch(`/api/file?id=${encodeURIComponent(node.id)}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch file");
-      }
-      const data = await response.json();
-      if (data.success && data.file) {
+      const fileDetails = await fileService.getFileDetails(node.id);
+      if (fileDetails) {
         // Merge the fetched file data with the node data
         setSelectedFile({
           ...node,
-          ...data.file,
-          icon: data.file.icon ?? node.icon,
-          tags: data.file.tags ?? [],
+          ...fileDetails,
+          icon: fileDetails.icon ?? node.icon,
+          tags: fileDetails.tags ?? [],
         });
       }
     } catch (error) {

@@ -14,6 +14,7 @@ import rehypeKatex from 'rehype-katex';
 import { useTheme } from './ThemeProvider';
 import { useSnackbar } from './Snackbar';
 import { MARKDOWN_EDITOR_CSS } from './markdown-editor/editorCss';
+import { fileService } from '../services/fileService';
 import {
   BoldIcon,
   ClearIcon,
@@ -440,23 +441,14 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
         return;
       }
 
-      const response = await fetch('/api/file', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: fileIdRef.current,
-          name: selectedFile.name || 'untitled.md',
-          collectionId: selectedFile.collectionId,
-          content: valueRef.current,
-        }),
+      const result = await fileService.saveFile({
+        id: fileIdRef.current,
+        name: selectedFile.name || 'untitled.md',
+        collectionId: selectedFile.collectionId,
+        content: valueRef.current,
       });
 
-      const result = (await response.json()) as { success?: boolean; id?: string; error?: string };
-      if (!response.ok || !result.success || !result.id) {
-        throw new Error(result.error || 'Failed to save file');
-      }
-
-      fileIdRef.current = result.id;
+      fileIdRef.current = result.id!;
       console.log('Saved file:', result.id);
       showSnackbar({
         title: 'Saved',
@@ -475,22 +467,8 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
 
     (async () => {
       try {
-        const response = await fetch(`/api/file?id=${encodeURIComponent(selectedFile.id)}`);
-        if (!response.ok) {
-          if (response.status === 404) {
-            setValue(selectedFile.content ?? '');
-            return;
-          }
-          const errorBody = (await response.json()) as { error?: string };
-          throw new Error(errorBody.error || 'Failed to load file');
-        }
-
-        const result = (await response.json()) as { success?: boolean; file?: { content?: string | null } };
-        if (!result.success) {
-          throw new Error('Failed to load file');
-        }
-
-        setValue(result.file?.content ?? '');
+        const content = await fileService.loadFile(selectedFile.id);
+        setValue(content || (selectedFile.content ?? ''));
       } catch (error) {
         console.error('Error loading file:', error);
         alert(error instanceof Error ? error.message : 'Error loading file. Please try again.');
@@ -546,21 +524,8 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
       }
 
       try {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const response = await fetch('/api/upload', { method: 'POST', body: formData });
-        const result = (await response.json()) as { success?: boolean; path?: string; error?: string };
-
-        if (!response.ok) {
-          throw new Error(result.error || 'Failed to upload file');
-        }
-
-        if (!result.success || !result.path) {
-          throw new Error('Upload failed: No file path returned');
-        }
-
-        const imagePath = normalizePublicPath(result.path);
+        const path = await fileService.uploadImage(file);
+        const imagePath = normalizePublicPath(path);
         const altText = file.name.replace(/\.[^/.]+$/, '');
         insertMarkdown(`![${altText}](${imagePath})`);
 
