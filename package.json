@@ -12,9 +12,12 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@langchain/core": "^1.1.17",
+    "@langchain/openai": "^1.2.3",
     "@uiw/react-md-editor": "^4.0.11",
     "better-sqlite3": "^12.6.0",
     "drizzle-orm": "^0.45.1",
+    "langchain": "^1.2.15",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
     "react": "19.2.3",

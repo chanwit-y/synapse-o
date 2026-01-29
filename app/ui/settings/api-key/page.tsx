@@ -2,24 +2,32 @@
 
 import { useState, useEffect } from "react";
 import { useTheme } from "@/app/lib/components/ThemeProvider";
-import { Key, Save, Eye, EyeOff, Trash2 } from "lucide-react";
-import { saveApiKey, getAllApiKeys, deleteApiKey } from "./action";
+import { Key, Save, Eye, EyeOff, Trash2, Pencil } from "lucide-react";
+import { saveApiKey, getAllApiKeys, deleteApiKey, updateApiKey } from "./action";
 import type { ApiKeyRow } from "@/app/lib/db/repository/api-key";
 import Modal from "@/app/lib/components/Modal";
+import { useSnackbar } from "@/app/lib/components/Snackbar";
 
 export default function ApiKeySettingsPage() {
   const { theme } = useTheme();
+  const { showSnackbar } = useSnackbar();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
   const [apiKeys, setApiKeys] = useState<ApiKeyRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
   const [isAnimating, setIsAnimating] = useState(true);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [keyToDelete, setKeyToDelete] = useState<ApiKeyRow | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [keyToEdit, setKeyToEdit] = useState<ApiKeyRow | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editApiKey, setEditApiKey] = useState("");
+  const [showEditKey, setShowEditKey] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     loadApiKeys();
@@ -47,8 +55,10 @@ export default function ApiKeySettingsPage() {
     });
 
     if (result.success) {
-      setIsSaved(true);
-      setTimeout(() => setIsSaved(false), 3000);
+      showSnackbar({
+        message: "API key saved successfully",
+        variant: "success",
+      });
       
       // Clear form
       setName("");
@@ -81,6 +91,46 @@ export default function ApiKeySettingsPage() {
   const handleCancelDelete = () => {
     setDeleteModalOpen(false);
     setKeyToDelete(null);
+  };
+
+  const handleEditClick = (key: ApiKeyRow) => {
+    setKeyToEdit(key);
+    setEditName(key.name);
+    setEditDescription(key.description || "");
+    setEditApiKey(key.apiKey);
+    setShowEditKey(false);
+    setEditModalOpen(true);
+  };
+
+  const handleConfirmEdit = async () => {
+    if (!keyToEdit || !editName.trim() || !editApiKey.trim()) return;
+
+    setIsEditing(true);
+    const result = await updateApiKey(keyToEdit.id, {
+      name: editName.trim(),
+      description: editDescription.trim() || undefined,
+      apiKey: editApiKey.trim(),
+    });
+
+    if (result.success) {
+      showSnackbar({
+        message: "API key updated successfully",
+        variant: "success",
+      });
+      await loadApiKeys();
+    }
+    setIsEditing(false);
+    setEditModalOpen(false);
+    setKeyToEdit(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditModalOpen(false);
+    setKeyToEdit(null);
+    setEditName("");
+    setEditDescription("");
+    setEditApiKey("");
+    setShowEditKey(false);
   };
 
   const toggleShowKey = (id: string) => {
@@ -234,18 +284,6 @@ export default function ApiKeySettingsPage() {
                 <Save className="h-4 w-4" />
                 {isLoading ? "Saving..." : "Save API Key"}
               </button>
-
-              {isSaved && (
-                <span
-                  className={
-                    theme === "light"
-                      ? "text-sm text-green-600"
-                      : "text-sm text-green-400"
-                  }
-                >
-                  ✓ Saved successfully
-                </span>
-              )}
             </div>
           </div>
         </div>
@@ -363,19 +401,34 @@ export default function ApiKeySettingsPage() {
                           : "-"}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteClick(key)}
-                          className={[
-                            "rounded p-2 transition-colors",
-                            theme === "light"
-                              ? "text-red-600 hover:bg-red-50"
-                              : "text-red-400 hover:bg-red-950",
-                          ].join(" ")}
-                          aria-label="Delete API key"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleEditClick(key)}
+                            className={[
+                              "rounded p-2 transition-colors",
+                              theme === "light"
+                                ? "text-blue-600 hover:bg-blue-50"
+                                : "text-blue-400 hover:bg-blue-950",
+                            ].join(" ")}
+                            aria-label="Edit API key"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteClick(key)}
+                            className={[
+                              "rounded p-2 transition-colors",
+                              theme === "light"
+                                ? "text-red-600 hover:bg-red-50"
+                                : "text-red-400 hover:bg-red-950",
+                            ].join(" ")}
+                            aria-label="Delete API key"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -436,6 +489,131 @@ export default function ApiKeySettingsPage() {
               className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white transition-colors hover:bg-red-700"
             >
               Delete
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal isOpen={editModalOpen} onClose={handleCancelEdit}>
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Edit API Key</h2>
+          
+          <div>
+            <label
+              htmlFor="edit-api-key-name"
+              className="mb-2 block text-sm font-medium"
+            >
+              Name
+            </label>
+            <input
+              id="edit-api-key-name"
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              placeholder="e.g., OpenAI Production Key"
+              className={[
+                "w-full rounded-lg border px-4 py-2",
+                "focus:outline-none focus:ring-2 focus:ring-blue-500",
+                theme === "light"
+                  ? "border-gray-300 bg-white text-gray-900"
+                  : "border-gray-700 bg-gray-800 text-gray-100",
+              ].join(" ")}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="edit-api-key-description"
+              className="mb-2 block text-sm font-medium"
+            >
+              Description
+            </label>
+            <textarea
+              id="edit-api-key-description"
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              placeholder="Optional description or notes about this API key"
+              rows={3}
+              className={[
+                "w-full rounded-lg border px-4 py-2",
+                "focus:outline-none focus:ring-2 focus:ring-blue-500",
+                theme === "light"
+                  ? "border-gray-300 bg-white text-gray-900"
+                  : "border-gray-700 bg-gray-800 text-gray-100",
+              ].join(" ")}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="edit-api-key"
+              className="mb-2 block text-sm font-medium"
+            >
+              API Key
+            </label>
+            <div className="relative">
+              <input
+                id="edit-api-key"
+                type={showEditKey ? "text" : "password"}
+                value={editApiKey}
+                onChange={(e) => setEditApiKey(e.target.value)}
+                placeholder="Enter your API key"
+                className={[
+                  "w-full rounded-lg border px-4 py-2 pr-10",
+                  "focus:outline-none focus:ring-2 focus:ring-blue-500",
+                  theme === "light"
+                    ? "border-gray-300 bg-white text-gray-900"
+                    : "border-gray-700 bg-gray-800 text-gray-100",
+                ].join(" ")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowEditKey(!showEditKey)}
+                className={[
+                  "absolute right-2 top-1/2 -translate-y-1/2",
+                  "rounded p-1 transition-colors",
+                  theme === "light"
+                    ? "hover:bg-gray-100"
+                    : "hover:bg-gray-700",
+                ].join(" ")}
+                aria-label={showEditKey ? "Hide API key" : "Show API key"}
+              >
+                {showEditKey ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={handleCancelEdit}
+              className={[
+                "rounded-lg px-4 py-2 font-medium transition-colors",
+                theme === "light"
+                  ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  : "bg-gray-700 text-gray-200 hover:bg-gray-600",
+              ].join(" ")}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmEdit}
+              disabled={isEditing || !editName.trim() || !editApiKey.trim()}
+              className={[
+                "flex items-center gap-2 rounded-lg px-4 py-2",
+                "font-medium transition-colors",
+                "bg-blue-600 text-white hover:bg-blue-700",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+              ].join(" ")}
+            >
+              <Save className="h-4 w-4" />
+              {isEditing ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </div>
