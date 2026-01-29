@@ -82,6 +82,10 @@ export default function ApiKeySettingsPage() {
 
     const result = await deleteApiKey(keyToDelete.id);
     if (result.success) {
+      showSnackbar({
+        message: "API key deleted successfully",
+        variant: "success",
+      });
       await loadApiKeys();
     }
     setDeleteModalOpen(false);

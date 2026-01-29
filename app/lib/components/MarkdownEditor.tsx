@@ -230,7 +230,7 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
   const { showSnackbar } = useSnackbar();
 
   const [value, setValue] = useState("");
-  const [previewMode, setPreviewMode] = useState<PreviewType>('live');
+  const [previewMode, setPreviewMode] = useState<PreviewType>('preview');
   const valueRef = useLatestRef(value);
   const tooltip = useHighlightTooltip();
 

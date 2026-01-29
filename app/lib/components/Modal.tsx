@@ -1,23 +1,41 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
+
+type ModalSize = "sm" | "md" | "lg" | "xl";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
+  size?: ModalSize;
 }
 
-export default function Modal({ isOpen, onClose, children }: ModalProps) {
+const sizeClasses: Record<ModalSize, string> = {
+  sm: "max-w-sm",
+  md: "max-w-2xl",
+  lg: "max-w-4xl",
+  xl: "max-w-6xl",
+};
+
+export default function Modal({ isOpen, onClose, children, size = "sm" }: ModalProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  if (!isOpen) return null;
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-[9999] flex items-center justify-center"
       onClick={onClose}
     >
       {/* Backdrop with blur */}
@@ -29,7 +47,7 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
 
       {/* Modal content */}
       <div
-        className={`relative rounded-lg shadow-xl border p-6 w-full max-w-md mx-4 ${
+        className={`relative rounded-lg shadow-xl border p-6 w-full ${sizeClasses[size]} mx-4 ${
           isDark
             ? "bg-gray-800 text-gray-100 border-gray-700"
             : "bg-white text-gray-900 border-gray-200"
@@ -48,7 +66,8 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
         </button>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
