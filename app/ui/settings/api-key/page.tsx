@@ -5,6 +5,7 @@ import { useTheme } from "@/app/lib/components/ThemeProvider";
 import { Key, Save, Eye, EyeOff, Trash2 } from "lucide-react";
 import { saveApiKey, getAllApiKeys, deleteApiKey } from "./action";
 import type { ApiKeyRow } from "@/app/lib/db/repository/api-key";
+import Modal from "@/app/lib/components/Modal";
 
 export default function ApiKeySettingsPage() {
   const { theme } = useTheme();
@@ -17,6 +18,8 @@ export default function ApiKeySettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
   const [isAnimating, setIsAnimating] = useState(true);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [keyToDelete, setKeyToDelete] = useState<ApiKeyRow | null>(null);
 
   useEffect(() => {
     loadApiKeys();
@@ -59,15 +62,25 @@ export default function ApiKeySettingsPage() {
     setIsLoading(false);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this API key?")) {
-      return;
-    }
+  const handleDeleteClick = (key: ApiKeyRow) => {
+    setKeyToDelete(key);
+    setDeleteModalOpen(true);
+  };
 
-    const result = await deleteApiKey(id);
+  const handleConfirmDelete = async () => {
+    if (!keyToDelete) return;
+
+    const result = await deleteApiKey(keyToDelete.id);
     if (result.success) {
       await loadApiKeys();
     }
+    setDeleteModalOpen(false);
+    setKeyToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModalOpen(false);
+    setKeyToDelete(null);
   };
 
   const toggleShowKey = (id: string) => {
@@ -352,7 +365,7 @@ export default function ApiKeySettingsPage() {
                       <td className="px-4 py-3 text-right">
                         <button
                           type="button"
-                          onClick={() => handleDelete(key.id)}
+                          onClick={() => handleDeleteClick(key)}
                           className={[
                             "rounded p-2 transition-colors",
                             theme === "light"
@@ -394,6 +407,39 @@ export default function ApiKeySettingsPage() {
           </ol>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={deleteModalOpen} onClose={handleCancelDelete}>
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Delete API Key</h2>
+          <p className={theme === "light" ? "text-gray-600" : "text-gray-400"}>
+            Are you sure you want to delete{" "}
+            <span className="font-medium">{keyToDelete?.name}</span>? This action
+            cannot be undone.
+          </p>
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={handleCancelDelete}
+              className={[
+                "rounded-lg px-4 py-2 font-medium transition-colors",
+                theme === "light"
+                  ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  : "bg-gray-700 text-gray-200 hover:bg-gray-600",
+              ].join(" ")}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDelete}
+              className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white transition-colors hover:bg-red-700"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
