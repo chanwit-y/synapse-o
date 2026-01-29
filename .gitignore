@@ -41,3 +41,6 @@ yarn-error.log*
 next-env.d.ts
 
 upload
+
+synapse.db
+synapse.db-shm
