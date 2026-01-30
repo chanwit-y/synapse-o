@@ -13,8 +13,22 @@ interface ToolsPanelProps {
 export default function ToolsPanel({ fileId, fileName }: ToolsPanelProps) {
   const { theme } = useTheme();
   const [isUnitTestModalOpen, setIsUnitTestModalOpen] = useState(false);
+  const defaultUnitTestPrompt = `You are a senior software engineer.
+
+Write high-quality unit tests for the file: ${fileName}
+File ID: ${fileId}
+
+Requirements:
+- Use the project's existing test framework and conventions.
+- Cover happy paths, edge cases, and error handling.
+- Mock external dependencies.
+- Keep tests readable and maintainable.
+
+Output only the test code.`;
+  const [unitTestPrompt, setUnitTestPrompt] = useState(defaultUnitTestPrompt);
 
   const handleCreateUnitTest = () => {
+    setUnitTestPrompt(defaultUnitTestPrompt);
     setIsUnitTestModalOpen(true);
   };
 
@@ -48,6 +62,27 @@ export default function ToolsPanel({ fileId, fileName }: ToolsPanelProps) {
           <p className="text-sm text-gray-500">
             Generate unit tests for: <span className="font-medium">{fileName}</span>
           </p>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-600">
+              Default prompt
+            </label>
+            <textarea
+              value={unitTestPrompt}
+              onChange={(e) => setUnitTestPrompt(e.target.value)}
+              rows={10}
+              spellCheck={false}
+              className={[
+                "w-full rounded-md border px-3 py-2 text-sm leading-5",
+                "focus:outline-none focus:ring-2 focus:ring-blue-500/40",
+                theme === "dark"
+                  ? "border-gray-700 bg-gray-900 text-gray-100 placeholder:text-gray-500"
+                  : "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400",
+              ].join(" ")}
+            />
+            <p className="text-xs text-gray-400">
+              You can edit this prompt before generating tests.
+            </p>
+          </div>
           <div className="pt-4 flex justify-end gap-2">
             <button
               type="button"
@@ -65,7 +100,14 @@ export default function ToolsPanel({ fileId, fileName }: ToolsPanelProps) {
               type="button"
               onClick={() => {
                 // TODO: Implement unit test generation
-                console.log("Create unit test for:", fileName, "with ID:", fileId);
+                console.log(
+                  "Create unit test for:",
+                  fileName,
+                  "with ID:",
+                  fileId,
+                  "prompt:",
+                  unitTestPrompt,
+                );
                 setIsUnitTestModalOpen(false);
               }}
               className="px-4 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors cursor-pointer"
