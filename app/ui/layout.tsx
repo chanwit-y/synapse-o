@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
+import { LoadingProvider } from "../lib/components/LoadingProvider";
 import { SnackbarProvider } from "../lib/components/Snackbar";
 import { ThemeProvider } from "../lib/components/ThemeProvider";
 import LayoutShell from "../lib/components/LayoutShell";
@@ -122,15 +123,17 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased duration-200`}
       >
         <ThemeProvider>
-          <SnackbarProvider>
-            <LayoutShell>
-              <div className="flex h-full overflow-hidden">
-                <SidebarMenu title="Navigation" items={menuItems} />
-                {children}
-                {/* <div className="flex-1 overflow-auto">{children}</div> */}
-              </div>
-            </LayoutShell>
-          </SnackbarProvider>
+          <LoadingProvider>
+            <SnackbarProvider>
+              <LayoutShell>
+                <div className="flex h-full overflow-hidden">
+                  <SidebarMenu title="Navigation" items={menuItems} />
+                  {children}
+                  {/* <div className="flex-1 overflow-auto">{children}</div> */}
+                </div>
+              </LayoutShell>
+            </SnackbarProvider>
+          </LoadingProvider>
         </ThemeProvider>
       </body>
     </html>

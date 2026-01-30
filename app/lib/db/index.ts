@@ -32,6 +32,7 @@ const createFolder = (
   children: TreeNode[] = []
 ): TreeNode => {
   return {
+    tags: [],
     id: mockUuid(),
     collectionId,
     name,
@@ -48,6 +49,7 @@ const createFile = (
 ): TreeNode => {
   const timestamp = Date.now();
   const file: TreeNode = {
+    tags: [],
     id: mockUuid(),
     collectionId,
     name,
