@@ -55,7 +55,7 @@ Output only the test code.`,
         );
 
         // Ensure the loading overlay becomes visible (LoadingProvider has a delay).
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 800));
       }, unitTestLoaderId);
 
       showSnackbar({
@@ -63,7 +63,7 @@ Output only the test code.`,
         title: "Unit test generation",
         message: "Generation complete (placeholder).",
       });
-      // setIsUnitTestModalOpen(false);
+      setIsUnitTestModalOpen(false);
     } catch (error) {
       console.error("Unit test generation failed:", error);
       showSnackbar({
