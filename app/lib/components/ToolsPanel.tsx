@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { FlaskConical, Loader2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { FlaskConical } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import Modal from "./Modal";
 import { useLoading } from "./LoadingProvider";
+import { useSnackbar } from "./Snackbar";
 
 interface ToolsPanelProps {
   fileId: string;
@@ -13,10 +14,11 @@ interface ToolsPanelProps {
 
 export default function ToolsPanel({ fileId, fileName }: ToolsPanelProps) {
   const { theme } = useTheme();
-  const { withLoading } = useLoading();
+  const { withLoading, activeLoaderIds } = useLoading();
+  const { showSnackbar } = useSnackbar();
   const [isUnitTestModalOpen, setIsUnitTestModalOpen] = useState(false);
-  const [isGeneratingUnitTest, setIsGeneratingUnitTest] = useState(false);
-  const defaultUnitTestPrompt = `You are a senior software engineer.
+  const defaultUnitTestPrompt = useMemo(
+    () => `You are a senior software engineer.
 
 Write high-quality unit tests for the file: ${fileName}
 File ID: ${fileId}
@@ -27,8 +29,12 @@ Requirements:
 - Mock external dependencies.
 - Keep tests readable and maintainable.
 
-Output only the test code.`;
+Output only the test code.`,
+    [fileId, fileName],
+  );
   const [unitTestPrompt, setUnitTestPrompt] = useState(defaultUnitTestPrompt);
+  const unitTestLoaderId = `unit-test:${fileId}`;
+  const isGenerating = activeLoaderIds.includes(unitTestLoaderId);
 
   const handleCreateUnitTest = () => {
     setUnitTestPrompt(defaultUnitTestPrompt);
@@ -36,11 +42,9 @@ Output only the test code.`;
   };
 
   const handleGenerateUnitTest = async () => {
-    if (isGeneratingUnitTest) return;
-    setIsGeneratingUnitTest(true);
     try {
       await withLoading(async () => {
-        // TODO: Implement unit test generation
+        // TODO: Implement unit test generation (API call / LLM call)
         console.log(
           "Create unit test for:",
           fileName,
@@ -49,10 +53,24 @@ Output only the test code.`;
           "prompt:",
           unitTestPrompt,
         );
-      }, `unit-test:${fileId}`);
-      setIsUnitTestModalOpen(false);
-    } finally {
-      setIsGeneratingUnitTest(false);
+
+        // Ensure the loading overlay becomes visible (LoadingProvider has a delay).
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }, unitTestLoaderId);
+
+      showSnackbar({
+        variant: "info",
+        title: "Unit test generation",
+        message: "Generation complete (placeholder).",
+      });
+      // setIsUnitTestModalOpen(false);
+    } catch (error) {
+      console.error("Unit test generation failed:", error);
+      showSnackbar({
+        variant: "error",
+        title: "Unit test generation",
+        message: "Failed to generate unit tests.",
+      });
     }
   };
 
@@ -78,10 +96,7 @@ Output only the test code.`;
 
       <Modal
         isOpen={isUnitTestModalOpen}
-        onClose={() => {
-          if (isGeneratingUnitTest) return;
-          setIsUnitTestModalOpen(false);
-        }}
+        onClose={() => setIsUnitTestModalOpen(false)}
         size="md"
       >
         <div className="space-y-4">
@@ -98,11 +113,9 @@ Output only the test code.`;
               onChange={(e) => setUnitTestPrompt(e.target.value)}
               rows={10}
               spellCheck={false}
-              disabled={isGeneratingUnitTest}
               className={[
                 "w-full rounded-md border px-3 py-2 text-sm leading-5",
                 "focus:outline-none focus:ring-2 focus:ring-blue-500/40",
-                isGeneratingUnitTest ? "opacity-60 cursor-not-allowed" : "",
                 theme === "dark"
                   ? "border-gray-700 bg-gray-900 text-gray-100 placeholder:text-gray-500"
                   : "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400",
@@ -116,37 +129,30 @@ Output only the test code.`;
             <button
               type="button"
               onClick={() => setIsUnitTestModalOpen(false)}
-              disabled={isGeneratingUnitTest}
+              disabled={isGenerating}
               className={[
                 "px-4 py-2 rounded-md text-sm font-medium transition-colors",
-                isGeneratingUnitTest ? "opacity-60 cursor-not-allowed" : "",
                 theme === "dark"
                   ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300",
+                isGenerating ? "opacity-60 cursor-not-allowed" : "",
               ].join(" ")}
             >
               Cancel
             </button>
             <button
               type="button"
-              onClick={handleGenerateUnitTest}
-              disabled={isGeneratingUnitTest}
-              aria-busy={isGeneratingUnitTest}
+              onClick={() => {
+                void handleGenerateUnitTest();
+              }}
+              disabled={isGenerating}
               className={[
                 "px-4 py-2 rounded-md text-sm font-medium transition-colors",
                 "bg-blue-600 text-white hover:bg-blue-700",
-                isGeneratingUnitTest ? "opacity-70 cursor-not-allowed" : "cursor-pointer",
-                "inline-flex items-center gap-2",
+                isGenerating ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
               ].join(" ")}
             >
-              {isGeneratingUnitTest ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                  Generating…
-                </>
-              ) : (
-                "Generate"
-              )}
+              {isGenerating ? "Generating..." : "Generate"}
             </button>
           </div>
         </div>
