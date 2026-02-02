@@ -4,6 +4,7 @@ import { Tag } from "@/app/lib/components/@types/tagEditorTypes";
 import type { TreeNode } from "@/app/lib/components/@types/treeViewTypes";
 import { CollectionRepository, type CollectionRow } from "@/app/lib/db/repository/collection";
 import { FileRepository, type FileRow } from "@/app/lib/db/repository/file";
+import { aiUnitTest } from "@/app/lib/services/ai";
 
 
 // class Action {
@@ -66,4 +67,8 @@ export async function findFileIconsByIds(ids: string[]): Promise<Record<string, 
 
 export async function updateFileTags(fileId: string, tags: Tag[]): Promise<FileRow | null> {
 	return await fileRepo.updateTags(fileId, tags);
+}
+
+export async function testAI(prompt: string) {
+	return await aiUnitTest(prompt);
 }
