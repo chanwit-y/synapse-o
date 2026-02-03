@@ -14,6 +14,15 @@ pnpm dev
 bun dev
 ```
 
+### Bun note (SQLite)
+
+This project uses `better-sqlite3` which requires a native binding. If Bun blocks lifecycle scripts during install and you see an error like “Could not locate the bindings file”, run:
+
+```bash
+bun pm trust better-sqlite3
+bun install
+```
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.

@@ -1,0 +1,9 @@
+$ next dev
+▲ Next.js 16.1.1 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.1.102:3001
+
+✓ Starting...
+✓ Ready in 628ms
+ GET /ui/doc 200 in 2.5s (compile: 2.0s, render: 468ms)
+[?25h

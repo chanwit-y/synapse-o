@@ -9,6 +9,7 @@
         "@uiw/react-md-editor": "^4.0.11",
         "better-sqlite3": "^12.6.0",
         "drizzle-orm": "^0.45.1",
+        "katex": "^0.16.22",
         "langchain": "^1.2.15",
         "lucide-react": "^0.562.0",
         "next": "16.1.1",
@@ -35,6 +36,7 @@
     },
   },
   "trustedDependencies": [
+    "better-sqlite3",
     "sharp",
     "unrs-resolver",
   ],

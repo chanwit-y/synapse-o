@@ -35,6 +35,7 @@ import {
   Eye,
   File,
   Flag,
+  FlaskConical,
   Folder,
   Gift,
   Globe,
@@ -291,6 +292,11 @@ export const iconOptions: IconOption[] = [
     id: "flag",
     label: "Flag",
     icon: <Flag className="h-5 w-5" aria-hidden="true" />,
+  },
+  {
+    id: "flask-conical",
+    label: "Flask Conical",
+    icon: <FlaskConical className="h-5 w-5" aria-hidden="true" />,
   },
   {
     id: "gift",

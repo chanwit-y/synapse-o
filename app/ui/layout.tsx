@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
+import "../lib/components/Snackbar.css";
 import { LoadingProvider } from "../lib/components/LoadingProvider";
 import { SnackbarProvider } from "../lib/components/Snackbar";
 import { ThemeProvider } from "../lib/components/ThemeProvider";
