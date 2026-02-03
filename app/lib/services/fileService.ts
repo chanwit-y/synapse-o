@@ -3,6 +3,8 @@ type SaveFileParams = {
   name: string;
   collectionId: string;
   content: string;
+  icon?: string | null;
+  tags?: Tag[];
 };
 
 type SaveFileResult = {

@@ -9,7 +9,7 @@ import { useTheme } from "./ThemeProvider";
 export interface TreeViewGroupItemProps {
   group: TreeViewGroup;
   groupIndex: number;
-  onNodeClick?: (node: TreeNode) => void;
+  onNodeClick?: (node: TreeNode, nodePath: string) => void;
   selectedNodePath: string | null;
   setSelectedNodePath: (path: string | null) => void;
   selectedNode: TreeNode | null;

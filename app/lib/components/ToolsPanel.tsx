@@ -6,16 +6,136 @@ import { useTheme } from "./ThemeProvider";
 import Modal from "./Modal";
 import { useLoading } from "./LoadingProvider";
 import { useSnackbar } from "./Snackbar";
-import { testAI } from "@/app/ui/doc/action";
+import { findCollectionById, testAI, updateCollectionDirectories } from "@/app/ui/doc/action";
 import MarkdownDisplay from "./MarkdownDisplay";
 import { fileService } from "@/app/lib/services/fileService";
+import type { TreeNode } from "./@types/treeViewTypes";
 
 interface ToolsPanelProps {
   fileId: string;
   fileName: string;
+  collectionId: string;
+  selectedFilePath: string | null;
 }
 
-export default function ToolsPanel({ fileId, fileName }: ToolsPanelProps) {
+function parseDirectories(raw: unknown): TreeNode[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw as TreeNode[];
+
+  if (typeof raw === "string") {
+    // Tolerate historical double-encoding (JSON string inside JSON string).
+    try {
+      const once = JSON.parse(raw) as unknown;
+      if (Array.isArray(once)) return once as TreeNode[];
+      if (typeof once === "string") {
+        try {
+          const twice = JSON.parse(once) as unknown;
+          return Array.isArray(twice) ? (twice as TreeNode[]) : [];
+        } catch {
+          return [];
+        }
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
+
+  return [];
+}
+
+function collectFileNames(nodes: TreeNode[], acc: Set<string>) {
+  nodes.forEach((node) => {
+    if (node.type === "file") acc.add(node.name);
+    if (node.type === "folder" && node.children?.length) {
+      collectFileNames(node.children, acc);
+    }
+  });
+}
+
+function getStem(name: string) {
+  const trimmed = (name ?? "").trim();
+  if (!trimmed) return "untitled";
+  const lastDot = trimmed.lastIndexOf(".");
+  if (lastDot <= 0) return trimmed;
+  return trimmed.slice(0, lastDot);
+}
+
+function getExtension(name: string) {
+  const trimmed = (name ?? "").trim();
+  const lastDot = trimmed.lastIndexOf(".");
+  if (lastDot === -1 || lastDot === trimmed.length - 1) return null;
+  return trimmed.slice(lastDot + 1);
+}
+
+function pickUniqueName(baseName: string, existing: Set<string>) {
+  const normalizedBase = (baseName ?? "").trim() || "untitled.md";
+  if (!existing.has(normalizedBase)) return normalizedBase;
+
+  const stem = getStem(normalizedBase);
+  const ext = getExtension(normalizedBase);
+  for (let i = 2; i < 1000; i++) {
+    const candidate = ext ? `${stem} (${i}).${ext}` : `${stem} (${i})`;
+    if (!existing.has(candidate)) return candidate;
+  }
+  // Worst case fallback
+  return `${stem}-${Date.now()}.${ext ?? "md"}`;
+}
+
+function createId() {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function insertNextToSelectedFile(opts: {
+  directories: TreeNode[];
+  selectedFilePath: string | null;
+  selectedFileName: string;
+  newNode: TreeNode;
+}) {
+  const { directories, selectedFilePath, selectedFileName, newNode } = opts;
+  const rawPath = (selectedFilePath ?? "").trim();
+  const pathSegments = rawPath ? rawPath.split("/").filter(Boolean) : [];
+  const fileSegment = pathSegments.length ? pathSegments[pathSegments.length - 1] : selectedFileName;
+  const parentSegments = pathSegments.length > 1 ? pathSegments.slice(0, -1) : [];
+
+  const findFolderByPath = (nodes: TreeNode[], segments: string[]): TreeNode | null => {
+    if (segments.length === 0) return null;
+    const [head, ...rest] = segments;
+    const current = nodes.find((n) => n.name === head) ?? null;
+    if (!current) return null;
+    if (rest.length === 0) return current;
+    if (current.type !== "folder") return null;
+    return findFolderByPath(current.children ?? [], rest);
+  };
+
+  const insertIntoList = (list: TreeNode[]) => {
+    const idx = list.findIndex((n) => n.type === "file" && n.name === fileSegment);
+    if (idx === -1) {
+      list.push(newNode);
+    } else {
+      list.splice(idx + 1, 0, newNode);
+    }
+  };
+
+  if (parentSegments.length === 0) {
+    insertIntoList(directories);
+    return;
+  }
+
+  const folder = findFolderByPath(directories, parentSegments);
+  if (folder && folder.type === "folder") {
+    folder.children = folder.children ?? [];
+    insertIntoList(folder.children);
+    return;
+  }
+
+  // Fallback: if we can't resolve the path, drop into root
+  insertIntoList(directories);
+}
+
+export default function ToolsPanel({ fileId, fileName, collectionId, selectedFilePath }: ToolsPanelProps) {
   const { theme } = useTheme();
   const { withLoading, activeLoaderIds } = useLoading();
   const { showSnackbar } = useSnackbar();
@@ -115,9 +235,11 @@ Constraints:
   const [unitTestPrompt, setUnitTestPrompt] = useState(defaultUnitTestPrompt);
   const unitTestLoaderId = `unit-test:${fileId}`;
   const unitTestContextLoaderId = `unit-test-context:${fileId}`;
+  const createTestCaseFileLoaderId = `unit-test-create-file:${fileId}`;
   const isGenerating = activeLoaderIds.includes(unitTestLoaderId);
   const isPreparingContext = activeLoaderIds.includes(unitTestContextLoaderId);
-  const isBusy = isGenerating || isPreparingContext;
+  const isCreatingFile = activeLoaderIds.includes(createTestCaseFileLoaderId);
+  const isBusy = isGenerating || isPreparingContext || isCreatingFile;
 
   const handleCreateUnitTest = async () => {
     setAiResult("");
@@ -167,6 +289,81 @@ Constraints:
       showSnackbar({
         variant: "error",
         title: "Unit test generation",
+        message,
+      });
+    }
+  };
+
+  const handleCreateTestCaseFile = async () => {
+    const content = aiResult ?? "";
+    if (!content.trim()) return;
+    if (!collectionId?.trim()) {
+      showSnackbar({
+        variant: "error",
+        title: "Create test case file",
+        message: "Missing collectionId for the selected file.",
+      });
+      return;
+    }
+
+    try {
+      await withLoading(async () => {
+        const collection = await findCollectionById(collectionId);
+        const directories = parseDirectories(collection?.directories);
+
+        const existingNames = new Set<string>();
+        collectFileNames(directories, existingNames);
+
+        const base = `${getStem(fileName)}.test-cases.md`;
+        const name = pickUniqueName(base, existingNames);
+
+        const saved = await fileService.saveFile({
+          id: null,
+          name,
+          collectionId,
+          content,
+          icon: "flask-conical",
+          tags: [{ id: createId(), label: "Test Case", color: "#60a5fa" }],
+        });
+
+        const now = Date.now();
+        const newNode: TreeNode = {
+          id: saved.id ?? crypto.randomUUID(),
+          collectionId,
+          name,
+          type: "file",
+          tags: [{ id: createId(), label: "Test Case", color: "#60a5fa" }],
+          icon: "flask-conical",
+          extension: getExtension(name),
+          content: null,
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        // Insert next to the selected file (same folder)
+        const updatedDirectories: TreeNode[] = JSON.parse(JSON.stringify(directories));
+        insertNextToSelectedFile({
+          directories: updatedDirectories,
+          selectedFilePath,
+          selectedFileName: fileName,
+          newNode,
+        });
+
+        await updateCollectionDirectories(collectionId, updatedDirectories);
+      }, createTestCaseFileLoaderId);
+
+      showSnackbar({
+        variant: "success",
+        title: "Create test case file",
+        message: "Created a new file from the AI result.",
+      });
+    } catch (error) {
+      console.error("Failed to create test case file:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to create test case file.";
+      showSnackbar({
+        variant: "error",
+        title: "Create test case file",
         message,
       });
     }
@@ -239,9 +436,9 @@ Constraints:
         <div className="flex max-h-[75vh] flex-col">
           {/* Scrollable body */}
           <div className="space-y-4 overflow-auto pr-1 pb-4">
-            <h2 className="text-lg font-semibold">Create Unit Test</h2>
+            <h2 className="text-lg font-semibold">Create Test Case</h2>
             <p className="text-sm text-gray-500">
-              Generate unit tests for: <span className="font-medium">{fileName}</span>
+              Generate tests case for: <span className="font-medium">{fileName}</span>
             </p>
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-600">
@@ -343,6 +540,22 @@ Constraints:
               ].join(" ")}
             >
               Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleCreateTestCaseFile}
+              disabled={isBusy || !aiResult.trim()}
+              className={[
+                "px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                theme === "dark"
+                  ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300",
+                isBusy || !aiResult.trim() ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
+              ].join(" ")}
+              title={aiResult.trim() ? "Create a new markdown file from the AI result" : "Generate a result first"}
+              aria-label="Create test case file"
+            >
+              {isCreatingFile ? "Creating..." : "Create test case file"}
             </button>
             <button
               type="button"

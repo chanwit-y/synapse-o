@@ -43,6 +43,11 @@ export async function createCollection(name: string): Promise<CollectionRow> {
 	});
 }
 
+export async function findCollectionById(collectionId: string): Promise<CollectionRow | null> {
+	if (!collectionId?.trim()) return null;
+	return await collectionRepo.findById(collectionId);
+}
+
 export async function updateCollectionDirectories(
 	collectionId: string,
 	directories: TreeNode[],

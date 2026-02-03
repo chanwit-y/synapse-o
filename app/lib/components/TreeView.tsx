@@ -9,7 +9,7 @@ export type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
 
 interface TreeViewProps {
   data: TreeViewGroup[];
-  onNodeClick?: (node: TreeNode) => void;
+  onNodeClick?: (node: TreeNode, nodePath: string) => void;
   onAddFile?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
   onAddFolder?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
   onRequestDeleteNode?: (node: TreeNode, nodePath: string, groupIndex: number) => void;

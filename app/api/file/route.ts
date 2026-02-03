@@ -7,6 +7,8 @@ type SaveFileBody = {
 	collectionId?: string | null;
 	name?: string | null;
 	content?: string | null;
+	icon?: string | null;
+	tags?: unknown;
 };
 
 const DEFAULT_COLLECTION_ID = "default";
@@ -24,6 +26,8 @@ export async function POST(request: Request) {
 		const content = typeof body.content === "string" ? body.content : "";
 		const name = (body.name ?? DEFAULT_FILE_NAME).trim() || DEFAULT_FILE_NAME;
 		const collectionId = (body.collectionId ?? DEFAULT_COLLECTION_ID).trim() || DEFAULT_COLLECTION_ID;
+		const icon = typeof body.icon === "string" ? body.icon : null;
+		const tags = Array.isArray(body.tags) ? body.tags : undefined;
 
 		const collectionRepo = new CollectionRepository();
 		const existingCollection = await collectionRepo.findById(collectionId);
@@ -46,6 +50,8 @@ export async function POST(request: Request) {
 				content,
 				extension,
 				collectionId,
+				...(typeof icon === "string" ? { icon } : {}),
+				...(tags ? { tags } : {}),
 				updatedAt: now,
 			});
 
@@ -60,6 +66,8 @@ export async function POST(request: Request) {
 			name,
 			type: "file",
 			extension,
+			icon,
+			tags: tags ?? [],
 			content,
 			createdAt: now,
 			updatedAt: now,

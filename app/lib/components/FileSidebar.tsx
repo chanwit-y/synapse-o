@@ -229,7 +229,7 @@ export default function FileSidebar({
   collapsed?: boolean;
   onToggleCollapsed: () => void;
   iconOverrides?: Record<string, string | null>;
-  onSelectFile?: (file: TreeNode) => void;
+  onSelectFile?: (file: TreeNode, nodePath: string) => void;
 }) {
   const { theme } = useTheme();
   const { showSnackbar } = useSnackbar();
@@ -342,9 +342,9 @@ export default function FileSidebar({
     </div>
   );
 
-  const handleNodeClick = (node: TreeNode) => {
+  const handleNodeClick = (node: TreeNode, nodePath: string) => {
     if (node.type === "file") {
-      onSelectFile?.(node);
+      onSelectFile?.(node, nodePath);
     }
   };
 

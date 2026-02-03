@@ -11,7 +11,7 @@ const iconMap = new Map(iconOptions.map((option) => [option.id, option.icon]));
 export interface TreeNodeItemProps {
   node: TreeNode;
   level: number;
-  onNodeClick?: (node: TreeNode) => void;
+  onNodeClick?: (node: TreeNode, nodePath: string) => void;
   selectedNodePath: string | null;
   setSelectedNodePath: (path: string | null) => void;
   nodePath: string;
@@ -63,7 +63,7 @@ export default function TreeNodeItem({
     }
     setSelectedNodePath(nodePath);
     setSelectedNode(node);
-    onNodeClick?.(node);
+    onNodeClick?.(node, nodePath);
   };
 
   return (

@@ -18,6 +18,7 @@ import { fileService } from "../../lib/services/fileService";
 export default function Home() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [selectedFile, setSelectedFile] = useState<TreeNode | null>(null);
+  const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
   const [selectedIconId, setSelectedIconId] = useState("file");
   const [iconOverrides, setIconOverrides] = useState<Record<string, string | null>>({});
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -35,9 +36,10 @@ export default function Home() {
     });
   };
 
-  const handleSelectFile = async (node: TreeNode) => {
+  const handleSelectFile = async (node: TreeNode, nodePath: string) => {
     // Set the initial node data immediately for responsive UI
     setSelectedFile(node);
+    setSelectedFilePath(nodePath);
     const resolvedIcon = iconOverrides[node.id] ?? node.icon ?? "file";
     setSelectedIconId(resolvedIcon);
 
@@ -113,7 +115,12 @@ export default function Home() {
               />
               
               <div className="mt-6">
-                <ToolsPanel fileId={selectedFile.id} fileName={selectedFile.name} />
+                <ToolsPanel
+                  fileId={selectedFile.id}
+                  fileName={selectedFile.name}
+                  collectionId={selectedFile.collectionId}
+                  selectedFilePath={selectedFilePath}
+                />
               </div>
             </Drawer>
             <div
