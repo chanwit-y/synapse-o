@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -11,6 +11,11 @@ type ChunkAnimationOptions = {
   enabled?: boolean;
   intervalMs?: number;
   chunkSize?: number;
+};
+
+type AutoScrollOptions = {
+  enabled?: boolean;
+  behavior?: ScrollBehavior;
 };
 
 function useChunkedReveal(text: string, opts: ChunkAnimationOptions) {
@@ -61,9 +66,32 @@ export default function MarkdownDisplay(props: {
   theme?: "light" | "dark";
   className?: string;
   animate?: ChunkAnimationOptions;
+  autoScroll?: AutoScrollOptions;
 }) {
-  const { content, theme, className, animate } = props;
+  const { content, theme, className, animate, autoScroll } = props;
   const { visibleText, isAnimating } = useChunkedReveal(content, animate ?? {});
+  const autoScrollEnabled = autoScroll?.enabled ?? false;
+  const autoScrollBehavior: ScrollBehavior = autoScroll?.behavior ?? "auto";
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const rafIdRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!autoScrollEnabled) return;
+    if (!isAnimating) return;
+
+    // During the typing animation, keep the latest content in view by scrolling
+    // a sentinel element into view. This scrolls the nearest scrollable ancestor
+    // (e.g. the modal body).
+    if (rafIdRef.current != null) window.cancelAnimationFrame(rafIdRef.current);
+    rafIdRef.current = window.requestAnimationFrame(() => {
+      bottomRef.current?.scrollIntoView({ block: "end", behavior: autoScrollBehavior });
+    });
+
+    return () => {
+      if (rafIdRef.current != null) window.cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    };
+  }, [autoScrollBehavior, autoScrollEnabled, isAnimating, visibleText]);
 
   const components = useMemo(() => {
     const isDark = theme === "dark";
@@ -131,6 +159,7 @@ export default function MarkdownDisplay(props: {
       >
         {visibleText}
       </ReactMarkdown>
+      <div ref={bottomRef} />
       {isAnimating && (
         <span
           aria-hidden="true"

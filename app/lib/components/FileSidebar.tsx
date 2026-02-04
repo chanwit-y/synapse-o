@@ -225,11 +225,15 @@ export default function FileSidebar({
   onToggleCollapsed,
   iconOverrides,
   onSelectFile,
+  reloadKey,
+  selectedNodePath,
 }: {
   collapsed?: boolean;
   onToggleCollapsed: () => void;
   iconOverrides?: Record<string, string | null>;
   onSelectFile?: (file: TreeNode, nodePath: string) => void;
+  reloadKey?: unknown;
+  selectedNodePath?: string | null;
 }) {
   const { theme } = useTheme();
   const { showSnackbar } = useSnackbar();
@@ -260,10 +264,10 @@ export default function FileSidebar({
 
   useEffect(() => {
     let isMounted = true;
+    setIsLoadingCollections(true);
 
     (async () => {
       try {
-        // const collections = await findAllCollections();
         const collections = await findAllCollections();
         if (!isMounted) return;
 
@@ -301,7 +305,7 @@ export default function FileSidebar({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [reloadKey]);
 
   const SkeletonTree = ({ rows = 10 }: { rows?: number }) => (
     <div className="px-3 py-3 space-y-3">
@@ -653,6 +657,7 @@ export default function FileSidebar({
                 onAddFile={handleAddFile}
                 onAddFolder={handleAddFolder}
                 onRequestDeleteNode={handleRequestDeleteNode}
+                selectedNodePath={selectedNodePath}
               />
             )}
           </div>

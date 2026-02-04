@@ -16,6 +16,7 @@ interface ToolsPanelProps {
   fileName: string;
   collectionId: string;
   selectedFilePath: string | null;
+  onAfterCreateTestCaseFile?: (opts: { node: TreeNode; nodePath: string }) => void;
 }
 
 function parseDirectories(raw: unknown): TreeNode[] {
@@ -135,7 +136,25 @@ function insertNextToSelectedFile(opts: {
   insertIntoList(directories);
 }
 
-export default function ToolsPanel({ fileId, fileName, collectionId, selectedFilePath }: ToolsPanelProps) {
+function findNodePathById(nodes: TreeNode[], nodeId: string, prefix: string[] = []): string | null {
+  for (const node of nodes) {
+    const nextPrefix = [...prefix, node.name];
+    if (node.id === nodeId) return nextPrefix.join("/");
+    if (node.type === "folder" && node.children?.length) {
+      const found = findNodePathById(node.children, nodeId, nextPrefix);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+export default function ToolsPanel({
+  fileId,
+  fileName,
+  collectionId,
+  selectedFilePath,
+  onAfterCreateTestCaseFile,
+}: ToolsPanelProps) {
   const { theme } = useTheme();
   const { withLoading, activeLoaderIds } = useLoading();
   const { showSnackbar } = useSnackbar();
@@ -307,6 +326,9 @@ Constraints:
     }
 
     try {
+      let createdNode: TreeNode | null = null;
+      let createdNodePath: string | null = null;
+
       await withLoading(async () => {
         const collection = await findCollectionById(collectionId);
         const directories = parseDirectories(collection?.directories);
@@ -327,8 +349,14 @@ Constraints:
         });
 
         const now = Date.now();
+        const newNodeId =
+          saved.id ??
+          (typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
+
         const newNode: TreeNode = {
-          id: saved.id ?? crypto.randomUUID(),
+          id: newNodeId,
           collectionId,
           name,
           type: "file",
@@ -350,7 +378,25 @@ Constraints:
         });
 
         await updateCollectionDirectories(collectionId, updatedDirectories);
+
+        createdNode = newNode;
+        createdNodePath =
+          findNodePathById(updatedDirectories, newNodeId) ??
+          (() => {
+            const rawPath = (selectedFilePath ?? "").trim();
+            const parentSegments = rawPath
+              ? rawPath.split("/").filter(Boolean).slice(0, -1)
+              : [];
+            return [...parentSegments, name].join("/");
+          })();
       }, createTestCaseFileLoaderId);
+
+      // Close the modal immediately on success.
+      setIsUnitTestModalOpen(false);
+
+      if (createdNode && createdNodePath) {
+        onAfterCreateTestCaseFile?.({ node: createdNode, nodePath: createdNodePath });
+      }
 
       showSnackbar({
         variant: "success",
@@ -507,6 +553,7 @@ Constraints:
                     theme={theme}
                     className="markdown-fade-in"
                     animate={{ enabled: true, intervalMs: 10, chunkSize: 8 }}
+                    autoScroll={{ enabled: true, behavior: "auto" }}
                   />
                 ) : (
                   <div className={theme === "dark" ? "text-gray-400 text-sm" : "text-gray-500 text-sm"}>

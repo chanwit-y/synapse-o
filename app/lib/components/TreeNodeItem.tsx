@@ -1,6 +1,6 @@
 "use client";
 
-import { cloneElement, isValidElement, useState } from "react";
+import { cloneElement, isValidElement, useEffect, useState } from "react";
 import { ChevronRight, ChevronDown, Folder, FolderOpen, File, Trash2 } from "lucide-react";
 import type { TreeNode } from "./@types/treeViewTypes";
 import { useTheme } from "./ThemeProvider";
@@ -43,6 +43,15 @@ export default function TreeNodeItem({
   // Check if this node is selected by comparing the nodePath
   const isSelected = selectedNodePath === nodePath;
   const iconClassName = `w-4 h-4 ${theme === 'light' ? "text-gray-500" : "text-gray-400"} shrink-0`;
+
+  useEffect(() => {
+    if (!isFolder) return;
+    if (!selectedNodePath) return;
+    // Auto-expand ancestor folders (and selected folder) so selected files remain visible after reload.
+    if (selectedNodePath === nodePath || selectedNodePath.startsWith(`${nodePath}/`)) {
+      setIsExpanded(true);
+    }
+  }, [isFolder, nodePath, selectedNodePath]);
 
   const resolvedIcon = node.type === "file" ? iconMap.get(node.icon ?? "") : null;
   const customFileIcon = isValidElement(resolvedIcon)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { PanelRightOpen } from "lucide-react";
 import Image from "next/image";
 import MarkdownEditor from "../../lib/components/MarkdownEditor";
@@ -23,8 +23,16 @@ export default function Home() {
   const [iconOverrides, setIconOverrides] = useState<Record<string, string | null>>({});
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoadingFile, setIsLoadingFile] = useState(false);
+  const [sidebarReloadKey, setSidebarReloadKey] = useState(0);
   const { theme } = useTheme();
   const [, startTransition] = useTransition();
+
+  useEffect(() => {
+    // Close the Properties drawer after collection data is reloaded.
+    // Skip initial mount (sidebarReloadKey starts at 0).
+    if (sidebarReloadKey <= 0) return;
+    setIsDrawerOpen(false);
+  }, [sidebarReloadKey]);
 
   const handleIconChange = (iconId: string) => {
     setSelectedIconId(iconId);
@@ -72,6 +80,8 @@ export default function Home() {
         onToggleCollapsed={() => setIsSidebarCollapsed((v) => !v)}
         iconOverrides={iconOverrides}
         onSelectFile={handleSelectFile}
+        reloadKey={sidebarReloadKey}
+        selectedNodePath={selectedFilePath}
       />
       <main className="flex-1 w-dvw overflow-auto animate-fade-in">
         {selectedFile ? (
@@ -120,6 +130,10 @@ export default function Home() {
                   fileName={selectedFile.name}
                   collectionId={selectedFile.collectionId}
                   selectedFilePath={selectedFilePath}
+                  onAfterCreateTestCaseFile={({ node, nodePath }) => {
+                    setSidebarReloadKey((v) => v + 1);
+                    void handleSelectFile(node, nodePath);
+                  }}
                 />
               </div>
             </Drawer>
