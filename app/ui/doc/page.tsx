@@ -27,6 +27,14 @@ export default function Home() {
   const { theme } = useTheme();
   const [, startTransition] = useTransition();
 
+  const handleClearSelection = () => {
+    setSelectedFile(null);
+    setSelectedFilePath(null);
+    setSelectedIconId("file");
+    setIsLoadingFile(false);
+    setIsDrawerOpen(false);
+  };
+
   useEffect(() => {
     // Close the Properties drawer after collection data is reloaded.
     // Skip initial mount (sidebarReloadKey starts at 0).
@@ -80,6 +88,7 @@ export default function Home() {
         onToggleCollapsed={() => setIsSidebarCollapsed((v) => !v)}
         iconOverrides={iconOverrides}
         onSelectFile={handleSelectFile}
+        onClearSelection={handleClearSelection}
         reloadKey={sidebarReloadKey}
         selectedNodePath={selectedFilePath}
       />

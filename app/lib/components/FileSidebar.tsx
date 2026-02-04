@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PanelLeftClose, PanelLeftOpen, PlusIcon } from "lucide-react";
 import TreeView, { TreeNode, TreeViewGroup } from "./TreeView";
 import FileSidebarModals from "./FileSidebarModals";
@@ -225,6 +225,7 @@ export default function FileSidebar({
   onToggleCollapsed,
   iconOverrides,
   onSelectFile,
+  onClearSelection,
   reloadKey,
   selectedNodePath,
 }: {
@@ -232,6 +233,7 @@ export default function FileSidebar({
   onToggleCollapsed: () => void;
   iconOverrides?: Record<string, string | null>;
   onSelectFile?: (file: TreeNode, nodePath: string) => void;
+  onClearSelection?: () => void;
   reloadKey?: unknown;
   selectedNodePath?: string | null;
 }) {
@@ -261,6 +263,36 @@ export default function FileSidebar({
     }));
   }, [collections, iconOverrides]);
 
+  const reloadCollections = useCallback(async () => {
+    const collections = await findAllCollections();
+
+    const hydratedCollections = collections.map((collection) => {
+      const directories = assignCollectionId(
+        parseDirectories(collection.directories),
+        collection.id
+      );
+
+      return {
+        id: collection.id,
+        name: collection.name ?? "",
+        directories,
+      };
+    });
+
+    const fileIds = new Set<string>();
+    hydratedCollections.forEach((collection) => {
+      collectFileIds(collection.directories, fileIds);
+    });
+
+    const iconsById = fileIds.size > 0 ? await findFileIconsByIds([...fileIds]) : {};
+
+    setCollections(
+      hydratedCollections.map((collection) => ({
+        ...collection,
+        directories: applyIconsToNodes(collection.directories, iconsById),
+      }))
+    );
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -268,35 +300,7 @@ export default function FileSidebar({
 
     (async () => {
       try {
-        const collections = await findAllCollections();
-        if (!isMounted) return;
-
-        const hydratedCollections = collections.map((collection) => {
-          const directories = assignCollectionId(
-            parseDirectories(collection.directories),
-            collection.id
-          );
-
-          return {
-            id: collection.id,
-            name: collection.name ?? "",
-            directories,
-          };
-        });
-
-        const fileIds = new Set<string>();
-        hydratedCollections.forEach((collection) => {
-          collectFileIds(collection.directories, fileIds);
-        });
-
-        const iconsById = fileIds.size > 0 ? await findFileIconsByIds([...fileIds]) : {};
-
-        setCollections(
-          hydratedCollections.map((collection) => ({
-            ...collection,
-            directories: applyIconsToNodes(collection.directories, iconsById),
-          }))
-        );
+        await reloadCollections();
       } finally {
         if (isMounted) setIsLoadingCollections(false);
       }
@@ -305,7 +309,7 @@ export default function FileSidebar({
     return () => {
       isMounted = false;
     };
-  }, [reloadKey]);
+  }, [reloadKey, reloadCollections]);
 
   const SkeletonTree = ({ rows = 10 }: { rows?: number }) => (
     <div className="px-3 py-3 space-y-3">
@@ -560,6 +564,18 @@ export default function FileSidebar({
     setIsDeletingItem(true);
     try {
       await updateCollectionDirectories(group.id, group.directories);
+
+      // If the currently selected node was deleted, clear selection in the parent.
+      const deletedPath = target.path;
+      const currentPath = selectedNodePath;
+      if (currentPath && (currentPath === deletedPath || currentPath.startsWith(`${deletedPath}/`))) {
+        onClearSelection?.();
+      }
+
+      // Ensure the sidebar reflects the canonical persisted state.
+      // (e.g. handles any server-side normalization and refreshes icons)
+      setIsLoadingCollections(true);
+      await reloadCollections();
       showSnackbar({
         variant: "success",
         message: `${target.node.type === "file" ? "File" : "Folder"} "${target.node.name}" deleted.`,
@@ -572,6 +588,7 @@ export default function FileSidebar({
         message: `Failed to delete ${target.node.type}. Please try again.`,
       });
     } finally {
+      setIsLoadingCollections(false);
       setIsDeletingItem(false);
     }
   };
