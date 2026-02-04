@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect } from "react";
 import { PanelRightOpen } from "lucide-react";
 import Image from "next/image";
 import MarkdownEditor from "../../lib/components/MarkdownEditor";
@@ -13,71 +13,36 @@ import TagEditor from "../../lib/components/TagEditor";
 import ToolsPanel from "../../lib/components/ToolsPanel";
 import { useTheme } from "../../lib/components/ThemeProvider";
 import emptyBox from "../../asset/empty-box.svg";
-import { fileService } from "../../lib/services/fileService";
+import { useDocWorkspaceStore } from "@/app/lib/stores/docWorkspaceStore";
 
 export default function Home() {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<TreeNode | null>(null);
-  const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
-  const [selectedIconId, setSelectedIconId] = useState("file");
-  const [iconOverrides, setIconOverrides] = useState<Record<string, string | null>>({});
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isLoadingFile, setIsLoadingFile] = useState(false);
-  const [sidebarReloadKey, setSidebarReloadKey] = useState(0);
   const { theme } = useTheme();
-  const [, startTransition] = useTransition();
 
-  const handleClearSelection = () => {
-    setSelectedFile(null);
-    setSelectedFilePath(null);
-    setSelectedIconId("file");
-    setIsLoadingFile(false);
-    setIsDrawerOpen(false);
-  };
+  const isSidebarCollapsed = useDocWorkspaceStore((s) => s.isSidebarCollapsed);
+  const toggleSidebarCollapsed = useDocWorkspaceStore((s) => s.toggleSidebarCollapsed);
+  const selectedFile = useDocWorkspaceStore((s) => s.selectedFile) as TreeNode | null;
+  const selectedFilePath = useDocWorkspaceStore((s) => s.selectedFilePath);
+  const selectedIconId = useDocWorkspaceStore((s) => s.selectedIconId);
+  const iconOverrides = useDocWorkspaceStore((s) => s.iconOverrides);
+  const isDrawerOpen = useDocWorkspaceStore((s) => s.isDrawerOpen);
+  const setDrawerOpen = useDocWorkspaceStore((s) => s.setDrawerOpen);
+  const sidebarReloadKey = useDocWorkspaceStore((s) => s.sidebarReloadKey);
+  const bumpSidebarReloadKey = useDocWorkspaceStore((s) => s.bumpSidebarReloadKey);
+  const clearSelection = useDocWorkspaceStore((s) => s.clearSelection);
+  const selectFile = useDocWorkspaceStore((s) => s.selectFile);
+  const setFileIcon = useDocWorkspaceStore((s) => s.setFileIcon);
+  const setSelectedFileTags = useDocWorkspaceStore((s) => s.setSelectedFileTags);
 
   useEffect(() => {
     // Close the Properties drawer after collection data is reloaded.
     // Skip initial mount (sidebarReloadKey starts at 0).
     if (sidebarReloadKey <= 0) return;
-    setIsDrawerOpen(false);
-  }, [sidebarReloadKey]);
+    setDrawerOpen(false);
+  }, [sidebarReloadKey, setDrawerOpen]);
 
   const handleIconChange = (iconId: string) => {
-    setSelectedIconId(iconId);
     if (!selectedFile) return;
-    setIconOverrides((prev) => ({ ...prev, [selectedFile.id]: iconId }));
-    setSelectedFile((prev) => (prev ? { ...prev, icon: iconId } : prev));
-    startTransition(() => {
-      void fileService.updateFileIcon(selectedFile.id, iconId);
-    });
-  };
-
-  const handleSelectFile = async (node: TreeNode, nodePath: string) => {
-    // Set the initial node data immediately for responsive UI
-    setSelectedFile(node);
-    setSelectedFilePath(nodePath);
-    const resolvedIcon = iconOverrides[node.id] ?? node.icon ?? "file";
-    setSelectedIconId(resolvedIcon);
-
-    // Fetch the full file data from the API
-    setIsLoadingFile(true);
-    try {
-      const fileDetails = await fileService.getFileDetails(node.id);
-      if (fileDetails) {
-        // Merge the fetched file data with the node data
-        setSelectedFile({
-          ...node,
-          ...fileDetails,
-          icon: fileDetails.icon ?? node.icon,
-          tags: fileDetails.tags ?? [],
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching file:", error);
-      // Keep the initial node data if API call fails
-    } finally {
-      setIsLoadingFile(false);
-    }
+    setFileIcon(selectedFile.id, iconId);
   };
 
   return (
@@ -85,10 +50,10 @@ export default function Home() {
     <>
       <FileSidebar
         collapsed={isSidebarCollapsed}
-        onToggleCollapsed={() => setIsSidebarCollapsed((v) => !v)}
+        onToggleCollapsed={toggleSidebarCollapsed}
         iconOverrides={iconOverrides}
-        onSelectFile={handleSelectFile}
-        onClearSelection={handleClearSelection}
+        onSelectFile={selectFile}
+        onClearSelection={clearSelection}
         reloadKey={sidebarReloadKey}
         selectedNodePath={selectedFilePath}
       />
@@ -107,7 +72,7 @@ export default function Home() {
               </div>
               <button
                 type="button"
-                onClick={() => setIsDrawerOpen(true)}
+                onClick={() => setDrawerOpen(true)}
                 className={[
                   "mr-6 mt-6 flex h-8 w-8 items-center justify-center rounded-md transition-colors cursor-pointer",
                   theme === "dark"
@@ -121,7 +86,7 @@ export default function Home() {
             </div>
             <Drawer
               isOpen={isDrawerOpen}
-              onClose={() => setIsDrawerOpen(false)}
+              onClose={() => setDrawerOpen(false)}
               position="right"
               title="Properties"
             >
@@ -129,7 +94,7 @@ export default function Home() {
                 fileId={selectedFile.id} 
                 fileTags={(selectedFile.tags ?? [])} 
                 onTagsChange={(newTags) => {
-                  setSelectedFile((prev) => prev ? { ...prev, tags: newTags } : prev);
+                  setSelectedFileTags(newTags);
                 }}
               />
               
@@ -140,8 +105,8 @@ export default function Home() {
                   collectionId={selectedFile.collectionId}
                   selectedFilePath={selectedFilePath}
                   onAfterCreateTestCaseFile={({ node, nodePath }) => {
-                    setSidebarReloadKey((v) => v + 1);
-                    void handleSelectFile(node, nodePath);
+                    bumpSidebarReloadKey();
+                    void selectFile(node, nodePath);
                   }}
                 />
               </div>

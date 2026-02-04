@@ -37,6 +37,10 @@ export default function TagEditor({ fileId, fileTags, onTagsChange }: TagEditorP
   const [activeTagId, setActiveTagId] = useState<string | null>(null);
   const [isFocused, setIsFocused] = useState(false);
 
+  useEffect(() => {
+    setTags(fileTags);
+  }, [fileTags]);
+
   const handleTagAction = async (
     action: "add" | "remove",
     payload: { label?: string; tagId?: string }
