@@ -25,11 +25,23 @@ export default function Modal({ isOpen, onClose, children, size = "sm" }: ModalP
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [mounted, setMounted] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     return () => setMounted(false);
   }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Trigger animation after mount
+      requestAnimationFrame(() => {
+        setIsAnimating(true);
+      });
+    } else {
+      setIsAnimating(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen || !mounted) return null;
 
@@ -40,14 +52,19 @@ export default function Modal({ isOpen, onClose, children, size = "sm" }: ModalP
     >
       {/* Backdrop with blur */}
       <div
-        className={`absolute inset-0 backdrop-blur-sm ${
-          isDark ? "bg-black/50" : "bg-black/20"
-        }`}
+        className={`absolute inset-0 backdrop-blur-sm transition-opacity duration-300 ${
+          isAnimating ? "opacity-100" : "opacity-0"
+        } ${isDark ? "bg-black/50" : "bg-black/20"}`}
       />
 
       {/* Modal content */}
       <div
-        className={`relative rounded-lg shadow-xl border p-6 w-full ${sizeClasses[size]} mx-4 ${
+        className={`relative rounded-lg shadow-xl border p-6 w-full ${sizeClasses[size]} mx-4 
+          transition-all duration-300 ${
+          isAnimating 
+            ? "opacity-100 scale-100" 
+            : "opacity-0 scale-95"
+        } ${
           isDark
             ? "bg-gray-800 text-gray-100 border-gray-700"
             : "bg-white text-gray-900 border-gray-200"
