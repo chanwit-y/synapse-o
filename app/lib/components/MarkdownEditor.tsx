@@ -14,7 +14,7 @@ import rehypeKatex from 'rehype-katex';
 import { useTheme } from './ThemeProvider';
 import { useSnackbar } from './Snackbar';
 import { MARKDOWN_EDITOR_CSS } from './markdown-editor/editorCss';
-import { fileService } from '../services/fileService.client';
+import { useFileContentQuery, useSaveFileMutation, useUploadImageMutation } from '../services/fileService.client';
 import {
   BoldIcon,
   ClearIcon,
@@ -233,6 +233,11 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
   const [previewMode, setPreviewMode] = useState<PreviewType>('preview');
   const valueRef = useLatestRef(value);
   const tooltip = useHighlightTooltip();
+  const saveFileMutation = useSaveFileMutation();
+  const uploadImageMutation = useUploadImageMutation();
+  const selectedFileId = selectedFile?.id ?? null;
+  const { data: loadedContent } = useFileContentQuery(selectedFileId);
+  const lastHydratedFileIdRef = useRef<string | null>(null);
 
   const [imageUploadPopover, setImageUploadPopover] = useState<PositionedPopoverState>({
     visible: false,
@@ -441,7 +446,7 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
         return;
       }
 
-      const result = await fileService.saveFile({
+      const result = await saveFileMutation.mutateAsync({
         id: fileIdRef.current,
         name: selectedFile.name || 'untitled.md',
         collectionId: selectedFile.collectionId,
@@ -459,22 +464,30 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
       console.error('Error saving file:', error);
       alert(error instanceof Error ? error.message : 'Error saving file. Please try again.');
     }
-  }, [selectedFile, showSnackbar, valueRef]);
+  }, [saveFileMutation, selectedFile, showSnackbar, valueRef]);
 
   useEffect(() => {
-    if (!selectedFile?.id) return;
-    fileIdRef.current = selectedFile.id;
+    const id = selectedFile?.id ?? null;
+    fileIdRef.current = id;
+    lastHydratedFileIdRef.current = null;
 
-    (async () => {
-      try {
-        const content = await fileService.loadFile(selectedFile.id);
-        setValue(content || (selectedFile.content ?? ''));
-      } catch (error) {
-        console.error('Error loading file:', error);
-        alert(error instanceof Error ? error.message : 'Error loading file. Please try again.');
-      }
-    })();
+    if (!id) {
+      setValue('');
+      return;
+    }
+
+    // Fast paint: show whatever we already have on the node, then hydrate from query once.
+    setValue(selectedFile?.content ?? '');
   }, [selectedFile?.content, selectedFile?.id]);
+
+  useEffect(() => {
+    const id = selectedFile?.id ?? null;
+    if (!id) return;
+    if (loadedContent === undefined) return;
+    if (lastHydratedFileIdRef.current === id) return;
+    lastHydratedFileIdRef.current = id;
+    setValue(loadedContent ?? '');
+  }, [loadedContent, selectedFile?.id]);
 
   const saveCommand = useMemo<ICommand>(
     () => ({
@@ -524,7 +537,7 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
       }
 
       try {
-        const path = await fileService.uploadImage(file);
+        const path = await uploadImageMutation.mutateAsync(file);
         const imagePath = normalizePublicPath(path);
         const altText = file.name.replace(/\.[^/.]+$/, '');
         insertMarkdown(`![${altText}](${imagePath})`);
@@ -537,7 +550,7 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
         if (fileInputRef.current) fileInputRef.current.value = '';
       }
     },
-    [insertMarkdown]
+    [insertMarkdown, uploadImageMutation]
   );
 
   const handleLinkSubmit = useCallback(

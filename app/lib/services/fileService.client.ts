@@ -1,3 +1,9 @@
+"use client";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { UseQueryOptions } from "@tanstack/react-query";
+import { fileQueryKeys } from "@/app/lib/react-query/queryKeys";
+
 import type {
   FileDetailsResult,
   LoadFileResult,
@@ -112,4 +118,89 @@ export class FileService {
 
 // Export a singleton instance
 export const fileService = new FileService();
+
+type EnabledQueryOptions<TQueryFnData> = Omit<
+  UseQueryOptions<TQueryFnData, Error, TQueryFnData, readonly unknown[]>,
+  "queryKey" | "queryFn"
+>;
+
+/**
+ * React Query hook: load file content (string).
+ * Uses the same underlying fetcher as `fileService.loadFile`.
+ */
+export function useFileContentQuery(
+  fileId: string | null | undefined,
+  options: EnabledQueryOptions<string> = {},
+) {
+  const enabled = Boolean(fileId) && (options.enabled ?? true);
+  const stableId = fileId ?? "__no-file__";
+
+  return useQuery({
+    ...options,
+    enabled,
+    queryKey: fileQueryKeys.content(stableId),
+    queryFn: () => fileService.loadFile(fileId as string),
+  });
+}
+
+/**
+ * React Query hook: fetch full file details (metadata + optional content).
+ */
+export function useFileDetailsQuery(
+  fileId: string | null | undefined,
+  options: EnabledQueryOptions<FileDetailsResult["file"]> = {},
+) {
+  const enabled = Boolean(fileId) && (options.enabled ?? true);
+  const stableId = fileId ?? "__no-file__";
+
+  return useQuery({
+    ...options,
+    enabled,
+    queryKey: fileQueryKeys.details(stableId),
+    queryFn: () => fileService.getFileDetails(fileId as string),
+  });
+}
+
+/**
+ * React Query hook: save file content.
+ * Invalidates all cached queries for that file id.
+ */
+export function useSaveFileMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (params: SaveFileParams) => fileService.saveFile(params),
+    onSuccess: (result) => {
+      if (result.id) {
+        void queryClient.invalidateQueries({ queryKey: fileQueryKeys.byId(result.id) });
+      }
+      void queryClient.invalidateQueries({ queryKey: fileQueryKeys.all });
+    },
+  });
+}
+
+/**
+ * React Query hook: update icon for a file.
+ * Invalidates cached metadata/details for that file id.
+ */
+export function useUpdateFileIconMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (vars: { fileId: string; icon: string | null }) =>
+      fileService.updateFileIcon(vars.fileId, vars.icon),
+    onSuccess: (_data, vars) => {
+      void queryClient.invalidateQueries({ queryKey: fileQueryKeys.byId(vars.fileId) });
+    },
+  });
+}
+
+/**
+ * React Query hook: upload image (returns public path string).
+ */
+export function useUploadImageMutation() {
+  return useMutation({
+    mutationFn: (file: File) => fileService.uploadImage(file),
+  });
+}
 

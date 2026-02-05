@@ -5,6 +5,7 @@ import "../lib/components/Snackbar.css";
 import { LoadingProvider } from "../lib/components/LoadingProvider";
 import { SnackbarProvider } from "../lib/components/Snackbar";
 import { ThemeProvider } from "../lib/components/ThemeProvider";
+import { ReactQueryProvider } from "../lib/react-query/ReactQueryProvider";
 import LayoutShell from "../lib/components/LayoutShell";
 import SidebarMenu from "../lib/components/SidebarMenu";
 import { Workflow, Settings, Key } from "lucide-react";
@@ -123,19 +124,21 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased duration-200`}
       >
-        <ThemeProvider>
-          <LoadingProvider>
-            <SnackbarProvider>
-              <LayoutShell>
-                <div className="flex h-full overflow-hidden">
-                  <SidebarMenu title="Navigation" items={menuItems} />
-                  {children}
-                  {/* <div className="flex-1 overflow-auto">{children}</div> */}
-                </div>
-              </LayoutShell>
-            </SnackbarProvider>
-          </LoadingProvider>
-        </ThemeProvider>
+        <ReactQueryProvider>
+          <ThemeProvider>
+            <LoadingProvider>
+              <SnackbarProvider>
+                <LayoutShell>
+                  <div className="flex h-full overflow-hidden">
+                    <SidebarMenu title="Navigation" items={menuItems} />
+                    {children}
+                    {/* <div className="flex-1 overflow-auto">{children}</div> */}
+                  </div>
+                </LayoutShell>
+              </SnackbarProvider>
+            </LoadingProvider>
+          </ThemeProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

@@ -8,7 +8,7 @@ import { useLoading } from "./LoadingProvider";
 import { useSnackbar } from "./Snackbar";
 import { findCollectionById, testAI, updateCollectionDirectories } from "@/app/ui/doc/action";
 import MarkdownDisplay from "./MarkdownDisplay";
-import { fileService } from "@/app/lib/services/fileService.client";
+import { useFileContentQuery, useSaveFileMutation } from "@/app/lib/services/fileService.client";
 import type { TreeNode } from "./@types/treeViewTypes";
 
 interface ToolsPanelProps {
@@ -158,6 +158,8 @@ export default function ToolsPanel({
   const { theme } = useTheme();
   const { withLoading, activeLoaderIds } = useLoading();
   const { showSnackbar } = useSnackbar();
+  const fileContentQuery = useFileContentQuery(fileId, { enabled: false });
+  const saveFileMutation = useSaveFileMutation();
   const [isUnitTestModalOpen, setIsUnitTestModalOpen] = useState(false);
   const [aiResult, setAiResult] = useState<string>("");
   const [aiError, setAiError] = useState<string>("");
@@ -270,7 +272,8 @@ Constraints:
 
     try {
       await withLoading(async () => {
-        const content = await fileService.loadFile(fileId);
+        const { data } = await fileContentQuery.refetch();
+        const content = data ?? "";
         setUnitTestPrompt(buildUnitTestPromptWithContext(content));
       }, unitTestContextLoaderId);
     } catch (error) {
@@ -339,7 +342,7 @@ Constraints:
         const base = `${getStem(fileName)}.test-cases.md`;
         const name = pickUniqueName(base, existingNames);
 
-        const saved = await fileService.saveFile({
+        const saved = await saveFileMutation.mutateAsync({
           id: null,
           name,
           collectionId,
