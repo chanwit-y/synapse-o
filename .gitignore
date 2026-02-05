@@ -40,7 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-upload
 
 synapse.db
 synapse.db-shm
+
+public/upload
