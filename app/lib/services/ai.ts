@@ -1,7 +1,11 @@
+import "server-only";
+
 import { ChatOpenAI } from "@langchain/openai";
 import { ApiKeyRepository } from "../db/repository/api-key";
+import { AiSemanticCacheRedis } from "@/app/lib/services/aiSemanticCacheRedis.server";
 
 const apiKeyRepo = new ApiKeyRepository();
+const semanticCache = new AiSemanticCacheRedis();
 
 
 export async function aiUnitTest(prompt: string) {
@@ -15,6 +19,12 @@ export async function aiUnitTest(prompt: string) {
 		throw new Error("OpenAI API key not found. Please add one in Settings.");
 	}
 
+	// Semantic cache (RedisSearch vector KNN). If Redis isn't configured/available, this is a no-op.
+	const cacheDomain = "aiUnitTest";
+	const cacheVersion = "gpt-4.1";
+	const cached = await semanticCache.lookupText(trimmedPrompt, cacheDomain, cacheVersion, apiKey);
+	if (cached) return cached;
+
 	const llm = new ChatOpenAI({
 		apiKey: apiKey,
 		model: "gpt-4.1",
@@ -22,9 +32,17 @@ export async function aiUnitTest(prompt: string) {
 	const completion = await llm.invoke(trimmedPrompt);
 
 	// Chat models return a message object; normalize to a string for callers.
-	if (typeof completion === "string") return completion;
+	if (typeof completion === "string") {
+		void semanticCache.writeText(trimmedPrompt, completion, cacheDomain, cacheVersion, apiKey);
+		return completion;
+	}
 	const content: unknown = (completion as { content?: unknown })?.content;
-	if (typeof content === "string") return content;
-	return JSON.stringify(content ?? completion);
+	if (typeof content === "string") {
+		void semanticCache.writeText(trimmedPrompt, content, cacheDomain, cacheVersion, apiKey);
+		return content;
+	}
+	const fallback = JSON.stringify(content ?? completion);
+	void semanticCache.writeText(trimmedPrompt, fallback, cacheDomain, cacheVersion, apiKey);
+	return fallback;
 }
 

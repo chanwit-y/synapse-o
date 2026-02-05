@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PanelLeftClose, PanelLeftOpen, PlusIcon } from "lucide-react";
-import TreeView, { TreeNode, TreeViewGroup } from "./TreeView";
+import TreeView from "./TreeView";
+import type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
 import FileSidebarModals from "./FileSidebarModals";
 import { useSnackbar } from "./Snackbar";
 import { useTheme } from "./ThemeProvider";

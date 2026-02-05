@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { UseQueryOptions } from "@tanstack/react-query";
 import { fileQueryKeys } from "@/app/lib/react-query/queryKeys";
+import { HttpClient } from "@/app/lib/services/httpClient";
 
 import type {
   FileDetailsResult,
@@ -14,19 +15,18 @@ import type {
 } from "@/app/lib/services/@types/fileService.client";
 
 export class FileService {
+  private httpClient: HttpClient;
+
+  constructor() {
+    this.httpClient = new HttpClient();
+  }
   /**
    * Save file content to the server
    */
   async saveFile(params: SaveFileParams): Promise<SaveFileResult> {
-    const response = await fetch("/api/file", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(params),
-    });
+    const result = await this.httpClient.post<SaveFileResult>("/api/file", params);
 
-    const result = (await response.json()) as SaveFileResult;
-
-    if (!response.ok || !result.success || !result.id) {
+    if (!result.success || !result.id) {
       throw new Error(result.error || "Failed to save file");
     }
 
@@ -37,35 +37,32 @@ export class FileService {
    * Load file content from the server
    */
   async loadFile(fileId: string): Promise<string> {
-    const response = await fetch(`/api/file?id=${encodeURIComponent(fileId)}`);
+    try {
+      const result = await this.httpClient.get<LoadFileResult>(
+        `/api/file?id=${encodeURIComponent(fileId)}`
+      );
 
-    if (!response.ok) {
-      if (response.status === 404) {
+      if (!result.success) {
+        throw new Error("Failed to load file");
+      }
+
+      return result.file?.content ?? "";
+    } catch (error) {
+      // Return empty string for 404 errors
+      if (error instanceof Error && error.message.includes("404")) {
         return "";
       }
-      const errorBody = (await response.json()) as { error?: string };
-      throw new Error(errorBody.error || "Failed to load file");
+      throw error;
     }
-
-    const result = (await response.json()) as LoadFileResult;
-    if (!result.success) {
-      throw new Error("Failed to load file");
-    }
-
-    return result.file?.content ?? "";
   }
 
   /**
    * Fetch full file details including metadata from the server
    */
   async getFileDetails(fileId: string): Promise<FileDetailsResult["file"]> {
-    const response = await fetch(`/api/file?id=${encodeURIComponent(fileId)}`);
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch file");
-    }
-
-    const result = (await response.json()) as FileDetailsResult;
+    const result = await this.httpClient.get<FileDetailsResult>(
+      `/api/file?id=${encodeURIComponent(fileId)}`
+    );
 
     if (!result.success || !result.file) {
       throw new Error("Failed to fetch file details");
@@ -78,14 +75,12 @@ export class FileService {
    * Update file icon
    */
   async updateFileIcon(fileId: string, icon: string | null): Promise<void> {
-    const response = await fetch("/api/file/icon", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: fileId, icon }),
+    const result = await this.httpClient.post<UpdateIconResult>("/api/file/icon", {
+      id: fileId,
+      icon,
     });
 
-    if (!response.ok) {
-      const result = (await response.json()) as UpdateIconResult;
+    if (!result.success) {
       throw new Error(result.error || "Failed to update file icon");
     }
   }
@@ -97,19 +92,18 @@ export class FileService {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-
-    const result = (await response.json()) as UploadImageResult;
-
-    if (!response.ok) {
-      throw new Error(result.error || "Failed to upload file");
-    }
+    const result = await this.httpClient.post<UploadImageResult>(
+      "/api/upload",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
 
     if (!result.success || !result.path) {
-      throw new Error("Upload failed: No file path returned");
+      throw new Error(result.error || "Upload failed: No file path returned");
     }
 
     return result.path;

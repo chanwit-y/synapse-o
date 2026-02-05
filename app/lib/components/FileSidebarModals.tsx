@@ -1,7 +1,7 @@
 "use client";
 
 import Modal from "./Modal";
-import { TreeNode } from "./TreeView";
+import type { TreeNode } from "./@types/treeViewTypes";
 
 type SelectedNodeForAdd =
   | { node: TreeNode | null; path: string | null; groupIndex: number }
