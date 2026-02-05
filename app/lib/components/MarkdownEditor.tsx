@@ -14,7 +14,7 @@ import rehypeKatex from 'rehype-katex';
 import { useTheme } from './ThemeProvider';
 import { useSnackbar } from './Snackbar';
 import { MARKDOWN_EDITOR_CSS } from './markdown-editor/editorCss';
-import { fileService } from '../services/fileService';
+import { fileService } from '../services/fileService.client';
 import {
   BoldIcon,
   ClearIcon,

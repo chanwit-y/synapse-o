@@ -5,7 +5,7 @@ import { PanelRightOpen } from "lucide-react";
 import Image from "next/image";
 import MarkdownEditor from "../../lib/components/MarkdownEditor";
 import FileSidebar from "../../lib/components/FileSidebar";
-import type { TreeNode } from "../../lib/components/TreeView";
+import type { TreeNode } from "../../lib/components/@types/treeViewTypes";
 import IconPopover from "../../lib/components/IconPopover";
 import { iconOptions } from "../../lib/components/iconOptions";
 import Drawer from "../../lib/components/Drawer";

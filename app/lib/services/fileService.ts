@@ -1,159 +1,93 @@
-type SaveFileParams = {
-  id: string | null;
-  name: string;
-  collectionId: string;
-  content: string;
-  icon?: string | null;
-  tags?: Tag[];
-};
+import "server-only";
 
-type SaveFileResult = {
-  success: boolean;
-  id?: string;
-  error?: string;
-};
+import { CollectionRepository } from "@/app/lib/db/repository/collection";
+import { FileRepository } from "@/app/lib/db/repository/file";
+import type { SaveFileBody } from "@/app/lib/services/@types/fileService";
+export type { SaveFileBody } from "@/app/lib/services/@types/fileService";
 
-type LoadFileResult = {
-  success: boolean;
-  file?: {
-    content?: string | null;
-  };
-  error?: string;
-};
+const DEFAULT_COLLECTION_ID = "default";
+const DEFAULT_FILE_NAME = "untitled.md";
 
-type Tag = {
-  id: string;
-  label: string;
-  color: string;
-};
-
-type FileDetailsResult = {
-  success: boolean;
-  file?: {
-    id: string;
-    name: string;
-    content?: string | null;
-    icon?: string | null;
-    tags?: Tag[];
-    [key: string]: unknown;
-  };
-  error?: string;
-};
-
-type UpdateIconResult = {
-  success: boolean;
-  error?: string;
-};
-
-type UploadImageResult = {
-  success: boolean;
-  path?: string;
-  error?: string;
-};
-
-export class FileService {
-  /**
-   * Save file content to the server
-   */
-  async saveFile(params: SaveFileParams): Promise<SaveFileResult> {
-    const response = await fetch('/api/file', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params),
-    });
-
-    const result = (await response.json()) as SaveFileResult;
-
-    if (!response.ok || !result.success || !result.id) {
-      throw new Error(result.error || 'Failed to save file');
-    }
-
-    return result;
-  }
-
-  /**
-   * Load file content from the server
-   */
-  async loadFile(fileId: string): Promise<string> {
-    const response = await fetch(`/api/file?id=${encodeURIComponent(fileId)}`);
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return '';
-      }
-      const errorBody = (await response.json()) as { error?: string };
-      throw new Error(errorBody.error || 'Failed to load file');
-    }
-
-    const result = (await response.json()) as LoadFileResult;
-    if (!result.success) {
-      throw new Error('Failed to load file');
-    }
-
-    return result.file?.content ?? '';
-  }
-
-  /**
-   * Fetch full file details including metadata from the server
-   */
-  async getFileDetails(fileId: string): Promise<FileDetailsResult['file']> {
-    const response = await fetch(`/api/file?id=${encodeURIComponent(fileId)}`);
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch file');
-    }
-
-    const result = (await response.json()) as FileDetailsResult;
-    
-    if (!result.success || !result.file) {
-      throw new Error('Failed to fetch file details');
-    }
-
-    return result.file;
-  }
-
-  /**
-   * Update file icon
-   */
-  async updateFileIcon(fileId: string, icon: string | null): Promise<void> {
-    const response = await fetch('/api/file/icon', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: fileId, icon }),
-    });
-
-    if (!response.ok) {
-      const result = (await response.json()) as UpdateIconResult;
-      throw new Error(result.error || 'Failed to update file icon');
-    }
-  }
-
-  /**
-   * Upload an image file to the server
-   */
-  async uploadImage(file: File): Promise<string> {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    });
-
-    const result = (await response.json()) as UploadImageResult;
-
-    if (!response.ok) {
-      throw new Error(result.error || 'Failed to upload file');
-    }
-
-    if (!result.success || !result.path) {
-      throw new Error('Upload failed: No file path returned');
-    }
-
-    return result.path;
-  }
+function getExtension(name: string) {
+  const lastDotIndex = name.lastIndexOf(".");
+  if (lastDotIndex === -1 || lastDotIndex === name.length - 1) return null;
+  return name.slice(lastDotIndex + 1);
 }
 
-// Export a singleton instance
-export const fileService = new FileService();
+function normalizeSaveBody(body: SaveFileBody) {
+  const content = typeof body.content === "string" ? body.content : "";
+  const name = (body.name ?? DEFAULT_FILE_NAME).trim() || DEFAULT_FILE_NAME;
+  const collectionId =
+    (body.collectionId ?? DEFAULT_COLLECTION_ID).trim() || DEFAULT_COLLECTION_ID;
+  const icon = typeof body.icon === "string" ? body.icon : null;
+  const tags = Array.isArray(body.tags) ? body.tags : undefined;
+
+  const fileId =
+    typeof body.id === "string" && body.id.trim() ? body.id.trim() : null;
+
+  const now = Date.now();
+  const extension = getExtension(name);
+
+  return { fileId, collectionId, name, content, icon, tags, now, extension };
+}
+
+async function ensureCollectionExists(collectionId: string) {
+  const collectionRepo = new CollectionRepository();
+  const existingCollection = await collectionRepo.findById(collectionId);
+  if (existingCollection) return;
+
+  await collectionRepo.create({
+    id: collectionId,
+    name: "Default",
+    directories: JSON.stringify([]),
+  });
+}
+
+export async function saveFile(body: SaveFileBody): Promise<{ id: string }> {
+  const { fileId, collectionId, name, content, icon, tags, now, extension } =
+    normalizeSaveBody(body);
+
+  await ensureCollectionExists(collectionId);
+
+  const fileRepo = new FileRepository();
+
+  if (fileId) {
+    const updated = await fileRepo.update(fileId, {
+      name,
+      content,
+      extension,
+      collectionId,
+      ...(typeof icon === "string" ? { icon } : {}),
+      ...(tags ? { tags } : {}),
+      updatedAt: now,
+    });
+
+    if (updated) return { id: updated.id };
+  }
+
+  const created = await fileRepo.create({
+    id: fileId ?? undefined,
+    collectionId,
+    name,
+    type: "file",
+    extension,
+    icon,
+    tags: tags ?? [],
+    content,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  return { id: created.id };
+}
+
+export async function loadFile(id: string) {
+  const fileRepo = new FileRepository();
+  const file = await fileRepo.findById(id);
+  if (!file) return null;
+
+  // Ensure tags is always an array.
+  const tags = Array.isArray(file.tags) ? file.tags : [];
+  return { ...file, tags };
+}
 

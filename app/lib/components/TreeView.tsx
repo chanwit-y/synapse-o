@@ -5,8 +5,6 @@ import type { MouseEvent } from "react";
 import TreeViewGroupItem from "./TreeViewGroupItem";
 import type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
 
-export type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
-
 interface TreeViewProps {
   data: TreeViewGroup[];
   onNodeClick?: (node: TreeNode, nodePath: string) => void;

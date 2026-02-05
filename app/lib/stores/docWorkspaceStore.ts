@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { fileService } from "@/app/lib/services/fileService";
+import { fileService } from "@/app/lib/services/fileService.client";
 import type { Tag } from "@/app/lib/components/@types/tagEditorTypes";
 import type { TreeNode } from "@/app/lib/components/@types/treeViewTypes";
 

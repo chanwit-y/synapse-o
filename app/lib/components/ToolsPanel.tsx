@@ -8,7 +8,7 @@ import { useLoading } from "./LoadingProvider";
 import { useSnackbar } from "./Snackbar";
 import { findCollectionById, testAI, updateCollectionDirectories } from "@/app/ui/doc/action";
 import MarkdownDisplay from "./MarkdownDisplay";
-import { fileService } from "@/app/lib/services/fileService";
+import { fileService } from "@/app/lib/services/fileService.client";
 import type { TreeNode } from "./@types/treeViewTypes";
 
 interface ToolsPanelProps {

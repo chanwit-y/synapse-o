@@ -3,7 +3,7 @@
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { sql } from "drizzle-orm";
 import Database from "better-sqlite3";
-import type { TreeNode, TreeViewGroup } from "../components/TreeView";
+import type { TreeNode, TreeViewGroup } from "../components/@types/treeViewTypes";
 import { collectionTable } from "./schema";
 
 export async function testConnection() {

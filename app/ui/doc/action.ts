@@ -1,6 +1,6 @@
 "use server";
 
-import { Tag } from "@/app/lib/components/@types/tagEditorTypes";
+import type { Tag } from "@/app/lib/components/@types/tagEditorTypes";
 import type { TreeNode } from "@/app/lib/components/@types/treeViewTypes";
 import { CollectionRepository, type CollectionRow } from "@/app/lib/db/repository/collection";
 import { FileRepository, type FileRow } from "@/app/lib/db/repository/file";
