@@ -5,6 +5,7 @@ import Database from "better-sqlite3";
 import { drizzle, type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { and, eq, or } from "drizzle-orm";
 import type { AnySQLiteTable } from "drizzle-orm/sqlite-core";
+import { configService } from "@/app/lib/services/config/configService.server";
 
 export type RepoOptions = {
 	db?: BetterSQLite3Database;
@@ -37,7 +38,7 @@ export function getDefaultDb(): BetterSQLite3Database {
 	if (_db) return _db;
 
 	if (!_sqlite) {
-		const dbPath = process.env.SYNAPSE_DB_PATH ?? "synapse.db";
+		const dbPath = configService.getEnv().dbPath;
 		_sqlite = new Database(dbPath);
 		// Better concurrency behavior for SQLite in server runtimes.
 		_sqlite.pragma("journal_mode = WAL");

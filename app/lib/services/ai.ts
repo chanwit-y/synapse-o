@@ -1,10 +1,9 @@
 import "server-only";
 
 import { ChatOpenAI } from "@langchain/openai";
-import { ApiKeyRepository } from "../db/repository/api-key";
 import { AiSemanticCacheRedis } from "@/app/lib/services/aiSemanticCacheRedis.server";
+import { configService } from "@/app/lib/services/config/configService.server";
 
-const apiKeyRepo = new ApiKeyRepository();
 const semanticCache = new AiSemanticCacheRedis();
 
 
@@ -14,7 +13,7 @@ export async function aiUnitTest(prompt: string) {
 		throw new Error("Prompt is required.");
 	}
 
-	const apiKey = (await apiKeyRepo.findAll())?.[0]?.apiKey;
+	const apiKey = await configService.getOpenAiApiKey();
 	if (!apiKey) {
 		throw new Error("OpenAI API key not found. Please add one in Settings.");
 	}

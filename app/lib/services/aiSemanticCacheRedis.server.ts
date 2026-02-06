@@ -3,6 +3,7 @@ import "server-only";
 import crypto from "crypto";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { createClient, type RedisClientType } from "redis";
+import { configService } from "@/app/lib/services/config/configService.server";
 
 export interface AiSemanticCacheRedisConfig {
   /**
@@ -97,7 +98,7 @@ export class AiSemanticCacheRedis {
   private readonly redis: RedisClientType | null;
 
   constructor(config: AiSemanticCacheRedisConfig = {}) {
-    const redisUrl = config.redisUrl ?? process.env.REDIS_URL ?? null;
+    const redisUrl = config.redisUrl ?? configService.getEnv().redisUrl ?? null;
     this.redisUrl = redisUrl;
 
     this.indexName = config.indexName ?? "ai_semantic_cache_idx";

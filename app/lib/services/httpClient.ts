@@ -5,6 +5,7 @@ import axios, {
   type AxiosError,
   type InternalAxiosRequestConfig,
 } from "axios";
+import { getPublicConfig } from "@/app/lib/services/config/publicConfig";
 
 /**
  * HTTP Client configuration options
@@ -181,6 +182,6 @@ export class HttpClient {
 
 // Export a singleton instance with default configuration
 export const httpClient = new HttpClient({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "",
+  baseURL: getPublicConfig().apiBaseUrl,
   timeout: 30000,
 });

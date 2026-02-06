@@ -1,6 +1,7 @@
 "use server";
 
 import { ApiKeyRepository, type ApiKeyCreateInput } from "@/app/lib/db/repository/api-key";
+import { configService } from "@/app/lib/services/config/configService.server";
 
 const apiKeyRepo = new ApiKeyRepository();
 
@@ -13,6 +14,7 @@ export async function saveApiKey(data: { name: string; description?: string; api
 		};
 
 		const result = await apiKeyRepo.create(input);
+		configService.invalidateOpenAiApiKey();
 		return { success: true, data: result };
 	} catch (error) {
 		console.error("Failed to save API key:", error);
@@ -33,6 +35,7 @@ export async function getAllApiKeys() {
 export async function deleteApiKey(id: string) {
 	try {
 		const deleted = await apiKeyRepo.delete(id);
+		configService.invalidateOpenAiApiKey();
 		return { success: deleted, data: deleted };
 	} catch (error) {
 		console.error("Failed to delete API key:", error);
@@ -47,6 +50,7 @@ export async function updateApiKey(id: string, data: { name?: string; descriptio
 			description: data.description,
 			apiKey: data.apiKey,
 		});
+		configService.invalidateOpenAiApiKey();
 		return { success: true, data: result };
 	} catch (error) {
 		console.error("Failed to update API key:", error);
