@@ -7,6 +7,14 @@ export interface CodebaseTreeNode {
   path?: string;
 }
 
+export interface ImportInfo {
+  source: string;
+  named?: { name: string; alias?: string }[];
+  default?: string;
+  namespace?: string;
+  line?: number;
+}
+
 export interface CodebaseFileInfo {
   path: string;
   extension: string;
@@ -24,6 +32,8 @@ export interface CodebaseFileInfo {
   type?: string;
   content?: string;
   description?: string;
+  imports?: ImportInfo[];
+  exports?: any[];
 }
 
 export interface CodebaseIndex {
