@@ -1,3 +1,15 @@
+"use client";
+
+import CodebaseTreeView from "@/app/lib/components/CodebaseTreeView";
+import codebaseIndexData from "@/app/codebase-index.json";
+import type { CodebaseIndex } from "@/app/lib/components/@types/codebaseTreeTypes";
+
 export default function FlowPage() {
-  return <div>FlowPage</div>;
+  const data = codebaseIndexData as CodebaseIndex;
+
+  return (
+    <div className="h-screen p-4">
+      <CodebaseTreeView data={data} />
+    </div>
+  );
 }
