@@ -1,9 +1,109 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronRight, ChevronDown, Folder, FolderOpen, File } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronDown,
+  Folder,
+  FolderOpen,
+  File,
+  Code,
+  Code2,
+  Palette,
+  Database,
+  Book,
+  Globe,
+  Image,
+  Video,
+  Music,
+  Terminal,
+  Settings,
+} from "lucide-react";
 import type { CodebaseTreeNode } from "./@types/codebaseTreeTypes";
 import { useTheme } from "./ThemeProvider";
+
+// Helper function to get icon based on file extension
+function getFileIcon(fileName: string, className: string) {
+  const extension = fileName.split(".").pop()?.toLowerCase();
+
+  switch (extension) {
+    // React/JSX files
+    case "tsx":
+    case "jsx":
+      return <Code2 className={className} />;
+    
+    // JavaScript/TypeScript
+    case "ts":
+    case "js":
+    case "mjs":
+    case "cjs":
+      return <Code className={className} />;
+    
+    // Styles
+    case "css":
+    case "scss":
+    case "sass":
+    case "less":
+      return <Palette className={className} />;
+    
+    // JSON/Config
+    case "json":
+    case "jsonc":
+      return <Database className={className} />;
+    
+    // Documentation
+    case "md":
+    case "mdx":
+    case "txt":
+      return <Book className={className} />;
+    
+    // HTML
+    case "html":
+    case "htm":
+      return <Globe className={className} />;
+    
+    // Images
+    case "png":
+    case "jpg":
+    case "jpeg":
+    case "gif":
+    case "svg":
+    case "webp":
+    case "ico":
+      return <Image className={className} />;
+    
+    // Video
+    case "mp4":
+    case "mov":
+    case "avi":
+    case "webm":
+      return <Video className={className} />;
+    
+    // Audio
+    case "mp3":
+    case "wav":
+    case "ogg":
+      return <Music className={className} />;
+    
+    // Shell scripts
+    case "sh":
+    case "bash":
+    case "zsh":
+      return <Terminal className={className} />;
+    
+    // Config files
+    case "yaml":
+    case "yml":
+    case "toml":
+    case "ini":
+    case "conf":
+      return <Settings className={className} />;
+    
+    // Default
+    default:
+      return <File className={className} />;
+  }
+}
 
 interface CodebaseTreeNodeProps {
   node: CodebaseTreeNode;
@@ -119,11 +219,12 @@ export default function CodebaseTreeNodeComponent({
             />
           )
         ) : (
-          <File
-            className={`w-4 h-4 ${
+          getFileIcon(
+            node.name,
+            `w-4 h-4 ${
               theme === "light" ? "text-gray-500" : "text-gray-400"
-            } shrink-0`}
-          />
+            } shrink-0`
+          )
         )}
 
         <span className="text-sm truncate flex-1 min-w-0" title={node.name}>

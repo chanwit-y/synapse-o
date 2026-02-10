@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file ToolsPanel.tsx
+ * @description A tools panel for generating AI-powered test cases from file content, with modal interfaces for editing prompts and creating test case files.
+ */
 
 import { useMemo, useState } from "react";
 import { Copy, FlaskConical } from "lucide-react";

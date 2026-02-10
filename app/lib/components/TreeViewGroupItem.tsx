@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file TreeViewGroupItem.tsx
+ * @description A collection group component with expand/collapse, add file/folder buttons, and favorite toggle functionality.
+ */
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronRight, ChevronDown, Folder, File, Star } from "lucide-react";

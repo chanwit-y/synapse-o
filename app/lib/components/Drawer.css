@@ -1,3 +1,7 @@
+/**
+ * @file Drawer.css
+ * @description Defines CSS animations for a drawer component sliding in/out from different directions with fade and transform effects.
+ */
 .drawer-backdrop {
   animation: drawer-fade-in 160ms ease-out both;
 }

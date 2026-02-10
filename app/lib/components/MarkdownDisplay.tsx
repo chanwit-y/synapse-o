@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file MarkdownDisplay.tsx
+ * @description A markdown renderer with animated text reveal, auto-scroll support, and theme-aware styling for various markdown elements.
+ */
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";

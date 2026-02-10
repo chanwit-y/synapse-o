@@ -1,27 +1,32 @@
 {
-  "$schema": "codebase-index/1.0",
+  "$comment": "@file codebase-index.json — Auto-generated codebase index containing the full project structure, per-file metadata (size, hash, line counts), symbol analysis (functions, classes, interfaces, imports, exports), dependency graph, and human-readable descriptions for every source file.",
+  "$schema": "codebase-index/1.1",
   "project": {
     "name": "app",
     "root": "/sessions/sweet-funny-carson/mnt/app",
-    "indexed_at": "2026-02-10T08:10:56.256623+00:00"
+    "indexed_at": "2026-02-10T09:16:25.949431+00:00",
+    "description": "A Next.js TypeScript web application featuring a markdown document workspace with collection/file management, rich text editing, AI-powered test generation, theme support, and a SQLite database backend using Drizzle ORM."
   },
   "summary": {
-    "total_files": 67,
-    "total_lines": 9198,
-    "total_code_lines": 7743,
-    "total_size_bytes": 467426,
+    "total_files": 71,
+    "total_lines": 17013,
+    "total_code_lines": 15254,
+    "total_size_bytes": 662426,
     "files_by_extension": {
-      ".tsx": 30,
-      ".ts": 30,
+      ".tsx": 32,
+      ".ts": 31,
       ".css": 4,
+      ".json": 1,
       ".ico": 1,
       ".svg": 1,
       ".png": 1
     },
     "languages": [
+      "json",
       "stylesheet",
       "typescript"
-    ]
+    ],
+    "files_with_descriptions": 67
   },
   "directory_tree": {
     "name": "app",
@@ -95,6 +100,11 @@
                 "type": "directory",
                 "children": [
                   {
+                    "name": "codebaseTreeTypes.ts",
+                    "type": "file",
+                    "extension": ".ts"
+                  },
+                  {
                     "name": "tagEditorTypes.ts",
                     "type": "file",
                     "extension": ".ts"
@@ -134,6 +144,16 @@
               },
               {
                 "name": "AppBar.tsx",
+                "type": "file",
+                "extension": ".tsx"
+              },
+              {
+                "name": "CodebaseTreeNode.tsx",
+                "type": "file",
+                "extension": ".tsx"
+              },
+              {
+                "name": "CodebaseTreeView.tsx",
                 "type": "file",
                 "extension": ".tsx"
               },
@@ -491,6 +511,11 @@
         ]
       },
       {
+        "name": "codebase-index.json",
+        "type": "file",
+        "extension": ".json"
+      },
+      {
         "name": "favicon.ico",
         "type": "file",
         "extension": ".ico"
@@ -504,6 +529,31 @@
   },
   "files": [
     {
+      "path": "codebase-index.json",
+      "extension": ".json",
+      "metadata": {
+        "size_bytes": 165648,
+        "last_modified": "2026-02-10T09:12:10.933180+00:00",
+        "md5": "29c28771dc6a47a1fb2b6c3c2c38e6f2"
+      },
+      "line_counts": {
+        "total": 6962,
+        "code": 6962,
+        "blank": 0,
+        "comment": 0
+      },
+      "type": "json",
+      "top_level_keys": [
+        "$schema",
+        "project",
+        "summary",
+        "directory_tree",
+        "files",
+        "dependency_graph"
+      ],
+      "description": "(json file)"
+    },
+    {
       "path": "favicon.ico",
       "extension": ".ico",
       "metadata": {
@@ -511,59 +561,61 @@
         "last_modified": "2025-12-24T08:58:14.238086+00:00",
         "md5": "c30c7d42707a47a3f4591831641e50dc"
       },
-      "type": "binary"
+      "type": "binary",
+      "description": "Application favicon icon displayed in browser tabs."
     },
     {
       "path": "globals.css",
       "extension": ".css",
       "metadata": {
-        "size_bytes": 1588,
-        "last_modified": "2026-02-03T08:31:41.957616+00:00",
-        "md5": "1bb009eee3efe66b17f240edfbd69e79"
+        "size_bytes": 1748,
+        "last_modified": "2026-02-10T09:16:12.257707+00:00",
+        "md5": "7cebf0209688359b7f36d77258990520"
       },
       "line_counts": {
-        "total": 88,
+        "total": 92,
         "code": 68,
         "blank": 14,
-        "comment": 6
+        "comment": 10
       },
       "type": "stylesheet",
       "selectors": [
         {
           "selector": ".animate-slide-in-left",
-          "line": 27
+          "line": 31
         },
         {
           "selector": ".animate-fade-in",
-          "line": 38
-        },
-        {
-          "selector": ".markdown-fade-in",
           "line": 42
         },
         {
+          "selector": ".markdown-fade-in",
+          "line": 46
+        },
+        {
           "selector": "html",
-          "line": 69
+          "line": 73
         },
         {
           "selector": "body",
-          "line": 74
+          "line": 78
         }
-      ]
+      ],
+      "description": "Global CSS stylesheet with Tailwind imports, custom animations (fade-in, slide-in), and commented theme variables."
     },
     {
       "path": "ui/layout.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 3582,
-        "last_modified": "2026-02-05T07:38:43.076606+00:00",
-        "md5": "c292aeb3acd8622fb18c6c16adfdc09b"
+        "size_bytes": 3804,
+        "last_modified": "2026-02-10T09:16:12.259197+00:00",
+        "md5": "e719eb1405a2a7cdbd962037fd01ec9d"
       },
       "line_counts": {
-        "total": 145,
+        "total": 149,
         "code": 136,
         "blank": 9,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "jsx": true,
@@ -575,7 +627,7 @@
               "name": "Metadata"
             }
           ],
-          "line": 1
+          "line": 5
         },
         {
           "source": "next/font/google",
@@ -587,7 +639,7 @@
               "name": "Geist_Mono"
             }
           ],
-          "line": 2
+          "line": 6
         },
         {
           "source": "../lib/components/LoadingProvider",
@@ -596,7 +648,7 @@
               "name": "LoadingProvider"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "../lib/components/Snackbar",
@@ -605,7 +657,7 @@
               "name": "SnackbarProvider"
             }
           ],
-          "line": 6
+          "line": 10
         },
         {
           "source": "../lib/components/ThemeProvider",
@@ -614,7 +666,7 @@
               "name": "ThemeProvider"
             }
           ],
-          "line": 7
+          "line": 11
         },
         {
           "source": "../lib/react-query/ReactQueryProvider",
@@ -623,17 +675,17 @@
               "name": "ReactQueryProvider"
             }
           ],
-          "line": 8
+          "line": 12
         },
         {
           "source": "../lib/components/LayoutShell",
           "default": "LayoutShell",
-          "line": 9
+          "line": 13
         },
         {
           "source": "../lib/components/SidebarMenu",
           "default": "SidebarMenu",
-          "line": 10
+          "line": 14
         },
         {
           "source": "lucide-react",
@@ -648,74 +700,76 @@
               "name": "Key"
             }
           ],
-          "line": 11
+          "line": 15
         },
         {
           "source": "../globals.css",
           "side_effect": true,
-          "line": 3
+          "line": 7
         },
         {
           "source": "../lib/components/Snackbar.css",
           "side_effect": true,
-          "line": 4
+          "line": 8
         }
       ],
       "exports": {
         "named": [
           {
             "name": "workflowIcon",
-            "line": 70
+            "line": 74
           },
           {
             "name": "metadata",
-            "line": 72
+            "line": 76
           }
         ],
         "default": {
           "name": "RootLayout",
-          "line": 117
+          "line": 121
         }
       },
-      "is_component": true
+      "is_component": true,
+      "description": "Root layout component that wraps the entire application with providers (React Query, Theme, Loading, Snackbar) and renders a sidebar navigation menu with links to main sections."
     },
     {
       "path": "ui/page.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 299,
-        "last_modified": "2026-01-23T08:29:31.366628+00:00",
-        "md5": "214c1a33c0abd0465fff49816b895689"
+        "size_bytes": 468,
+        "last_modified": "2026-02-10T09:16:12.260797+00:00",
+        "md5": "b85e423bf4143744fd7342d328541bfb"
       },
       "line_counts": {
-        "total": 10,
+        "total": 14,
         "code": 10,
         "blank": 0,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "jsx": true,
       "exports": {
         "default": {
           "name": "Home",
-          "line": 1
+          "line": 5
         }
       },
-      "is_component": true
+      "is_component": true,
+      "description": "Home page component that displays a welcome message and instructions to navigate the sidebar for accessing different sections."
     },
     {
       "path": "ui/settings/api-key/action.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 1824,
-        "last_modified": "2026-02-06T02:25:44.144552+00:00",
-        "md5": "e4de34c6b35d14c1e6298181c300d49d"
+        "size_bytes": 2017,
+        "last_modified": "2026-02-10T09:16:12.262446+00:00",
+        "md5": "1f544925a2f6bedd2bfab44bc6ad0220"
       },
       "line_counts": {
-        "total": 60,
+        "total": 64,
         "code": 52,
         "blank": 8,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "imports": [
@@ -729,7 +783,7 @@
               "name": "type ApiKeyCreateInput"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "@/app/lib/services/config/configService.server",
@@ -738,33 +792,33 @@
               "name": "configService"
             }
           ],
-          "line": 4
+          "line": 8
         }
       ],
       "exports": {
         "named": [
           {
             "name": "saveApiKey",
-            "line": 8
+            "line": 12
           },
           {
             "name": "getAllApiKeys",
-            "line": 25
+            "line": 29
           },
           {
             "name": "deleteApiKey",
-            "line": 35
+            "line": 39
           },
           {
             "name": "updateApiKey",
-            "line": 46
+            "line": 50
           }
         ]
       },
       "functions": [
         {
           "name": "saveApiKey",
-          "line": 8,
+          "line": 12,
           "type": "function",
           "params": "data: { name: string; description?: string; apiKey: string }",
           "async": true,
@@ -772,14 +826,14 @@
         },
         {
           "name": "getAllApiKeys",
-          "line": 25,
+          "line": 29,
           "type": "function",
           "async": true,
           "exported": true
         },
         {
           "name": "deleteApiKey",
-          "line": 35,
+          "line": 39,
           "type": "function",
           "params": "id: string",
           "async": true,
@@ -787,27 +841,28 @@
         },
         {
           "name": "updateApiKey",
-          "line": 46,
+          "line": 50,
           "type": "function",
           "params": "id: string, data: { name?: string; description?: string; apiKey?: string }",
           "async": true,
           "exported": true
         }
-      ]
+      ],
+      "description": "Server action module providing CRUD operations for managing AI API keys, including saving, retrieving, updating, and deleting stored API credentials."
     },
     {
       "path": "ui/settings/api-key/page.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 22490,
-        "last_modified": "2026-01-29T10:25:00.388308+00:00",
-        "md5": "d4e05a850980a4e7f4a8d06aba93ddc1"
+        "size_bytes": 22692,
+        "last_modified": "2026-02-10T09:16:12.264332+00:00",
+        "md5": "72ea00b5c530895eba38791376c96f29"
       },
       "line_counts": {
-        "total": 628,
+        "total": 632,
         "code": 592,
         "blank": 33,
-        "comment": 3
+        "comment": 7
       },
       "type": "typescript",
       "jsx": true,
@@ -822,7 +877,7 @@
               "name": "useEffect"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "@/app/lib/components/ThemeProvider",
@@ -831,7 +886,7 @@
               "name": "useTheme"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "lucide-react",
@@ -855,7 +910,7 @@
               "name": "Pencil"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "./action",
@@ -873,7 +928,7 @@
               "name": "updateApiKey"
             }
           ],
-          "line": 6
+          "line": 10
         },
         {
           "source": "@/app/lib/db/repository/api-key",
@@ -882,12 +937,12 @@
               "name": "ApiKeyRow"
             }
           ],
-          "line": 7
+          "line": 11
         },
         {
           "source": "@/app/lib/components/Modal",
           "default": "Modal",
-          "line": 8
+          "line": 12
         },
         {
           "source": "@/app/lib/components/Snackbar",
@@ -896,13 +951,13 @@
               "name": "useSnackbar"
             }
           ],
-          "line": 9
+          "line": 13
         }
       ],
       "exports": {
         "default": {
           "name": "ApiKeySettingsPage",
-          "line": 11
+          "line": 15
         }
       },
       "hooks_used": [
@@ -911,66 +966,68 @@
         "useState",
         "useTheme"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "Client component providing a UI for managing API keys with forms to add, edit, and delete keys, displaying a table of saved credentials with show/hide toggles."
     },
     {
       "path": "ui/db/action.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 394,
-        "last_modified": "2026-01-12T09:52:42.262439+00:00",
-        "md5": "b47951e972711a4b240c432a232393f4"
+        "size_bytes": 524,
+        "last_modified": "2026-02-10T09:16:12.266164+00:00",
+        "md5": "94753ec505b6ab8e072e293e3032cf52"
       },
       "line_counts": {
-        "total": 23,
+        "total": 27,
         "code": 19,
         "blank": 4,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "imports": [
         {
           "source": "better-sqlite3",
           "default": "Database",
-          "line": 3
+          "line": 7
         }
       ],
       "exports": {
         "named": [
           {
             "name": "createDevice",
-            "line": 14
+            "line": 18
           }
         ]
       },
       "functions": [
         {
           "name": "getDatabase",
-          "line": 7,
+          "line": 11,
           "type": "function"
         },
         {
           "name": "createDevice",
-          "line": 14,
+          "line": 18,
           "type": "function",
           "async": true,
           "exported": true
         }
-      ]
+      ],
+      "description": "Server action to create a SQLite database table for storing device configuration data."
     },
     {
       "path": "ui/db/page.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 586,
-        "last_modified": "2026-01-20T10:27:39.268648+00:00",
-        "md5": "b616d271e93f88d79a68c942fdf03341"
+        "size_bytes": 727,
+        "last_modified": "2026-02-10T09:16:12.267570+00:00",
+        "md5": "df6f364f2740f5e316b03723e60a1640"
       },
       "line_counts": {
-        "total": 13,
+        "total": 17,
         "code": 10,
         "blank": 3,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "jsx": true,
@@ -985,7 +1042,7 @@
               "name": "testConnection"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "./action",
@@ -994,30 +1051,31 @@
               "name": "createDevice"
             }
           ],
-          "line": 4
+          "line": 8
         }
       ],
       "exports": {
         "default": {
           "name": "DbPage",
-          "line": 6
+          "line": 10
         }
       },
-      "is_component": true
+      "is_component": true,
+      "description": "Client component with buttons to test database connections and create device/collection resources."
     },
     {
       "path": "ui/doc/action.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 2341,
-        "last_modified": "2026-02-05T03:52:13.592896+00:00",
-        "md5": "ae6c7237c782e6aaaf253375c211fcf5"
+        "size_bytes": 2537,
+        "last_modified": "2026-02-10T09:16:12.269271+00:00",
+        "md5": "2fbf891aaedf7e2cbc68359637004850"
       },
       "line_counts": {
-        "total": 79,
+        "total": 83,
         "code": 46,
         "blank": 18,
-        "comment": 15
+        "comment": 19
       },
       "type": "typescript",
       "imports": [
@@ -1028,7 +1086,7 @@
               "name": "Tag"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "@/app/lib/components/@types/treeViewTypes",
@@ -1037,7 +1095,7 @@
               "name": "TreeNode"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "@/app/lib/db/repository/collection",
@@ -1049,7 +1107,7 @@
               "name": "type CollectionRow"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "@/app/lib/db/repository/file",
@@ -1061,7 +1119,7 @@
               "name": "type FileRow"
             }
           ],
-          "line": 6
+          "line": 10
         },
         {
           "source": "@/app/lib/services/ai",
@@ -1070,49 +1128,49 @@
               "name": "aiUnitTest"
             }
           ],
-          "line": 7
+          "line": 11
         }
       ],
       "exports": {
         "named": [
           {
             "name": "findAllCollections",
-            "line": 35
-          },
-          {
-            "name": "createCollection",
             "line": 39
           },
           {
+            "name": "createCollection",
+            "line": 43
+          },
+          {
             "name": "findCollectionById",
-            "line": 46
+            "line": 50
           },
           {
             "name": "updateCollectionDirectories",
-            "line": 51
+            "line": 55
           },
           {
             "name": "updateFileIcon",
-            "line": 60
-          },
-          {
-            "name": "findFileIconsByIds",
             "line": 64
           },
           {
+            "name": "findFileIconsByIds",
+            "line": 68
+          },
+          {
             "name": "updateFileTags",
-            "line": 73
+            "line": 77
           },
           {
             "name": "testAI",
-            "line": 77
+            "line": 81
           }
         ]
       },
       "functions": [
         {
           "name": "findAllCollections",
-          "line": 35,
+          "line": 39,
           "type": "function",
           "return_type": "P",
           "async": true,
@@ -1120,7 +1178,7 @@
         },
         {
           "name": "createCollection",
-          "line": 39,
+          "line": 43,
           "type": "function",
           "params": "name: string",
           "return_type": "P",
@@ -1129,7 +1187,7 @@
         },
         {
           "name": "findCollectionById",
-          "line": 46,
+          "line": 50,
           "type": "function",
           "params": "collectionId: string",
           "return_type": "P",
@@ -1138,7 +1196,7 @@
         },
         {
           "name": "updateCollectionDirectories",
-          "line": 51,
+          "line": 55,
           "type": "function",
           "params": "collectionId: string,\n\tdirectories: TreeNode[],",
           "return_type": "P",
@@ -1147,7 +1205,7 @@
         },
         {
           "name": "updateFileIcon",
-          "line": 60,
+          "line": 64,
           "type": "function",
           "params": "fileId: string, icon: string | null",
           "return_type": "P",
@@ -1156,7 +1214,7 @@
         },
         {
           "name": "findFileIconsByIds",
-          "line": 64,
+          "line": 68,
           "type": "function",
           "params": "ids: string[]",
           "return_type": "P",
@@ -1165,7 +1223,7 @@
         },
         {
           "name": "updateFileTags",
-          "line": 73,
+          "line": 77,
           "type": "function",
           "params": "fileId: string, tags: Tag[]",
           "return_type": "P",
@@ -1174,27 +1232,28 @@
         },
         {
           "name": "testAI",
-          "line": 77,
+          "line": 81,
           "type": "function",
           "params": "prompt: string",
           "async": true,
           "exported": true
         }
-      ]
+      ],
+      "description": "Server action module providing functions for managing collections and files, including CRUD operations, file tagging, icon updates, and AI unit testing."
     },
     {
       "path": "ui/doc/page.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 5346,
-        "last_modified": "2026-02-05T03:51:52.626759+00:00",
-        "md5": "d73111a8373d5839715d1b1087d2d868"
+        "size_bytes": 5551,
+        "last_modified": "2026-02-10T09:16:12.270827+00:00",
+        "md5": "d57a21cc296381704d400c24a04ccb82"
       },
       "line_counts": {
-        "total": 137,
+        "total": 141,
         "code": 124,
         "blank": 9,
-        "comment": 4
+        "comment": 8
       },
       "type": "typescript",
       "jsx": true,
@@ -1206,7 +1265,7 @@
               "name": "useEffect"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "lucide-react",
@@ -1215,22 +1274,22 @@
               "name": "PanelRightOpen"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "next/image",
           "default": "Image",
-          "line": 5
+          "line": 9
         },
         {
           "source": "../../lib/components/MarkdownEditor",
           "default": "MarkdownEditor",
-          "line": 6
+          "line": 10
         },
         {
           "source": "../../lib/components/FileSidebar",
           "default": "FileSidebar",
-          "line": 7
+          "line": 11
         },
         {
           "source": "../../lib/components/@types/treeViewTypes",
@@ -1239,12 +1298,12 @@
               "name": "TreeNode"
             }
           ],
-          "line": 8
+          "line": 12
         },
         {
           "source": "../../lib/components/IconPopover",
           "default": "IconPopover",
-          "line": 9
+          "line": 13
         },
         {
           "source": "../../lib/components/iconOptions",
@@ -1253,22 +1312,22 @@
               "name": "iconOptions"
             }
           ],
-          "line": 10
+          "line": 14
         },
         {
           "source": "../../lib/components/Drawer",
           "default": "Drawer",
-          "line": 11
+          "line": 15
         },
         {
           "source": "../../lib/components/TagEditor",
           "default": "TagEditor",
-          "line": 12
+          "line": 16
         },
         {
           "source": "../../lib/components/ToolsPanel",
           "default": "ToolsPanel",
-          "line": 13
+          "line": 17
         },
         {
           "source": "../../lib/components/ThemeProvider",
@@ -1277,12 +1336,12 @@
               "name": "useTheme"
             }
           ],
-          "line": 14
+          "line": 18
         },
         {
           "source": "../../asset/empty-box.svg",
           "default": "emptyBox",
-          "line": 15
+          "line": 19
         },
         {
           "source": "@/app/lib/stores/docWorkspaceStore",
@@ -1291,13 +1350,13 @@
               "name": "useDocWorkspaceStore"
             }
           ],
-          "line": 16
+          "line": 20
         }
       ],
       "exports": {
         "default": {
           "name": "Home",
-          "line": 18
+          "line": 22
         }
       },
       "hooks_used": [
@@ -1305,31 +1364,54 @@
         "useEffect",
         "useTheme"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "Markdown workspace component featuring a file sidebar for navigation, markdown editor, icon and tag editors, and a properties drawer for file metadata management."
     },
     {
       "path": "ui/flow/page.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 68,
-        "last_modified": "2026-02-02T07:27:59.771296+00:00",
-        "md5": "016eae85697273afb6ce592e7d0c0d5e"
+        "size_bytes": 581,
+        "last_modified": "2026-02-10T09:16:12.272329+00:00",
+        "md5": "a018e971be3f7aa9f3527e42301c9165"
       },
       "line_counts": {
-        "total": 3,
-        "code": 3,
-        "blank": 0,
-        "comment": 0
+        "total": 19,
+        "code": 12,
+        "blank": 3,
+        "comment": 4
       },
       "type": "typescript",
       "jsx": true,
+      "imports": [
+        {
+          "source": "@/app/lib/components/CodebaseTreeView",
+          "default": "CodebaseTreeView",
+          "line": 7
+        },
+        {
+          "source": "@/app/codebase-index.json",
+          "default": "codebaseIndexData",
+          "line": 8
+        },
+        {
+          "source": "@/app/lib/components/@types/codebaseTreeTypes",
+          "named": [
+            {
+              "name": "CodebaseIndex"
+            }
+          ],
+          "line": 9
+        }
+      ],
       "exports": {
         "default": {
           "name": "FlowPage",
-          "line": 1
+          "line": 11
         }
       },
-      "is_component": true
+      "is_component": true,
+      "description": "Component that displays a codebase tree view visualization using indexed codebase data for navigation and exploration."
     },
     {
       "path": "asset/empty-box.svg",
@@ -1345,7 +1427,8 @@
         "blank": 0,
         "comment": 0
       },
-      "type": "svg"
+      "type": "svg",
+      "description": "SVG illustration for empty state displays when no data is available."
     },
     {
       "path": "asset/logo.png",
@@ -1355,21 +1438,22 @@
         "last_modified": "2026-01-14T08:49:08.324787+00:00",
         "md5": "1918e90feaf4a0dc38b8f76dd0e17b2e"
       },
-      "type": "binary"
+      "type": "binary",
+      "description": "Application logo image asset used in the AppBar and branding."
     },
     {
       "path": "lib/react-query/ReactQueryProvider.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 318,
-        "last_modified": "2026-02-05T04:59:41.245216+00:00",
-        "md5": "98b243c4bbc0b50af7ac8bc9dff518c2"
+        "size_bytes": 457,
+        "last_modified": "2026-02-10T09:16:12.273616+00:00",
+        "md5": "aac5709f44d68e84b2900c0458c9ca53"
       },
       "line_counts": {
-        "total": 13,
+        "total": 17,
         "code": 10,
         "blank": 3,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "jsx": true,
@@ -1381,7 +1465,7 @@
               "name": "QueryClientProvider"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "@/app/lib/react-query/queryClient",
@@ -1390,41 +1474,42 @@
               "name": "queryClient"
             }
           ],
-          "line": 4
+          "line": 8
         }
       ],
       "exports": {
         "named": [
           {
             "name": "ReactQueryProvider",
-            "line": 6
+            "line": 10
           }
         ]
       },
       "functions": [
         {
           "name": "ReactQueryProvider",
-          "line": 6,
+          "line": 10,
           "type": "function",
           "params": "{\n  children,\n}: {\n  children: React.ReactNode;\n}",
           "exported": true
         }
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "React component providing QueryClientProvider wrapper for React Query integration."
     },
     {
       "path": "lib/react-query/queryClient.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 282,
-        "last_modified": "2026-02-05T04:59:32.749344+00:00",
-        "md5": "4349fb037fafa98d4c7031c84d8b950b"
+        "size_bytes": 434,
+        "last_modified": "2026-02-10T09:16:12.274678+00:00",
+        "md5": "3442152cc7808062eb02466956fbf7fa"
       },
       "line_counts": {
-        "total": 17,
+        "total": 21,
         "code": 14,
         "blank": 3,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "imports": [
@@ -1435,55 +1520,57 @@
               "name": "QueryClient"
             }
           ],
-          "line": 3
+          "line": 7
         }
       ],
       "exports": {
         "named": [
           {
             "name": "queryClient",
-            "line": 5
+            "line": 9
           }
         ]
-      }
+      },
+      "description": "Configured React Query client with default options for staleTime, retry behavior, and refetch settings."
     },
     {
       "path": "lib/react-query/queryKeys.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 245,
-        "last_modified": "2026-02-05T04:59:22.789339+00:00",
-        "md5": "66ba0b99b5666ff1f481e39aeb4b64a3"
+        "size_bytes": 375,
+        "last_modified": "2026-02-10T09:16:12.275896+00:00",
+        "md5": "b54d06b4e604da0ab5fe540880bcb14c"
       },
       "line_counts": {
-        "total": 9,
+        "total": 13,
         "code": 7,
         "blank": 2,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "exports": {
         "named": [
           {
             "name": "fileQueryKeys",
-            "line": 3
+            "line": 7
           }
         ]
-      }
+      },
+      "description": "Defines React Query key factory for file-related queries (content, details, by ID)."
     },
     {
       "path": "lib/stores/docWorkspaceStore.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 5199,
-        "last_modified": "2026-02-05T04:00:37.500953+00:00",
-        "md5": "9b0e87f8da776c6d50c618a70f4a1259"
+        "size_bytes": 5360,
+        "last_modified": "2026-02-10T09:16:12.277349+00:00",
+        "md5": "d8a731d8b6170a6b3092b2593874ea3e"
       },
       "line_counts": {
-        "total": 163,
+        "total": 167,
         "code": 126,
         "blank": 27,
-        "comment": 10
+        "comment": 14
       },
       "type": "typescript",
       "imports": [
@@ -1494,7 +1581,7 @@
               "name": "create"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "zustand/middleware",
@@ -1503,7 +1590,7 @@
               "name": "persist"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "@/app/lib/services/fileService.client",
@@ -1512,7 +1599,7 @@
               "name": "fileService"
             }
           ],
-          "line": 6
+          "line": 10
         },
         {
           "source": "@/app/lib/components/@types/tagEditorTypes",
@@ -1521,7 +1608,7 @@
               "name": "Tag"
             }
           ],
-          "line": 7
+          "line": 11
         },
         {
           "source": "@/app/lib/components/@types/treeViewTypes",
@@ -1530,21 +1617,21 @@
               "name": "TreeNode"
             }
           ],
-          "line": 8
+          "line": 12
         }
       ],
       "exports": {
         "named": [
           {
             "name": "useDocWorkspaceStore",
-            "line": 49
+            "line": 53
           }
         ]
       },
       "functions": [
         {
           "name": "resolveIconId",
-          "line": 41,
+          "line": 45,
           "type": "function",
           "params": "opts: {\n  node: Pick<TreeNode, \"id\" | \"icon\">;\n  iconOverrides: Record<string, string | null>;\n}"
         }
@@ -1552,51 +1639,53 @@
       "type_aliases": [
         {
           "name": "DocWorkspaceState",
-          "line": 10
+          "line": 14
         }
-      ]
+      ],
+      "description": "Zustand store managing workspace UI state including sidebar, selected files, icons, tags, and persistence."
     },
     {
       "path": "lib/const/index.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 148,
-        "last_modified": "2026-01-27T02:34:54.843505+00:00",
-        "md5": "c7dcb539d3517639ef7798c67105df52"
+        "size_bytes": 257,
+        "last_modified": "2026-02-10T09:16:12.278753+00:00",
+        "md5": "f620b0e8422e5ea8c45a37b83e026329"
       },
       "line_counts": {
-        "total": 2,
+        "total": 6,
         "code": 2,
         "blank": 0,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "exports": {
         "named": [
           {
             "name": "TAG_SUGGESTIONS",
-            "line": 1
+            "line": 5
           },
           {
             "name": "PRESET_COLORS",
-            "line": 2
+            "line": 6
           }
         ]
-      }
+      },
+      "description": "Constant definitions for tag suggestions and preset color palette."
     },
     {
       "path": "lib/components/AppBar.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 1388,
-        "last_modified": "2026-01-22T10:58:57.707306+00:00",
-        "md5": "345c52d6b12a86865b820187726e3fff"
+        "size_bytes": 1516,
+        "last_modified": "2026-02-10T09:16:12.280414+00:00",
+        "md5": "7195edd67ec942d6ef0e88702f32726d"
       },
       "line_counts": {
-        "total": 47,
+        "total": 51,
         "code": 41,
         "blank": 5,
-        "comment": 1
+        "comment": 5
       },
       "type": "typescript",
       "jsx": true,
@@ -1608,93 +1697,281 @@
               "name": "useTheme"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "./Logo",
           "default": "Logo",
-          "line": 4
+          "line": 8
         },
         {
           "source": "./ThemeToggleIcon",
           "default": "ThemeToggleIcon",
-          "line": 5
+          "line": 9
         }
       ],
       "exports": {
         "default": {
           "name": "AppBar",
-          "line": 7
+          "line": 11
         }
       },
       "hooks_used": [
         "useTheme"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "Top navigation bar component displaying logo, app title, and a theme toggle button."
+    },
+    {
+      "path": "lib/components/CodebaseTreeNode.tsx",
+      "extension": ".tsx",
+      "metadata": {
+        "size_bytes": 5509,
+        "last_modified": "2026-02-10T08:50:07.018508+00:00",
+        "md5": "0fb32e6f6c33b5f0a1aadfd0f50d0893"
+      },
+      "line_counts": {
+        "total": 180,
+        "code": 164,
+        "blank": 14,
+        "comment": 2
+      },
+      "type": "typescript",
+      "jsx": true,
+      "imports": [
+        {
+          "source": "react",
+          "named": [
+            {
+              "name": "useState"
+            },
+            {
+              "name": "useEffect"
+            }
+          ],
+          "line": 3
+        },
+        {
+          "source": "lucide-react",
+          "named": [
+            {
+              "name": "ChevronRight"
+            },
+            {
+              "name": "ChevronDown"
+            },
+            {
+              "name": "Folder"
+            },
+            {
+              "name": "FolderOpen"
+            },
+            {
+              "name": "File"
+            }
+          ],
+          "line": 4
+        },
+        {
+          "source": "./@types/codebaseTreeTypes",
+          "named": [
+            {
+              "name": "CodebaseTreeNode"
+            }
+          ],
+          "line": 5
+        },
+        {
+          "source": "./ThemeProvider",
+          "named": [
+            {
+              "name": "useTheme"
+            }
+          ],
+          "line": 6
+        }
+      ],
+      "exports": {
+        "default": {
+          "name": "CodebaseTreeNodeComponent",
+          "line": 18
+        }
+      },
+      "interfaces": [
+        {
+          "name": "CodebaseTreeNodeProps",
+          "line": 8
+        }
+      ],
+      "hooks_used": [
+        "useEffect",
+        "useState",
+        "useTheme"
+      ],
+      "is_component": true,
+      "description": "(typescript file)"
+    },
+    {
+      "path": "lib/components/CodebaseTreeView.tsx",
+      "extension": ".tsx",
+      "metadata": {
+        "size_bytes": 12292,
+        "last_modified": "2026-02-10T08:50:49.389433+00:00",
+        "md5": "d5af08b4777fadb2bc409b456d35fcce"
+      },
+      "line_counts": {
+        "total": 360,
+        "code": 334,
+        "blank": 22,
+        "comment": 4
+      },
+      "type": "typescript",
+      "jsx": true,
+      "imports": [
+        {
+          "source": "react",
+          "named": [
+            {
+              "name": "useState"
+            },
+            {
+              "name": "useMemo"
+            }
+          ],
+          "line": 3
+        },
+        {
+          "source": "./CodebaseTreeNode",
+          "default": "CodebaseTreeNodeComponent",
+          "line": 4
+        },
+        {
+          "source": "./@types/codebaseTreeTypes",
+          "named": [
+            {
+              "name": "CodebaseIndex"
+            },
+            {
+              "name": "CodebaseTreeNode"
+            },
+            {
+              "name": "CodebaseFileInfo"
+            }
+          ],
+          "line": 5
+        },
+        {
+          "source": "./ThemeProvider",
+          "named": [
+            {
+              "name": "useTheme"
+            }
+          ],
+          "line": 10
+        },
+        {
+          "source": "lucide-react",
+          "named": [
+            {
+              "name": "File"
+            },
+            {
+              "name": "Folder"
+            },
+            {
+              "name": "CheckSquare"
+            },
+            {
+              "name": "XCircle"
+            }
+          ],
+          "line": 11
+        }
+      ],
+      "exports": {
+        "default": {
+          "name": "CodebaseTreeView",
+          "line": 17
+        }
+      },
+      "interfaces": [
+        {
+          "name": "CodebaseTreeViewProps",
+          "line": 13
+        }
+      ],
+      "hooks_used": [
+        "useMemo",
+        "useState",
+        "useTheme"
+      ],
+      "is_component": true,
+      "description": "(typescript file)"
     },
     {
       "path": "lib/components/Drawer.css",
       "extension": ".css",
       "metadata": {
-        "size_bytes": 2384,
-        "last_modified": "2026-01-29T08:54:53.414563+00:00",
-        "md5": "3bd68ffb68eb0c085158d7fac10c72db"
+        "size_bytes": 2548,
+        "last_modified": "2026-02-10T09:16:12.281770+00:00",
+        "md5": "9057d8d705cbfbad3ee3010d2c8f37d8"
       },
       "line_counts": {
-        "total": 138,
+        "total": 142,
         "code": 135,
         "blank": 3,
-        "comment": 0
+        "comment": 4
       },
       "type": "stylesheet",
       "selectors": [
         {
           "selector": ".drawer-backdrop",
-          "line": 1
+          "line": 5
         },
         {
           "selector": ".drawer-backdrop-closing",
-          "line": 4
+          "line": 8
         },
         {
           "selector": ".drawer-panel",
-          "line": 7
+          "line": 11
         },
         {
           "selector": ".drawer-panel-closing",
-          "line": 12
-        },
-        {
-          "selector": ".drawer-panel-left",
           "line": 16
         },
         {
+          "selector": ".drawer-panel-left",
+          "line": 20
+        },
+        {
           "selector": ".drawer-panel-right",
-          "line": 19
+          "line": 23
         },
         {
           "selector": ".drawer-panel-top",
-          "line": 22
+          "line": 26
         },
         {
           "selector": ".drawer-panel-bottom",
-          "line": 25
+          "line": 29
         }
-      ]
+      ],
+      "description": "Defines CSS animations for a drawer component sliding in/out from different directions with fade and transform effects."
     },
     {
       "path": "lib/components/Drawer.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 3808,
-        "last_modified": "2026-01-26T09:07:54.754308+00:00",
-        "md5": "d96b9cabcf9a84a8034fae6c374d9f83"
+        "size_bytes": 3980,
+        "last_modified": "2026-02-10T09:16:12.282790+00:00",
+        "md5": "02e2f8328ae095e063b5e5f9e8e133df"
       },
       "line_counts": {
-        "total": 137,
+        "total": 141,
         "code": 125,
         "blank": 12,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "jsx": true,
@@ -1712,7 +1989,7 @@
               "name": "useState"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "lucide-react",
@@ -1721,7 +1998,7 @@
               "name": "X"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "./ThemeProvider",
@@ -1730,30 +2007,30 @@
               "name": "useTheme"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "./Drawer.css",
           "side_effect": true,
-          "line": 6
+          "line": 10
         }
       ],
       "exports": {
         "default": {
           "name": "Drawer",
-          "line": 29
+          "line": 33
         }
       },
       "interfaces": [
         {
           "name": "DrawerProps",
-          "line": 10
+          "line": 14
         }
       ],
       "type_aliases": [
         {
           "name": "DrawerPosition",
-          "line": 8
+          "line": 12
         }
       ],
       "hooks_used": [
@@ -1761,21 +2038,22 @@
         "useState",
         "useTheme"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "A sliding drawer/panel component that can open from left/right/top/bottom with customizable title, size, and dismissal options."
     },
     {
       "path": "lib/components/FileSidebar.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 22832,
-        "last_modified": "2026-02-05T10:22:33.663156+00:00",
-        "md5": "d58df4c4a9bb5d0ec3d591a12dd55340"
+        "size_bytes": 23004,
+        "last_modified": "2026-02-10T09:16:12.284959+00:00",
+        "md5": "0bb0922ae6368f9a359a288c68e9a037"
       },
       "line_counts": {
-        "total": 710,
+        "total": 714,
         "code": 519,
         "blank": 63,
-        "comment": 128
+        "comment": 132
       },
       "type": "typescript",
       "jsx": true,
@@ -1796,7 +2074,7 @@
               "name": "useState"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "lucide-react",
@@ -1811,12 +2089,12 @@
               "name": "PlusIcon"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "./TreeView",
           "default": "TreeView",
-          "line": 5
+          "line": 9
         },
         {
           "source": "./@types/treeViewTypes",
@@ -1828,12 +2106,12 @@
               "name": "TreeViewGroup"
             }
           ],
-          "line": 6
+          "line": 10
         },
         {
           "source": "./FileSidebarModals",
           "default": "FileSidebarModals",
-          "line": 7
+          "line": 11
         },
         {
           "source": "./Snackbar",
@@ -1842,7 +2120,7 @@
               "name": "useSnackbar"
             }
           ],
-          "line": 8
+          "line": 12
         },
         {
           "source": "./ThemeProvider",
@@ -1851,7 +2129,7 @@
               "name": "useTheme"
             }
           ],
-          "line": 9
+          "line": 13
         },
         {
           "source": "@/app/ui/doc/action",
@@ -1869,53 +2147,53 @@
               "name": "updateCollectionDirectories"
             }
           ],
-          "line": 10
+          "line": 14
         }
       ],
       "exports": {
         "default": {
           "name": "FileSidebar",
-          "line": 224
+          "line": 228
         }
       },
       "functions": [
         {
           "name": "parseDirectories",
-          "line": 17,
+          "line": 21,
           "type": "function",
           "params": "raw: unknown",
           "return_type": "T"
         },
         {
           "name": "assignCollectionId",
-          "line": 43,
+          "line": 47,
           "type": "function",
           "params": "nodes: TreeNode[], collectionId: string",
           "return_type": "T"
         },
         {
           "name": "collectFileIds",
-          "line": 56,
+          "line": 60,
           "type": "function",
           "params": "nodes: TreeNode[], acc: Set<string>"
         },
         {
           "name": "applyIconsToNodes",
-          "line": 65,
+          "line": 69,
           "type": "function",
           "params": "nodes: TreeNode[], iconsById: Record<string, string | null>",
           "return_type": "T"
         },
         {
           "name": "applyIconOverrides",
-          "line": 78,
+          "line": 82,
           "type": "function",
           "params": "nodes: TreeNode[], overrides: Record<string, string | null>",
           "return_type": "T"
         },
         {
           "name": "mockUuid",
-          "line": 12,
+          "line": 16,
           "type": "arrow_function"
         }
       ],
@@ -1927,21 +2205,22 @@
         "useState",
         "useTheme"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "Main file/collection sidebar managing collections, file/folder CRUD operations, and selection state with skeleton loading."
     },
     {
       "path": "lib/components/FileSidebarModals.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 8820,
-        "last_modified": "2026-02-05T10:23:15.583333+00:00",
-        "md5": "a90ce084483aa38f6cb72d30811ebc35"
+        "size_bytes": 8994,
+        "last_modified": "2026-02-10T09:16:12.288791+00:00",
+        "md5": "76e1ce084c835ee24b2a9cc44567ebd5"
       },
       "line_counts": {
-        "total": 247,
+        "total": 251,
         "code": 238,
         "blank": 9,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "jsx": true,
@@ -1949,7 +2228,7 @@
         {
           "source": "./Modal",
           "default": "Modal",
-          "line": 3
+          "line": 7
         },
         {
           "source": "./@types/treeViewTypes",
@@ -1958,44 +2237,45 @@
               "name": "TreeNode"
             }
           ],
-          "line": 4
+          "line": 8
         }
       ],
       "exports": {
         "default": {
           "name": "FileSidebarModals",
-          "line": 37
+          "line": 41
         }
       },
       "type_aliases": [
         {
           "name": "SelectedNodeForAdd",
-          "line": 6
-        },
-        {
-          "name": "SelectedNodeForDelete",
           "line": 10
         },
         {
-          "name": "FileSidebarModalsProps",
+          "name": "SelectedNodeForDelete",
           "line": 14
+        },
+        {
+          "name": "FileSidebarModalsProps",
+          "line": 18
         }
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "Modal dialogs for managing file/folder collections including add collection, add item, and delete confirmation modals."
     },
     {
       "path": "lib/components/IconPopover.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 3624,
-        "last_modified": "2026-01-23T09:26:59.705076+00:00",
-        "md5": "a5fd465c8c8be79b60ce48b2443d0e2b"
+        "size_bytes": 3777,
+        "last_modified": "2026-02-10T09:16:12.294039+00:00",
+        "md5": "a7cd5819686d035cb8dcbaf242d49ae5"
       },
       "line_counts": {
-        "total": 126,
+        "total": 130,
         "code": 113,
         "blank": 13,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "jsx": true,
@@ -2016,30 +2296,30 @@
               "name": "useState"
             }
           ],
-          "line": 3
+          "line": 7
         }
       ],
       "exports": {
         "named": [
           {
             "name": "IconOption",
-            "line": 5
+            "line": 9
           }
         ],
         "default": {
           "name": "IconPopover",
-          "line": 18
+          "line": 22
         }
       },
       "type_aliases": [
         {
           "name": "IconOption",
-          "line": 5,
+          "line": 9,
           "exported": true
         },
         {
           "name": "IconPopoverProps",
-          "line": 11
+          "line": 15
         }
       ],
       "hooks_used": [
@@ -2048,21 +2328,22 @@
         "useRef",
         "useState"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "A popover component for selecting from a grid of icon options with keyboard and click outside handling."
     },
     {
       "path": "lib/components/LayoutShell.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 787,
-        "last_modified": "2026-01-27T02:41:14.542189+00:00",
-        "md5": "c48971f6b2599ac4ce2737c9e4f2b886"
+        "size_bytes": 936,
+        "last_modified": "2026-02-10T09:16:12.296812+00:00",
+        "md5": "bceaa3de58dd48b24ae3bf841a2026fb"
       },
       "line_counts": {
-        "total": 37,
+        "total": 41,
         "code": 30,
         "blank": 5,
-        "comment": 2
+        "comment": 6
       },
       "type": "typescript",
       "jsx": true,
@@ -2070,7 +2351,7 @@
         {
           "source": "./AppBar",
           "default": "AppBar",
-          "line": 3
+          "line": 7
         },
         {
           "source": "./SidebarContext",
@@ -2079,7 +2360,7 @@
               "name": "SidebarProvider"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "./ThemeProvider",
@@ -2088,67 +2369,69 @@
               "name": "useTheme"
             }
           ],
-          "line": 5
+          "line": 9
         }
       ],
       "exports": {
         "default": {
           "name": "LayoutShell",
-          "line": 7
+          "line": 11
         }
       },
       "hooks_used": [
         "useTheme"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "Layout wrapper component providing app bar, sidebar context, and theme support to child components."
     },
     {
       "path": "lib/components/LoadingProvider.css",
       "extension": ".css",
       "metadata": {
-        "size_bytes": 861,
-        "last_modified": "2026-01-30T11:19:41.496162+00:00",
-        "md5": "1c06b82c306814dba977544cebcad948"
+        "size_bytes": 1017,
+        "last_modified": "2026-02-10T09:16:12.302350+00:00",
+        "md5": "1b28759203f2019f24b1aa3d194ca17e"
       },
       "line_counts": {
-        "total": 46,
+        "total": 50,
         "code": 40,
         "blank": 6,
-        "comment": 0
+        "comment": 4
       },
       "type": "stylesheet",
       "selectors": [
         {
           "selector": ".loading-overlay",
-          "line": 1
+          "line": 5
         },
         {
           "selector": ".loading-overlay__content",
-          "line": 13
+          "line": 17
         },
         {
           "selector": ".loading-overlay__spinner",
-          "line": 25
+          "line": 29
         },
         {
           "selector": ".loading-overlay__label",
-          "line": 31
+          "line": 35
         }
-      ]
+      ],
+      "description": "Styles for the loading overlay including spinner animation, backdrop blur, and responsive positioning."
     },
     {
       "path": "lib/components/LoadingProvider.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 5525,
-        "last_modified": "2026-01-30T11:19:42.604793+00:00",
-        "md5": "d872ecf889c806a6bbac28f1a649e045"
+        "size_bytes": 5686,
+        "last_modified": "2026-02-10T09:16:12.308177+00:00",
+        "md5": "abb028a92ad810469a53af5372748386"
       },
       "line_counts": {
-        "total": 226,
+        "total": 230,
         "code": 191,
         "blank": 35,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "jsx": true,
@@ -2184,7 +2467,7 @@
               "name": "type ReactNode"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "react-dom",
@@ -2193,7 +2476,7 @@
               "name": "createPortal"
             }
           ],
-          "line": 14
+          "line": 18
         },
         {
           "source": "lucide-react",
@@ -2202,46 +2485,46 @@
               "name": "Loader2"
             }
           ],
-          "line": 15
+          "line": 19
         },
         {
           "source": "./LoadingProvider.css",
           "side_effect": true,
-          "line": 17
+          "line": 21
         }
       ],
       "exports": {
         "named": [
           {
             "name": "LoadingProviderProps",
-            "line": 33
+            "line": 37
           },
           {
             "name": "LoadingProvider",
-            "line": 48
+            "line": 52
           },
           {
             "name": "useLoading",
-            "line": 218
+            "line": 222
           }
         ]
       },
       "functions": [
         {
           "name": "LoadingProvider",
-          "line": 48,
+          "line": 52,
           "type": "function",
           "params": "{\n  children,\n  delay = 150,\n  overlay,\n  lockScroll = true,\n}: LoadingProviderProps",
           "exported": true
         },
         {
           "name": "generateLoaderId",
-          "line": 41,
+          "line": 45,
           "type": "arrow_function"
         },
         {
           "name": "useLoading",
-          "line": 218,
+          "line": 222,
           "type": "arrow_function",
           "exported": true
         }
@@ -2249,15 +2532,15 @@
       "type_aliases": [
         {
           "name": "LoadingContextValue",
-          "line": 19
+          "line": 23
         },
         {
           "name": "LoadingOverlayRenderProps",
-          "line": 28
+          "line": 32
         },
         {
           "name": "LoadingProviderProps",
-          "line": 33,
+          "line": 37,
           "exported": true
         }
       ],
@@ -2269,21 +2552,22 @@
         "useRef",
         "useState"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "Context provider for managing loading state with customizable delay, overlay rendering, and scroll locking."
     },
     {
       "path": "lib/components/Logo.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 244,
-        "last_modified": "2026-01-14T09:11:27.914000+00:00",
-        "md5": "af5d847d50ce74f1761f06fdf11b2b80"
+        "size_bytes": 368,
+        "last_modified": "2026-02-10T09:16:12.313724+00:00",
+        "md5": "945dddb08de39ba32b6db8890ca32656"
       },
       "line_counts": {
-        "total": 16,
+        "total": 20,
         "code": 13,
         "blank": 3,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "jsx": true,
@@ -2291,35 +2575,36 @@
         {
           "source": "next/image",
           "default": "Image",
-          "line": 2
+          "line": 6
         },
         {
           "source": "../../asset/logo.png",
           "default": "l",
-          "line": 3
+          "line": 7
         }
       ],
       "exports": {
         "default": {
           "name": "Logo",
-          "line": 5
+          "line": 9
         }
       },
-      "is_component": true
+      "is_component": true,
+      "description": "Component that displays the application logo image using Next.js Image component."
     },
     {
       "path": "lib/components/MarkdownDisplay.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 5830,
-        "last_modified": "2026-02-04T03:12:54.544439+00:00",
-        "md5": "4afb890ca381b270aa00f2b95ace8bcc"
+        "size_bytes": 6006,
+        "last_modified": "2026-02-10T09:16:12.377161+00:00",
+        "md5": "f3f6d0c8319395216c86e69b25c1c1db"
       },
       "line_counts": {
-        "total": 177,
+        "total": 181,
         "code": 154,
         "blank": 20,
-        "comment": 3
+        "comment": 7
       },
       "type": "typescript",
       "jsx": true,
@@ -2340,44 +2625,44 @@
               "name": "useState"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "react-markdown",
           "default": "ReactMarkdown",
-          "line": 4
+          "line": 8
         },
         {
           "source": "remark-gfm",
           "default": "remarkGfm",
-          "line": 5
+          "line": 9
         },
         {
           "source": "remark-math",
           "default": "remarkMath",
-          "line": 6
+          "line": 10
         },
         {
           "source": "rehype-raw",
           "default": "rehypeRaw",
-          "line": 7
+          "line": 11
         },
         {
           "source": "rehype-katex",
           "default": "rehypeKatex",
-          "line": 8
+          "line": 12
         }
       ],
       "exports": {
         "default": {
           "name": "MarkdownDisplay",
-          "line": 64
+          "line": 68
         }
       },
       "functions": [
         {
           "name": "useChunkedReveal",
-          "line": 21,
+          "line": 25,
           "type": "function",
           "params": "text: string, opts: ChunkAnimationOptions"
         }
@@ -2385,11 +2670,11 @@
       "type_aliases": [
         {
           "name": "ChunkAnimationOptions",
-          "line": 10
+          "line": 14
         },
         {
           "name": "AutoScrollOptions",
-          "line": 16
+          "line": 20
         }
       ],
       "hooks_used": [
@@ -2399,21 +2684,22 @@
         "useRef",
         "useState"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "A markdown renderer with animated text reveal, auto-scroll support, and theme-aware styling for various markdown elements."
     },
     {
       "path": "lib/components/MarkdownEditor.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 23513,
-        "last_modified": "2026-02-05T07:31:43.908599+00:00",
-        "md5": "5cab0a79de6c415cd133d354d18b2cf2"
+        "size_bytes": 23787,
+        "last_modified": "2026-02-10T09:16:12.407776+00:00",
+        "md5": "02f47d582696b212a48cbdd734b059d0"
       },
       "line_counts": {
-        "total": 822,
+        "total": 826,
         "code": 681,
         "blank": 92,
-        "comment": 49
+        "comment": 53
       },
       "type": "typescript",
       "jsx": true,
@@ -2434,7 +2720,7 @@
               "name": "ReactElement"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "react",
@@ -2455,7 +2741,7 @@
               "name": "useState"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "@uiw/react-md-editor",
@@ -2478,17 +2764,17 @@
               "name": "type TextAreaTextApi"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "remark-math",
           "default": "remarkMath",
-          "line": 12
+          "line": 16
         },
         {
           "source": "rehype-katex",
           "default": "rehypeKatex",
-          "line": 13
+          "line": 17
         },
         {
           "source": "./ThemeProvider",
@@ -2497,7 +2783,7 @@
               "name": "useTheme"
             }
           ],
-          "line": 14
+          "line": 18
         },
         {
           "source": "./Snackbar",
@@ -2506,7 +2792,7 @@
               "name": "useSnackbar"
             }
           ],
-          "line": 15
+          "line": 19
         },
         {
           "source": "./markdown-editor/editorCss",
@@ -2515,7 +2801,7 @@
               "name": "MARKDOWN_EDITOR_CSS"
             }
           ],
-          "line": 16
+          "line": 20
         },
         {
           "source": "../services/fileService.client",
@@ -2530,7 +2816,7 @@
               "name": "useUploadImageMutation"
             }
           ],
-          "line": 17
+          "line": 21
         },
         {
           "source": "./markdown-editor/icons",
@@ -2575,7 +2861,7 @@
               "name": "UnderlineIcon"
             }
           ],
-          "line": 18
+          "line": 22
         },
         {
           "source": "./markdown-editor/highlightPlugins",
@@ -2587,7 +2873,7 @@
               "name": "remarkHighlight"
             }
           ],
-          "line": 33
+          "line": 37
         },
         {
           "source": "./markdown-editor/editorUtils",
@@ -2602,7 +2888,7 @@
               "name": "normalizePublicPath"
             }
           ],
-          "line": 34
+          "line": 38
         },
         {
           "source": "./@types/treeViewTypes",
@@ -2611,43 +2897,43 @@
               "name": "TreeNode"
             }
           ],
-          "line": 39
+          "line": 43
         }
       ],
       "exports": {
         "default": {
           "name": "MarkdownEditor",
-          "line": 228
+          "line": 232
         }
       },
       "functions": [
         {
           "name": "useLatestRef",
-          "line": 126,
+          "line": 130,
           "type": "function",
           "params": "value: T"
         },
         {
           "name": "useModeSwitchAnimation",
-          "line": 134,
+          "line": 138,
           "type": "function",
           "params": "previewMode: PreviewType"
         },
         {
           "name": "useHighlightTooltip",
-          "line": 147,
+          "line": 151,
           "type": "function",
           "return_type": "T"
         },
         {
           "name": "createModeCommand",
-          "line": 187,
+          "line": 191,
           "type": "function",
           "params": "opts: {\n  base: ICommand;\n  ariaLabel: string;\n  icon: ReactElement;\n  mode: PreviewType;\n  setPreviewMode: (mode: PreviewType"
         },
         {
           "name": "createInsertCommand",
-          "line": 207,
+          "line": 211,
           "type": "function",
           "params": "opts: {\n  name: string;\n  keyCommand: string;\n  ariaLabel: string;\n  icon: ReactElement;\n  onOpen: (selectedText: string | undefined, replaceSelection?: (text: string"
         }
@@ -2655,15 +2941,15 @@
       "type_aliases": [
         {
           "name": "TooltipState",
-          "line": 41
+          "line": 45
         },
         {
           "name": "PositionedPopoverState",
-          "line": 48
+          "line": 52
         },
         {
           "name": "EditorCommandCtx",
-          "line": 54
+          "line": 58
         }
       ],
       "hooks_used": [
@@ -2681,21 +2967,22 @@
         "useTheme",
         "useUploadImageMutation"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "A rich text editor component that supports markdown with live preview, custom formatting commands (bold, italic, strikethrough, etc.), image/link insertion, and integrates with math rendering and custom highlight plugins."
     },
     {
       "path": "lib/components/Modal.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 2383,
-        "last_modified": "2026-02-05T08:57:51.816414+00:00",
-        "md5": "997b2606d15921481850b14627b65be5"
+        "size_bytes": 2526,
+        "last_modified": "2026-02-10T09:16:12.411682+00:00",
+        "md5": "ed589a3a96437f07e92b310c363190bf"
       },
       "line_counts": {
-        "total": 90,
+        "total": 94,
         "code": 78,
         "blank": 11,
-        "comment": 1
+        "comment": 5
       },
       "type": "typescript",
       "jsx": true,
@@ -2713,7 +3000,7 @@
               "name": "useState"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "react-dom",
@@ -2722,7 +3009,7 @@
               "name": "createPortal"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "lucide-react",
@@ -2731,7 +3018,7 @@
               "name": "X"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "./ThemeProvider",
@@ -2740,25 +3027,25 @@
               "name": "useTheme"
             }
           ],
-          "line": 6
+          "line": 10
         }
       ],
       "exports": {
         "default": {
           "name": "Modal",
-          "line": 24
+          "line": 28
         }
       },
       "interfaces": [
         {
           "name": "ModalProps",
-          "line": 10
+          "line": 14
         }
       ],
       "type_aliases": [
         {
           "name": "ModalSize",
-          "line": 8
+          "line": 12
         }
       ],
       "hooks_used": [
@@ -2766,21 +3053,22 @@
         "useState",
         "useTheme"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "A centered modal dialog component with backdrop, animations, close button, and configurable sizing."
     },
     {
       "path": "lib/components/SidebarContext.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 900,
-        "last_modified": "2026-01-22T10:03:39.580148+00:00",
-        "md5": "739d172393eddd497922030fc0090a06"
+        "size_bytes": 1037,
+        "last_modified": "2026-02-10T09:16:12.417657+00:00",
+        "md5": "12d159c6f2406895be9795aa017bbc8f"
       },
       "line_counts": {
-        "total": 39,
+        "total": 43,
         "code": 31,
         "blank": 8,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "jsx": true,
@@ -2801,32 +3089,32 @@
               "name": "useState"
             }
           ],
-          "line": 3
+          "line": 7
         }
       ],
       "exports": {
         "named": [
           {
             "name": "SidebarProvider",
-            "line": 15
+            "line": 19
           },
           {
             "name": "useSidebar",
-            "line": 32
+            "line": 36
           }
         ]
       },
       "functions": [
         {
           "name": "SidebarProvider",
-          "line": 15,
+          "line": 19,
           "type": "function",
           "params": "{ children }: { children: React.ReactNode }",
           "exported": true
         },
         {
           "name": "useSidebar",
-          "line": 32,
+          "line": 36,
           "type": "function",
           "exported": true
         }
@@ -2834,7 +3122,7 @@
       "type_aliases": [
         {
           "name": "SidebarContextValue",
-          "line": 5
+          "line": 9
         }
       ],
       "hooks_used": [
@@ -2843,21 +3131,22 @@
         "useSidebar",
         "useState"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "React context for managing sidebar collapsed state with toggle and setter functions."
     },
     {
       "path": "lib/components/SidebarMenu.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 11417,
-        "last_modified": "2026-01-28T05:03:07.742137+00:00",
-        "md5": "6d1b42168a3eb4bcfdea9f338f4544ba"
+        "size_bytes": 11571,
+        "last_modified": "2026-02-10T09:16:12.419746+00:00",
+        "md5": "a748add2e7b086bd6b9c0e9d48aa3a97"
       },
       "line_counts": {
-        "total": 343,
+        "total": 347,
         "code": 310,
         "blank": 21,
-        "comment": 12
+        "comment": 16
       },
       "type": "typescript",
       "jsx": true,
@@ -2870,12 +3159,12 @@
               "name": "useState"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "next/link",
           "default": "Link",
-          "line": 4
+          "line": 8
         },
         {
           "source": "next/navigation",
@@ -2884,7 +3173,7 @@
               "name": "usePathname"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "lucide-react",
@@ -2899,7 +3188,7 @@
               "name": "ChevronRight"
             }
           ],
-          "line": 6
+          "line": 10
         },
         {
           "source": "./SidebarContext",
@@ -2908,7 +3197,7 @@
               "name": "useSidebar"
             }
           ],
-          "line": 7
+          "line": 11
         },
         {
           "source": "./ThemeProvider",
@@ -2917,25 +3206,25 @@
               "name": "useTheme"
             }
           ],
-          "line": 8
+          "line": 12
         }
       ],
       "exports": {
         "named": [
           {
             "name": "SidebarMenuItem",
-            "line": 10
+            "line": 14
           }
         ],
         "default": {
           "name": "SidebarMenu",
-          "line": 258
+          "line": 262
         }
       },
       "functions": [
         {
           "name": "MenuItem",
-          "line": 18,
+          "line": 22,
           "type": "function",
           "params": "{\n  item,\n  index,\n  isCollapsed,\n  theme,\n  pathname,\n  allSubmenuHrefs,\n  toggleSidebar,\n}: {\n  item: SidebarMenuItem;\n  index: number;\n  isCollapsed: boolean;\n  theme: string;\n  pathname: string | null;\n  allSubmenuHrefs: string[];\n  toggleSidebar: ("
         }
@@ -2943,7 +3232,7 @@
       "type_aliases": [
         {
           "name": "SidebarMenuItem",
-          "line": 10,
+          "line": 14,
           "exported": true
         }
       ],
@@ -2954,115 +3243,117 @@
         "useState",
         "useTheme"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "A collapsible navigation sidebar with submenu support, active state highlighting, and smooth animations."
     },
     {
       "path": "lib/components/Snackbar.css",
       "extension": ".css",
       "metadata": {
-        "size_bytes": 3527,
-        "last_modified": "2026-01-22T07:39:21.235324+00:00",
-        "md5": "580f940ba5d9286b367cfa857115a5e2"
+        "size_bytes": 3704,
+        "last_modified": "2026-02-10T09:16:12.421947+00:00",
+        "md5": "3c039d3daca59e9f1e9f413d90daaeed"
       },
       "line_counts": {
-        "total": 192,
+        "total": 196,
         "code": 166,
         "blank": 26,
-        "comment": 0
+        "comment": 4
       },
       "type": "stylesheet",
       "selectors": [
         {
           "selector": ".snackbar-container",
-          "line": 1
+          "line": 5
         },
         {
           "selector": ".snackbar-container--top-left",
-          "line": 11
+          "line": 15
         },
         {
           "selector": ".snackbar-container--top-center",
-          "line": 17
+          "line": 21
         },
         {
           "selector": ".snackbar-container--top-right",
-          "line": 24
+          "line": 28
         },
         {
           "selector": ".snackbar-container--bottom-left",
-          "line": 30
+          "line": 34
         },
         {
           "selector": ".snackbar-container--bottom-center",
-          "line": 36
+          "line": 40
         },
         {
           "selector": ".snackbar-container--bottom-right",
-          "line": 43
+          "line": 47
         },
         {
           "selector": ".snackbar",
-          "line": 71
+          "line": 75
         },
         {
           "selector": ".snackbar--success",
-          "line": 93
-        },
-        {
-          "selector": ".snackbar--error",
           "line": 97
         },
         {
-          "selector": ".snackbar--warning",
+          "selector": ".snackbar--error",
           "line": 101
         },
         {
-          "selector": ".snackbar--info",
+          "selector": ".snackbar--warning",
           "line": 105
         },
         {
-          "selector": ".snackbar--neutral",
+          "selector": ".snackbar--info",
           "line": 109
         },
         {
-          "selector": ".snackbar__icon",
+          "selector": ".snackbar--neutral",
           "line": 113
         },
         {
+          "selector": ".snackbar__icon",
+          "line": 117
+        },
+        {
           "selector": ".snackbar__content",
-          "line": 120
+          "line": 124
         },
         {
           "selector": ".snackbar__title",
-          "line": 126
+          "line": 130
         },
         {
           "selector": ".snackbar__message",
-          "line": 133
+          "line": 137
         },
         {
           "selector": ".snackbar__action",
-          "line": 140
+          "line": 144
         },
         {
           "selector": ".snackbar__close",
-          "line": 161
+          "line": 165
         }
-      ]
+      ],
+      "description": "Styles for snackbar notifications including positioning, variants (success/error/warning/info), animations, and responsive layout."
     },
     {
       "path": "lib/components/Snackbar.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 7846,
-        "last_modified": "2026-01-22T07:39:19.247679+00:00",
-        "md5": "7f93caa4ce177731925589e7160a97dd"
+        "size_bytes": 8001,
+        "last_modified": "2026-02-10T09:16:12.424063+00:00",
+        "md5": "eabbed3b6c0d69d05bb0e4195064c237"
       },
       "line_counts": {
-        "total": 344,
+        "total": 348,
         "code": 306,
         "blank": 38,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "jsx": true,
@@ -3101,7 +3392,7 @@
               "name": "type PropsWithChildren"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "react-dom",
@@ -3110,7 +3401,7 @@
               "name": "createPortal"
             }
           ],
-          "line": 15
+          "line": 19
         },
         {
           "source": "lucide-react",
@@ -3137,77 +3428,77 @@
               "name": "XCircle"
             }
           ],
-          "line": 16
+          "line": 20
         }
       ],
       "exports": {
         "named": [
           {
             "name": "SnackbarVariant",
-            "line": 26
+            "line": 30
           },
           {
             "name": "SnackbarPosition",
-            "line": 33
+            "line": 37
           },
           {
             "name": "SnackbarOptions",
-            "line": 41
+            "line": 45
           },
           {
             "name": "SnackbarProviderProps",
-            "line": 64
+            "line": 68
           },
           {
             "name": "SnackbarProvider",
-            "line": 132
+            "line": 136
           },
           {
             "name": "useSnackbar",
-            "line": 335
+            "line": 339
           },
           {
             "name": "SnackbarConsumer",
-            "line": 343
+            "line": 347
           }
         ]
       },
       "functions": [
         {
           "name": "SnackbarProvider",
-          "line": 132,
+          "line": 136,
           "type": "function",
           "params": "{\n  children,\n  duration = defaultDuration,\n  position = defaultPosition,\n  maxSnackbars = 3,\n  pauseOnHover = true,\n}: SnackbarProviderProps",
           "exported": true
         },
         {
           "name": "cx",
-          "line": 91,
+          "line": 95,
           "type": "arrow_function"
         },
         {
           "name": "generateId",
-          "line": 94,
+          "line": 98,
           "type": "arrow_function"
         },
         {
           "name": "normalizeOptions",
-          "line": 103,
+          "line": 107,
           "type": "arrow_function"
         },
         {
           "name": "SnackbarContainer",
-          "line": 220,
+          "line": 224,
           "type": "arrow_function"
         },
         {
           "name": "SnackbarItem",
-          "line": 255,
+          "line": 259,
           "type": "arrow_function"
         },
         {
           "name": "useSnackbar",
-          "line": 335,
+          "line": 339,
           "type": "arrow_function",
           "exported": true
         }
@@ -3215,7 +3506,7 @@
       "interfaces": [
         {
           "name": "SnackbarProviderProps",
-          "line": 64,
+          "line": 68,
           "extends": [
             "PropsWithChildren"
           ],
@@ -3225,34 +3516,34 @@
       "type_aliases": [
         {
           "name": "SnackbarVariant",
-          "line": 26,
+          "line": 30,
           "exported": true
         },
         {
           "name": "SnackbarPosition",
-          "line": 33,
+          "line": 37,
           "exported": true
         },
         {
           "name": "SnackbarOptions",
-          "line": 41,
+          "line": 45,
           "exported": true
         },
         {
           "name": "SnackbarMessage",
-          "line": 52
+          "line": 56
         },
         {
           "name": "SnackbarContextValue",
-          "line": 71
+          "line": 75
         },
         {
           "name": "SnackbarContainerProps",
-          "line": 213
+          "line": 217
         },
         {
           "name": "SnackbarItemProps",
-          "line": 249
+          "line": 253
         }
       ],
       "hooks_used": [
@@ -3263,21 +3554,22 @@
         "useRef",
         "useState"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "A notification system provider and hook with configurable position, duration, variants, and dismiss actions."
     },
     {
       "path": "lib/components/TagEditor.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 12188,
-        "last_modified": "2026-02-04T10:11:24.114974+00:00",
-        "md5": "ecceee25d41db047cc5fbdc5705e56ee"
+        "size_bytes": 12330,
+        "last_modified": "2026-02-10T09:16:12.429061+00:00",
+        "md5": "bf59a7dd13059250b2c751ce7a5c0a12"
       },
       "line_counts": {
-        "total": 306,
+        "total": 310,
         "code": 289,
         "blank": 13,
-        "comment": 4
+        "comment": 8
       },
       "type": "typescript",
       "jsx": true,
@@ -3295,7 +3587,7 @@
               "name": "useState"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "lucide-react",
@@ -3304,7 +3596,7 @@
               "name": "X"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "./ThemeProvider",
@@ -3313,7 +3605,7 @@
               "name": "useTheme"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "../const",
@@ -3325,7 +3617,7 @@
               "name": "TAG_SUGGESTIONS"
             }
           ],
-          "line": 6
+          "line": 10
         },
         {
           "source": "@/app/ui/doc/action",
@@ -3334,7 +3626,7 @@
               "name": "updateFileTags"
             }
           ],
-          "line": 7
+          "line": 11
         },
         {
           "source": "./@types/tagEditorTypes",
@@ -3346,24 +3638,24 @@
               "name": "TagEditorProps"
             }
           ],
-          "line": 8
+          "line": 12
         }
       ],
       "exports": {
         "default": {
           "name": "TagEditor",
-          "line": 27
+          "line": 31
         }
       },
       "functions": [
         {
           "name": "createId",
-          "line": 12,
+          "line": 16,
           "type": "arrow_function"
         },
         {
           "name": "getReadableTextColor",
-          "line": 17,
+          "line": 21,
           "type": "arrow_function"
         }
       ],
@@ -3373,21 +3665,22 @@
         "useState",
         "useTheme"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "A tag editor component with autocomplete suggestions, color picker, and visual tag management."
     },
     {
       "path": "lib/components/ThemeProvider.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 1872,
-        "last_modified": "2026-01-14T10:14:37.081105+00:00",
-        "md5": "19b79f479dce18b8e61f2dec0a213aa8"
+        "size_bytes": 2045,
+        "last_modified": "2026-02-10T09:16:12.433748+00:00",
+        "md5": "2cbf2ae3f6d8e436cea363f0740ac0fd"
       },
       "line_counts": {
-        "total": 72,
+        "total": 76,
         "code": 55,
         "blank": 15,
-        "comment": 2
+        "comment": 6
       },
       "type": "typescript",
       "jsx": true,
@@ -3408,32 +3701,32 @@
               "name": "useState"
             }
           ],
-          "line": 3
+          "line": 7
         }
       ],
       "exports": {
         "named": [
           {
             "name": "ThemeProvider",
-            "line": 14
+            "line": 18
           },
           {
             "name": "useTheme",
-            "line": 65
+            "line": 69
           }
         ]
       },
       "functions": [
         {
           "name": "ThemeProvider",
-          "line": 14,
+          "line": 18,
           "type": "function",
           "params": "{ children }: { children: React.ReactNode }",
           "exported": true
         },
         {
           "name": "useTheme",
-          "line": 65,
+          "line": 69,
           "type": "function",
           "exported": true
         }
@@ -3441,13 +3734,13 @@
       "interfaces": [
         {
           "name": "ThemeContextType",
-          "line": 7
+          "line": 11
         }
       ],
       "type_aliases": [
         {
           "name": "Theme",
-          "line": 5
+          "line": 9
         }
       ],
       "hooks_used": [
@@ -3456,51 +3749,53 @@
         "useState",
         "useTheme"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "React context provider for managing light/dark theme state with localStorage persistence and system preference detection."
     },
     {
       "path": "lib/components/ThemeToggleIcon.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 1038,
-        "last_modified": "2026-01-15T04:09:25.011203+00:00",
-        "md5": "e65e22c16b3ba6461e8505037699477f"
+        "size_bytes": 1198,
+        "last_modified": "2026-02-10T09:16:12.436778+00:00",
+        "md5": "418664eecf6257c0e3062c4f75da2422"
       },
       "line_counts": {
-        "total": 47,
+        "total": 51,
         "code": 40,
         "blank": 7,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "jsx": true,
       "exports": {
         "default": {
           "name": "ThemeToggleIcon",
-          "line": 11
+          "line": 15
         }
       },
       "type_aliases": [
         {
           "name": "Theme",
-          "line": 3
+          "line": 7
         }
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "A simple SVG icon component that displays either a moon or sun icon based on the current light/dark theme."
     },
     {
       "path": "lib/components/ToolsPanel.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 22523,
-        "last_modified": "2026-02-05T07:30:36.447266+00:00",
-        "md5": "7782b93c20ce406518bb3778fe79a0a5"
+        "size_bytes": 22713,
+        "last_modified": "2026-02-10T09:16:12.447949+00:00",
+        "md5": "cb202282315c1d311169c463c1f0d5d1"
       },
       "line_counts": {
-        "total": 628,
+        "total": 632,
         "code": 520,
         "blank": 66,
-        "comment": 42
+        "comment": 46
       },
       "type": "typescript",
       "jsx": true,
@@ -3515,7 +3810,7 @@
               "name": "useState"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "lucide-react",
@@ -3527,7 +3822,7 @@
               "name": "FlaskConical"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "./ThemeProvider",
@@ -3536,12 +3831,12 @@
               "name": "useTheme"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "./Modal",
           "default": "Modal",
-          "line": 6
+          "line": 10
         },
         {
           "source": "./LoadingProvider",
@@ -3550,7 +3845,7 @@
               "name": "useLoading"
             }
           ],
-          "line": 7
+          "line": 11
         },
         {
           "source": "./Snackbar",
@@ -3559,7 +3854,7 @@
               "name": "useSnackbar"
             }
           ],
-          "line": 8
+          "line": 12
         },
         {
           "source": "@/app/ui/doc/action",
@@ -3574,12 +3869,12 @@
               "name": "updateCollectionDirectories"
             }
           ],
-          "line": 9
+          "line": 13
         },
         {
           "source": "./MarkdownDisplay",
           "default": "MarkdownDisplay",
-          "line": 10
+          "line": 14
         },
         {
           "source": "@/app/lib/services/fileService.client",
@@ -3591,7 +3886,7 @@
               "name": "useSaveFileMutation"
             }
           ],
-          "line": 11
+          "line": 15
         },
         {
           "source": "./@types/treeViewTypes",
@@ -3600,61 +3895,61 @@
               "name": "TreeNode"
             }
           ],
-          "line": 12
+          "line": 16
         }
       ],
       "exports": {
         "default": {
           "name": "ToolsPanel",
-          "line": 151
+          "line": 155
         }
       },
       "functions": [
         {
           "name": "parseDirectories",
-          "line": 22,
+          "line": 26,
           "type": "function",
           "params": "raw: unknown",
           "return_type": "T"
         },
         {
           "name": "collectFileNames",
-          "line": 48,
+          "line": 52,
           "type": "function",
           "params": "nodes: TreeNode[], acc: Set<string>"
         },
         {
           "name": "getStem",
-          "line": 57,
+          "line": 61,
           "type": "function",
           "params": "name: string"
         },
         {
           "name": "getExtension",
-          "line": 65,
+          "line": 69,
           "type": "function",
           "params": "name: string"
         },
         {
           "name": "pickUniqueName",
-          "line": 72,
+          "line": 76,
           "type": "function",
           "params": "baseName: string, existing: Set<string>"
         },
         {
           "name": "createId",
-          "line": 86,
+          "line": 90,
           "type": "function"
         },
         {
           "name": "insertNextToSelectedFile",
-          "line": 92,
+          "line": 96,
           "type": "function",
           "params": "opts: {\n  directories: TreeNode[];\n  selectedFilePath: string | null;\n  selectedFileName: string;\n  newNode: TreeNode;\n}"
         },
         {
           "name": "findNodePathById",
-          "line": 139,
+          "line": 143,
           "type": "function",
           "params": "nodes: TreeNode[], nodeId: string, prefix: string[] = []",
           "return_type": "s"
@@ -3663,7 +3958,7 @@
       "interfaces": [
         {
           "name": "ToolsPanelProps",
-          "line": 14
+          "line": 18
         }
       ],
       "hooks_used": [
@@ -3675,21 +3970,22 @@
         "useState",
         "useTheme"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "A tools panel for generating AI-powered test cases from file content, with modal interfaces for editing prompts and creating test case files."
     },
     {
       "path": "lib/components/TreeNodeItem.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 5978,
-        "last_modified": "2026-02-04T02:56:28.805815+00:00",
-        "md5": "e39ffb86a30285ff0bba5fb924caa8c2"
+        "size_bytes": 6155,
+        "last_modified": "2026-02-10T09:16:12.450068+00:00",
+        "md5": "ca3e71a3469bbfc2f915cccec5743c1d"
       },
       "line_counts": {
-        "total": 163,
+        "total": 167,
         "code": 148,
         "blank": 11,
-        "comment": 4
+        "comment": 8
       },
       "type": "typescript",
       "jsx": true,
@@ -3710,7 +4006,7 @@
               "name": "useState"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "lucide-react",
@@ -3734,7 +4030,7 @@
               "name": "Trash2"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "./@types/treeViewTypes",
@@ -3743,7 +4039,7 @@
               "name": "TreeNode"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "./ThemeProvider",
@@ -3752,7 +4048,7 @@
               "name": "useTheme"
             }
           ],
-          "line": 6
+          "line": 10
         },
         {
           "source": "./iconOptions",
@@ -3761,25 +4057,25 @@
               "name": "iconOptions"
             }
           ],
-          "line": 7
+          "line": 11
         }
       ],
       "exports": {
         "named": [
           {
             "name": "TreeNodeItemProps",
-            "line": 11
+            "line": 15
           }
         ],
         "default": {
           "name": "TreeNodeItem",
-          "line": 24
+          "line": 28
         }
       },
       "interfaces": [
         {
           "name": "TreeNodeItemProps",
-          "line": 11,
+          "line": 15,
           "exported": true
         }
       ],
@@ -3788,21 +4084,22 @@
         "useState",
         "useTheme"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "A recursive tree node component that renders individual files/folders with expand/collapse, deletion, and custom icon support."
     },
     {
       "path": "lib/components/TreeView.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 3536,
-        "last_modified": "2026-02-05T03:52:35.616617+00:00",
-        "md5": "a20db566b085e7a67afaa15f2f66832b"
+        "size_bytes": 3687,
+        "last_modified": "2026-02-10T09:16:12.452424+00:00",
+        "md5": "8b41bdda0264a509b3bb9fea4b664baa"
       },
       "line_counts": {
-        "total": 103,
+        "total": 107,
         "code": 90,
         "blank": 9,
-        "comment": 4
+        "comment": 8
       },
       "type": "typescript",
       "jsx": true,
@@ -3817,7 +4114,7 @@
               "name": "useState"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "react",
@@ -3826,12 +4123,12 @@
               "name": "MouseEvent"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "./TreeViewGroupItem",
           "default": "TreeViewGroupItem",
-          "line": 5
+          "line": 9
         },
         {
           "source": "./@types/treeViewTypes",
@@ -3843,40 +4140,41 @@
               "name": "TreeViewGroup"
             }
           ],
-          "line": 6
+          "line": 10
         }
       ],
       "exports": {
         "default": {
           "name": "TreeView",
-          "line": 21
+          "line": 25
         }
       },
       "interfaces": [
         {
           "name": "TreeViewProps",
-          "line": 8
+          "line": 12
         }
       ],
       "hooks_used": [
         "useEffect",
         "useState"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "Main tree view component that renders collection groups and manages node selection and favoriting state."
     },
     {
       "path": "lib/components/TreeViewGroupItem.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 5205,
-        "last_modified": "2026-02-03T10:13:02.724661+00:00",
-        "md5": "39ffd1cb8f83355032a6642891d8c471"
+        "size_bytes": 5371,
+        "last_modified": "2026-02-10T09:16:12.454386+00:00",
+        "md5": "0f5ff0c0435915263e72a8d5102fabcd"
       },
       "line_counts": {
-        "total": 140,
+        "total": 144,
         "code": 129,
         "blank": 9,
-        "comment": 2
+        "comment": 6
       },
       "type": "typescript",
       "jsx": true,
@@ -3894,7 +4192,7 @@
               "name": "useState"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "lucide-react",
@@ -3915,7 +4213,7 @@
               "name": "Star"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "./@types/treeViewTypes",
@@ -3927,12 +4225,12 @@
               "name": "TreeViewGroup"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "./TreeNodeItem",
           "default": "TreeNodeItem",
-          "line": 6
+          "line": 10
         },
         {
           "source": "./ThemeProvider",
@@ -3941,25 +4239,25 @@
               "name": "useTheme"
             }
           ],
-          "line": 7
+          "line": 11
         }
       ],
       "exports": {
         "named": [
           {
             "name": "TreeViewGroupItemProps",
-            "line": 9
+            "line": 13
           }
         ],
         "default": {
           "name": "TreeViewGroupItem",
-          "line": 24
+          "line": 28
         }
       },
       "interfaces": [
         {
           "name": "TreeViewGroupItemProps",
-          "line": 9,
+          "line": 13,
           "exported": true
         }
       ],
@@ -3969,21 +4267,22 @@
         "useState",
         "useTheme"
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "A collection group component with expand/collapse, add file/folder buttons, and favorite toggle functionality."
     },
     {
       "path": "lib/components/iconOptions.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 9665,
-        "last_modified": "2026-02-03T08:40:21.081990+00:00",
-        "md5": "8ef4e286476705f8751169d65dfcfcb6"
+        "size_bytes": 9827,
+        "last_modified": "2026-02-10T09:16:12.456170+00:00",
+        "md5": "1d7effefa56963c730b8910a3be7dd84"
       },
       "line_counts": {
-        "total": 482,
+        "total": 486,
         "code": 479,
         "blank": 3,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "jsx": true,
@@ -4229,7 +4528,7 @@
               "name": "Zap"
             }
           ],
-          "line": 1
+          "line": 5
         },
         {
           "source": "./IconPopover",
@@ -4238,74 +4537,126 @@
               "name": "IconOption"
             }
           ],
-          "line": 83
+          "line": 87
         }
       ],
       "exports": {
         "named": [
           {
             "name": "iconOptions",
-            "line": 85
+            "line": 89
           }
         ]
       },
-      "is_component": true
+      "is_component": true,
+      "description": "Exports an array of icon options with id, label, and lucide-react icon components for file/folder customization."
+    },
+    {
+      "path": "lib/components/@types/codebaseTreeTypes.ts",
+      "extension": ".ts",
+      "metadata": {
+        "size_bytes": 883,
+        "last_modified": "2026-02-10T08:49:43.234995+00:00",
+        "md5": "6a9c2da23b266617fa2e38f4207d502f"
+      },
+      "line_counts": {
+        "total": 45,
+        "code": 42,
+        "blank": 2,
+        "comment": 1
+      },
+      "type": "typescript",
+      "exports": {
+        "named": [
+          {
+            "name": "CodebaseTreeNode",
+            "line": 1
+          },
+          {
+            "name": "CodebaseFileInfo",
+            "line": 10
+          },
+          {
+            "name": "CodebaseIndex",
+            "line": 28
+          }
+        ]
+      },
+      "interfaces": [
+        {
+          "name": "CodebaseTreeNode",
+          "line": 1,
+          "exported": true
+        },
+        {
+          "name": "CodebaseFileInfo",
+          "line": 10,
+          "exported": true
+        },
+        {
+          "name": "CodebaseIndex",
+          "line": 28,
+          "exported": true
+        }
+      ],
+      "description": "(typescript file)"
     },
     {
       "path": "lib/components/@types/tagEditorTypes.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 186,
-        "last_modified": "2026-01-28T04:42:45.369390+00:00",
-        "md5": "a3cc3096cffae70f31b5b7a67bd7ea22"
+        "size_bytes": 328,
+        "last_modified": "2026-02-10T09:16:12.458568+00:00",
+        "md5": "ba94305ae5b5fc47c6e0a13d9877c4e5"
       },
       "line_counts": {
-        "total": 12,
+        "total": 16,
         "code": 10,
         "blank": 2,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "exports": {
         "named": [
           {
             "name": "Tag",
-            "line": 1
+            "line": 5
           },
           {
             "name": "TagEditorProps",
-            "line": 7
+            "line": 11
           }
         ]
       },
       "interfaces": [
         {
           "name": "TagEditorProps",
-          "line": 7,
+          "line": 11,
           "exported": true
         }
       ],
       "type_aliases": [
         {
           "name": "Tag",
-          "line": 1,
+          "line": 5,
           "exported": true
         }
-      ]
+      ],
+      "description": "Type definitions for tag editing functionality including Tag structure and TagEditorProps."
     },
     {
       "path": "lib/components/@types/treeViewTypes.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 410,
-        "last_modified": "2026-01-28T03:48:39.913841+00:00",
-        "md5": "38727212ab2c6ca20d9b7baf8b1a981b"
+        "size_bytes": 565,
+        "last_modified": "2026-02-10T09:16:12.460659+00:00",
+        "md5": "38d22c1235ee32bb76a964ebc20562ef"
       },
       "line_counts": {
-        "total": 23,
+        "total": 27,
         "code": 19,
         "blank": 4,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "imports": [
@@ -4316,71 +4667,73 @@
               "name": "Tag"
             }
           ],
-          "line": 1
+          "line": 5
         }
       ],
       "exports": {
         "named": [
           {
             "name": "TreeNode",
-            "line": 3
+            "line": 7
           },
           {
             "name": "TreeViewGroup",
-            "line": 17
+            "line": 21
           }
         ]
       },
       "interfaces": [
         {
           "name": "TreeNode",
-          "line": 3,
+          "line": 7,
           "exported": true
         },
         {
           "name": "TreeViewGroup",
-          "line": 17,
+          "line": 21,
           "exported": true
         }
-      ]
+      ],
+      "description": "Type definitions for tree view structures including TreeNode (file/folder) and TreeViewGroup interfaces."
     },
     {
       "path": "lib/components/markdown-editor/editorCss.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 5211,
-        "last_modified": "2026-01-19T06:43:01.149866+00:00",
-        "md5": "3da238fa350321c78d4147b2197cf19d"
+        "size_bytes": 5372,
+        "last_modified": "2026-02-10T09:16:12.462974+00:00",
+        "md5": "5ce31dc67e20a41d9a60112f2daed799"
       },
       "line_counts": {
-        "total": 291,
+        "total": 295,
         "code": 248,
         "blank": 43,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "exports": {
         "named": [
           {
             "name": "MARKDOWN_EDITOR_CSS",
-            "line": 1
+            "line": 5
           }
         ]
-      }
+      },
+      "description": "Exported CSS styles for the markdown editor including custom highlights, popovers, and syntax highlighting colors."
     },
     {
       "path": "lib/components/markdown-editor/editorUtils.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 2301,
-        "last_modified": "2026-01-26T11:01:46.539804+00:00",
-        "md5": "d72a11446cb1d89097c473e2cd9919aa"
+        "size_bytes": 2475,
+        "last_modified": "2026-02-10T09:16:12.464584+00:00",
+        "md5": "a9709b8aaf995ed3cf5b55b82e6e4d8a"
       },
       "line_counts": {
-        "total": 69,
+        "total": 73,
         "code": 50,
         "blank": 15,
-        "comment": 4
+        "comment": 8
       },
       "type": "typescript",
       "imports": [
@@ -4394,29 +4747,29 @@
               "name": "SetStateAction"
             }
           ],
-          "line": 1
+          "line": 5
         }
       ],
       "exports": {
         "named": [
           {
             "name": "normalizePublicPath",
-            "line": 3
+            "line": 7
           },
           {
             "name": "getToolbarButtonCenter",
-            "line": 17
+            "line": 21
           },
           {
             "name": "insertAtMdEditorCursor",
-            "line": 30
+            "line": 34
           }
         ]
       },
       "functions": [
         {
           "name": "normalizePublicPath",
-          "line": 3,
+          "line": 7,
           "type": "function",
           "params": "path: string",
           "return_type": "s",
@@ -4424,14 +4777,14 @@
         },
         {
           "name": "safeEscapeForAttributeSelector",
-          "line": 8,
+          "line": 12,
           "type": "function",
           "params": "value: string",
           "return_type": "s"
         },
         {
           "name": "getToolbarButtonCenter",
-          "line": 17,
+          "line": 21,
           "type": "function",
           "params": "ariaLabel: string",
           "return_type": "",
@@ -4439,50 +4792,51 @@
         },
         {
           "name": "insertAtMdEditorCursor",
-          "line": 30,
+          "line": 34,
           "type": "function",
           "params": "opts: {\n  markdown: string;\n  setValue: Dispatch<SetStateAction<string>>;\n  fallbackReplaceSelection?: (text: string",
           "exported": true
         }
-      ]
+      ],
+      "description": "Utility functions for markdown editor operations including getting toolbar button positions and inserting markdown at cursor."
     },
     {
       "path": "lib/components/markdown-editor/highlightPlugins.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 2046,
-        "last_modified": "2026-01-15T03:54:53.261179+00:00",
-        "md5": "fac51a621c15a7378e3a854e3e339e8d"
+        "size_bytes": 2208,
+        "last_modified": "2026-02-10T09:16:12.466175+00:00",
+        "md5": "8df75ca6219a9f6d225dd0af9f0cebe6"
       },
       "line_counts": {
-        "total": 67,
+        "total": 71,
         "code": 52,
         "blank": 13,
-        "comment": 2
+        "comment": 6
       },
       "type": "typescript",
       "exports": {
         "named": [
           {
             "name": "remarkHighlight",
-            "line": 8
+            "line": 12
           },
           {
             "name": "rehypeHighlight",
-            "line": 63
+            "line": 67
           }
         ]
       },
       "functions": [
         {
           "name": "remarkHighlight",
-          "line": 8,
+          "line": 12,
           "type": "function",
           "exported": true
         },
         {
           "name": "rehypeHighlight",
-          "line": 63,
+          "line": 67,
           "type": "function",
           "exported": true
         }
@@ -4490,23 +4844,24 @@
       "type_aliases": [
         {
           "name": "NodeLike",
-          "line": 1
+          "line": 5
         }
-      ]
+      ],
+      "description": "Remark and rehype plugins that parse custom highlight syntax (??text??) and render it with popover tooltips."
     },
     {
       "path": "lib/components/markdown-editor/icons.tsx",
       "extension": ".tsx",
       "metadata": {
-        "size_bytes": 3145,
-        "last_modified": "2026-01-19T06:36:10.247285+00:00",
-        "md5": "70b4cb1a99e4a0715c14c9387fbcff7d"
+        "size_bytes": 3299,
+        "last_modified": "2026-02-10T09:16:12.467831+00:00",
+        "md5": "d990d02320c74d22dfcfa3d40243f014"
       },
       "line_counts": {
-        "total": 135,
+        "total": 139,
         "code": 118,
         "blank": 17,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "jsx": true,
@@ -4518,147 +4873,147 @@
               "name": "ReactNode"
             }
           ],
-          "line": 1
+          "line": 5
         }
       ],
       "exports": {
         "named": [
           {
             "name": "BoldIcon",
-            "line": 29
+            "line": 33
           },
           {
             "name": "ItalicIcon",
-            "line": 36
+            "line": 40
           },
           {
             "name": "StrikethroughIcon",
-            "line": 44
+            "line": 48
           },
           {
             "name": "UnderlineIcon",
-            "line": 51
+            "line": 55
           },
           {
             "name": "LinkIcon",
-            "line": 58
+            "line": 62
           },
           {
             "name": "ImageIcon",
-            "line": 65
+            "line": 69
           },
           {
             "name": "HeadingIcon",
-            "line": 73
+            "line": 77
           },
           {
             "name": "SaveIcon",
-            "line": 81
+            "line": 85
           },
           {
             "name": "ClearIcon",
-            "line": 89
+            "line": 93
           },
           {
             "name": "EditCodeIcon",
-            "line": 98
+            "line": 102
           },
           {
             "name": "LiveCodeIcon",
-            "line": 109
+            "line": 113
           },
           {
             "name": "PreviewIcon",
-            "line": 118
+            "line": 122
           },
           {
             "name": "FullscreenIcon",
-            "line": 126
+            "line": 130
           }
         ]
       },
       "functions": [
         {
           "name": "IconBase",
-          "line": 8,
+          "line": 12,
           "type": "function",
           "params": "{\n  children,\n  width = 16,\n  height = 16,\n}: IconProps & { children: ReactNode }"
         },
         {
           "name": "BoldIcon",
-          "line": 29,
+          "line": 33,
           "type": "arrow_function",
           "exported": true
         },
         {
           "name": "ItalicIcon",
-          "line": 36,
+          "line": 40,
           "type": "arrow_function",
           "exported": true
         },
         {
           "name": "StrikethroughIcon",
-          "line": 44,
+          "line": 48,
           "type": "arrow_function",
           "exported": true
         },
         {
           "name": "UnderlineIcon",
-          "line": 51,
+          "line": 55,
           "type": "arrow_function",
           "exported": true
         },
         {
           "name": "LinkIcon",
-          "line": 58,
+          "line": 62,
           "type": "arrow_function",
           "exported": true
         },
         {
           "name": "ImageIcon",
-          "line": 65,
+          "line": 69,
           "type": "arrow_function",
           "exported": true
         },
         {
           "name": "HeadingIcon",
-          "line": 73,
+          "line": 77,
           "type": "arrow_function",
           "exported": true
         },
         {
           "name": "SaveIcon",
-          "line": 81,
+          "line": 85,
           "type": "arrow_function",
           "exported": true
         },
         {
           "name": "ClearIcon",
-          "line": 89,
+          "line": 93,
           "type": "arrow_function",
           "exported": true
         },
         {
           "name": "EditCodeIcon",
-          "line": 98,
+          "line": 102,
           "type": "arrow_function",
           "exported": true
         },
         {
           "name": "LiveCodeIcon",
-          "line": 109,
+          "line": 113,
           "type": "arrow_function",
           "exported": true
         },
         {
           "name": "PreviewIcon",
-          "line": 118,
+          "line": 122,
           "type": "arrow_function",
           "exported": true
         },
         {
           "name": "FullscreenIcon",
-          "line": 126,
+          "line": 130,
           "type": "arrow_function",
           "exported": true
         }
@@ -4666,24 +5021,25 @@
       "type_aliases": [
         {
           "name": "IconProps",
-          "line": 3
+          "line": 7
         }
       ],
-      "is_component": true
+      "is_component": true,
+      "description": "Custom SVG icon components for markdown formatting toolbar buttons (bold, italic, link, image, heading, etc.)."
     },
     {
       "path": "lib/db/index.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 3892,
-        "last_modified": "2026-02-05T03:52:01.283596+00:00",
-        "md5": "d1aa03191256c03b212b6c8cbf7b9351"
+        "size_bytes": 4052,
+        "last_modified": "2026-02-10T09:16:12.469768+00:00",
+        "md5": "0275456e9550daef089db23de8715626"
       },
       "line_counts": {
-        "total": 144,
+        "total": 148,
         "code": 133,
         "blank": 11,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "imports": [
@@ -4694,7 +5050,7 @@
               "name": "drizzle"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "drizzle-orm",
@@ -4703,12 +5059,12 @@
               "name": "sql"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "better-sqlite3",
           "default": "Database",
-          "line": 5
+          "line": 9
         },
         {
           "source": "../components/@types/treeViewTypes",
@@ -4720,7 +5076,7 @@
               "name": "TreeViewGroup"
             }
           ],
-          "line": 6
+          "line": 10
         },
         {
           "source": "./schema",
@@ -4729,71 +5085,72 @@
               "name": "collectionTable"
             }
           ],
-          "line": 7
+          "line": 11
         }
       ],
       "exports": {
         "named": [
           {
             "name": "testConnection",
-            "line": 9
+            "line": 13
           },
           {
             "name": "createCollection",
-            "line": 131
+            "line": 135
           }
         ]
       },
       "functions": [
         {
           "name": "testConnection",
-          "line": 9,
+          "line": 13,
           "type": "function",
           "async": true,
           "exported": true
         },
         {
           "name": "createCollection",
-          "line": 131,
+          "line": 135,
           "type": "function",
           "async": true,
           "exported": true
         },
         {
           "name": "mockUuid",
-          "line": 16,
+          "line": 20,
           "type": "arrow_function"
         },
         {
           "name": "getExtension",
-          "line": 21,
+          "line": 25,
           "type": "arrow_function"
         },
         {
           "name": "createFolder",
-          "line": 29,
+          "line": 33,
           "type": "arrow_function"
         },
         {
           "name": "createFile",
-          "line": 45,
+          "line": 49,
           "type": "arrow_function"
         }
-      ]
+      ],
+      "description": "Server utility file containing sample data generation, database test functions, and mock collection creation helpers."
     },
     {
       "path": "lib/db/schema.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 1048,
-        "last_modified": "2026-01-28T05:12:56.942369+00:00",
-        "md5": "7f25d94bd6a7603865b3b34bc900d6ce"
+        "size_bytes": 1197,
+        "last_modified": "2026-02-10T09:16:12.471966+00:00",
+        "md5": "3a0ced3dac6506227c980e844290cc9f"
       },
       "line_counts": {
-        "total": 30,
+        "total": 34,
         "code": 27,
         "blank": 3,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "imports": [
@@ -4804,7 +5161,7 @@
               "name": "sql"
             }
           ],
-          "line": 1
+          "line": 5
         },
         {
           "source": "drizzle-orm/sqlite-core",
@@ -4819,39 +5176,40 @@
               "name": "text"
             }
           ],
-          "line": 2
+          "line": 6
         }
       ],
       "exports": {
         "named": [
           {
             "name": "collectionTable",
-            "line": 4
+            "line": 8
           },
           {
             "name": "fileTable",
-            "line": 10
+            "line": 14
           },
           {
             "name": "apiKeyTable",
-            "line": 23
+            "line": 27
           }
         ]
-      }
+      },
+      "description": "Defines Drizzle ORM table schemas for collections, files, and API keys with their columns and data types."
     },
     {
       "path": "lib/db/repository/api-key.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 762,
-        "last_modified": "2026-01-28T05:12:58.065932+00:00",
-        "md5": "39afacfa5b249cb1865c4165350e4ac0"
+        "size_bytes": 888,
+        "last_modified": "2026-02-10T09:16:12.473556+00:00",
+        "md5": "1e20b40a9d0eef92a56e76b30cc1a042"
       },
       "line_counts": {
-        "total": 21,
+        "total": 25,
         "code": 15,
         "blank": 5,
-        "comment": 1
+        "comment": 5
       },
       "type": "typescript",
       "imports": [
@@ -4862,7 +5220,7 @@
               "name": "apiKeyTable"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "@/app/lib/db/repository/base",
@@ -4874,48 +5232,48 @@
               "name": "type RepoOptions"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "server-only",
           "side_effect": true,
-          "line": 2
+          "line": 6
         }
       ],
       "exports": {
         "named": [
           {
             "name": "ApiKeyRow",
-            "line": 7
+            "line": 11
           },
           {
             "name": "ApiKeyInsert",
-            "line": 8
+            "line": 12
           },
           {
             "name": "ApiKeyCreateInput",
-            "line": 9
+            "line": 13
           },
           {
             "name": "ApiKeyUpdateInput",
-            "line": 10
+            "line": 14
           },
           {
             "name": "ApiKeyRepository",
-            "line": 12
+            "line": 16
           }
         ]
       },
       "classes": [
         {
           "name": "ApiKeyRepository",
-          "line": 12,
+          "line": 16,
           "extends": "BaseRepository<typeof apiKeyTable, string>",
           "exported": true,
           "methods": [
             {
               "name": "super",
-              "line": 14,
+              "line": 18,
               "params": "apiKeyTable, apiKeyTable.id, \"id\", {\n\t\t\t...opts,\n\t\t\tidFactory: ("
             }
           ]
@@ -4924,46 +5282,47 @@
       "type_aliases": [
         {
           "name": "ApiKeyRow",
-          "line": 7,
+          "line": 11,
           "exported": true
         },
         {
           "name": "ApiKeyInsert",
-          "line": 8,
+          "line": 12,
           "exported": true
         },
         {
           "name": "ApiKeyCreateInput",
-          "line": 9,
+          "line": 13,
           "exported": true
         },
         {
           "name": "ApiKeyUpdateInput",
-          "line": 10,
+          "line": 14,
           "exported": true
         }
-      ]
+      ],
+      "description": "API key repository extending BaseRepository for managing stored API key entities."
     },
     {
       "path": "lib/db/repository/base.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 5900,
-        "last_modified": "2026-02-06T02:25:32.189190+00:00",
-        "md5": "8c5ee6db7feb45e92ebe0e50d4e55a0b"
+        "size_bytes": 6061,
+        "last_modified": "2026-02-10T09:16:12.475618+00:00",
+        "md5": "de80dd0f15c1a5065725a9b294f0fca4"
       },
       "line_counts": {
-        "total": 183,
+        "total": 187,
         "code": 117,
         "blank": 30,
-        "comment": 36
+        "comment": 40
       },
       "type": "typescript",
       "imports": [
         {
           "source": "better-sqlite3",
           "default": "Database",
-          "line": 4
+          "line": 8
         },
         {
           "source": "drizzle-orm/better-sqlite3",
@@ -4975,7 +5334,7 @@
               "name": "type BetterSQLite3Database"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "drizzle-orm",
@@ -4990,7 +5349,7 @@
               "name": "or"
             }
           ],
-          "line": 6
+          "line": 10
         },
         {
           "source": "drizzle-orm/sqlite-core",
@@ -4999,7 +5358,7 @@
               "name": "AnySQLiteTable"
             }
           ],
-          "line": 7
+          "line": 11
         },
         {
           "source": "@/app/lib/services/config/configService.server",
@@ -5008,42 +5367,42 @@
               "name": "configService"
             }
           ],
-          "line": 8
+          "line": 12
         },
         {
           "source": "server-only",
           "side_effect": true,
-          "line": 2
+          "line": 6
         }
       ],
       "exports": {
         "named": [
           {
             "name": "RepoOptions",
-            "line": 10
-          },
-          {
-            "name": "WhereOperator",
             "line": 14
           },
           {
+            "name": "WhereOperator",
+            "line": 18
+          },
+          {
             "name": "WhereCondition",
-            "line": 24
+            "line": 28
           },
           {
             "name": "getDefaultDb",
-            "line": 37
+            "line": 41
           },
           {
             "name": "BaseRepository",
-            "line": 65
+            "line": 69
           }
         ]
       },
       "functions": [
         {
           "name": "getDefaultDb",
-          "line": 37,
+          "line": 41,
           "type": "function",
           "return_type": "B",
           "exported": true
@@ -5052,13 +5411,13 @@
       "classes": [
         {
           "name": "BaseRepository",
-          "line": 65,
+          "line": 69,
           "abstract": true,
           "exported": true,
           "methods": [
             {
               "name": "findAll",
-              "line": 79,
+              "line": 83,
               "return_type": "P",
               "modifiers": [
                 "public",
@@ -5067,7 +5426,7 @@
             },
             {
               "name": "findById",
-              "line": 83,
+              "line": 87,
               "params": "id: TId",
               "return_type": "P",
               "modifiers": [
@@ -5077,7 +5436,7 @@
             },
             {
               "name": "where",
-              "line": 95,
+              "line": 99,
               "params": "conditions: WhereCondition<TTable>[]",
               "return_type": "a",
               "modifiers": [
@@ -5086,7 +5445,7 @@
             },
             {
               "name": "findWhere",
-              "line": 123,
+              "line": 127,
               "params": "conditions: WhereCondition<TTable>[]",
               "return_type": "P",
               "modifiers": [
@@ -5096,7 +5455,7 @@
             },
             {
               "name": "findOneWhere",
-              "line": 132,
+              "line": 136,
               "params": "conditions: WhereCondition<TTable>[]",
               "return_type": "P",
               "modifiers": [
@@ -5106,7 +5465,7 @@
             },
             {
               "name": "create",
-              "line": 143,
+              "line": 147,
               "params": "input: Partial<InsertModel<TTable>> & Record<string, unknown>",
               "return_type": "P",
               "modifiers": [
@@ -5116,7 +5475,7 @@
             },
             {
               "name": "update",
-              "line": 165,
+              "line": 169,
               "params": "id: TId, patch: Partial<InsertModel<TTable>>",
               "return_type": "P",
               "modifiers": [
@@ -5126,7 +5485,7 @@
             },
             {
               "name": "delete",
-              "line": 176,
+              "line": 180,
               "params": "id: TId",
               "return_type": "P",
               "modifiers": [
@@ -5140,46 +5499,47 @@
       "type_aliases": [
         {
           "name": "RepoOptions",
-          "line": 10,
-          "exported": true
-        },
-        {
-          "name": "WhereOperator",
           "line": 14,
           "exported": true
         },
         {
+          "name": "WhereOperator",
+          "line": 18,
+          "exported": true
+        },
+        {
           "name": "WhereCondition",
-          "line": 24,
+          "line": 28,
           "exported": true
         },
         {
           "name": "BaseRepoCtorOptions",
-          "line": 51
+          "line": 55
         },
         {
           "name": "SelectModel",
-          "line": 58
+          "line": 62
         },
         {
           "name": "InsertModel",
-          "line": 59
+          "line": 63
         }
-      ]
+      ],
+      "description": "Provides an abstract base repository class with CRUD operations and query building for SQLite tables using Drizzle ORM."
     },
     {
       "path": "lib/db/repository/collection.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 758,
-        "last_modified": "2026-01-20T11:06:06.142644+00:00",
-        "md5": "eefd7787909a8d43648a6bb02179a727"
+        "size_bytes": 907,
+        "last_modified": "2026-02-10T09:16:12.477416+00:00",
+        "md5": "56583b78f77af695ee85282ddb997bf7"
       },
       "line_counts": {
-        "total": 21,
+        "total": 25,
         "code": 15,
         "blank": 5,
-        "comment": 1
+        "comment": 5
       },
       "type": "typescript",
       "imports": [
@@ -5190,7 +5550,7 @@
               "name": "collectionTable"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "@/app/lib/db/repository/base",
@@ -5202,48 +5562,48 @@
               "name": "type RepoOptions"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "server-only",
           "side_effect": true,
-          "line": 2
+          "line": 6
         }
       ],
       "exports": {
         "named": [
           {
             "name": "CollectionRow",
-            "line": 7
+            "line": 11
           },
           {
             "name": "CollectionInsert",
-            "line": 8
+            "line": 12
           },
           {
             "name": "CollectionCreateInput",
-            "line": 9
+            "line": 13
           },
           {
             "name": "CollectionUpdateInput",
-            "line": 10
+            "line": 14
           },
           {
             "name": "CollectionRepository",
-            "line": 12
+            "line": 16
           }
         ]
       },
       "classes": [
         {
           "name": "CollectionRepository",
-          "line": 12,
+          "line": 16,
           "extends": "BaseRepository<typeof collectionTable, string>",
           "exported": true,
           "methods": [
             {
               "name": "super",
-              "line": 14,
+              "line": 18,
               "params": "collectionTable, collectionTable.id, \"id\", {\n\t\t\t...opts,\n\t\t\tidFactory: ("
             }
           ]
@@ -5252,39 +5612,40 @@
       "type_aliases": [
         {
           "name": "CollectionRow",
-          "line": 7,
+          "line": 11,
           "exported": true
         },
         {
           "name": "CollectionInsert",
-          "line": 8,
+          "line": 12,
           "exported": true
         },
         {
           "name": "CollectionCreateInput",
-          "line": 9,
+          "line": 13,
           "exported": true
         },
         {
           "name": "CollectionUpdateInput",
-          "line": 10,
+          "line": 14,
           "exported": true
         }
-      ]
+      ],
+      "description": "Collection repository extending BaseRepository for managing collection entities with UUID generation."
     },
     {
       "path": "lib/db/repository/file.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 1217,
-        "last_modified": "2026-02-09T06:47:06.411114+00:00",
-        "md5": "1e931e57b72ca6bcbc61ec0815912998"
+        "size_bytes": 1382,
+        "last_modified": "2026-02-10T09:16:12.479323+00:00",
+        "md5": "e3b688b7267af696ce2eade81e3a0665"
       },
       "line_counts": {
-        "total": 35,
+        "total": 39,
         "code": 27,
         "blank": 7,
-        "comment": 1
+        "comment": 5
       },
       "type": "typescript",
       "imports": [
@@ -5295,7 +5656,7 @@
               "name": "inArray"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "@/app/lib/db/schema",
@@ -5304,7 +5665,7 @@
               "name": "fileTable"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "@/app/lib/db/repository/base",
@@ -5316,7 +5677,7 @@
               "name": "type RepoOptions"
             }
           ],
-          "line": 6
+          "line": 10
         },
         {
           "source": "../../components/@types/tagEditorTypes",
@@ -5325,53 +5686,53 @@
               "name": "Tag"
             }
           ],
-          "line": 7
+          "line": 11
         },
         {
           "source": "server-only",
           "side_effect": true,
-          "line": 2
+          "line": 6
         }
       ],
       "exports": {
         "named": [
           {
             "name": "FileRow",
-            "line": 9
+            "line": 13
           },
           {
             "name": "FileInsert",
-            "line": 10
+            "line": 14
           },
           {
             "name": "FileCreateInput",
-            "line": 11
+            "line": 15
           },
           {
             "name": "FileUpdateInput",
-            "line": 12
+            "line": 16
           },
           {
             "name": "FileRepository",
-            "line": 14
+            "line": 18
           }
         ]
       },
       "classes": [
         {
           "name": "FileRepository",
-          "line": 14,
+          "line": 18,
           "extends": "BaseRepository<typeof fileTable, string>",
           "exported": true,
           "methods": [
             {
               "name": "super",
-              "line": 16,
+              "line": 20,
               "params": "fileTable, fileTable.id, \"id\", {\n\t\t\t...opts,\n\t\t\tidFactory: ("
             },
             {
               "name": "updateIcon",
-              "line": 21,
+              "line": 25,
               "params": "id: string, icon: string | null, updatedAt: number = Date.now(",
               "modifiers": [
                 "public",
@@ -5380,7 +5741,7 @@
             },
             {
               "name": "findByIds",
-              "line": 25,
+              "line": 29,
               "params": "ids: string[]",
               "return_type": "P",
               "modifiers": [
@@ -5390,7 +5751,7 @@
             },
             {
               "name": "updateTags",
-              "line": 30,
+              "line": 34,
               "params": "id: string, tags: Tag[]",
               "modifiers": [
                 "public",
@@ -5403,39 +5764,40 @@
       "type_aliases": [
         {
           "name": "FileRow",
-          "line": 9,
+          "line": 13,
           "exported": true
         },
         {
           "name": "FileInsert",
-          "line": 10,
+          "line": 14,
           "exported": true
         },
         {
           "name": "FileCreateInput",
-          "line": 11,
+          "line": 15,
           "exported": true
         },
         {
           "name": "FileUpdateInput",
-          "line": 12,
+          "line": 16,
           "exported": true
         }
-      ]
+      ],
+      "description": "File repository extending BaseRepository with specialized methods for updating file icons, tags, and bulk retrieval by IDs."
     },
     {
       "path": "lib/services/ai.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 1646,
-        "last_modified": "2026-02-06T02:25:04.569030+00:00",
-        "md5": "26511e1ab61afeb3ff4dbe7e645f2e48"
+        "size_bytes": 1766,
+        "last_modified": "2026-02-10T09:16:12.481980+00:00",
+        "md5": "3a36c2de082fd706e6644edaa2da5f83"
       },
       "line_counts": {
-        "total": 47,
+        "total": 51,
         "code": 36,
         "blank": 9,
-        "comment": 2
+        "comment": 6
       },
       "type": "typescript",
       "imports": [
@@ -5446,7 +5808,7 @@
               "name": "ChatOpenAI"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "@/app/lib/services/aiSemanticCacheRedis.server",
@@ -5455,7 +5817,7 @@
               "name": "AiSemanticCacheRedis"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "@/app/lib/services/config/configService.server",
@@ -5464,53 +5826,54 @@
               "name": "configService"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "server-only",
           "side_effect": true,
-          "line": 1
+          "line": 5
         }
       ],
       "exports": {
         "named": [
           {
             "name": "aiUnitTest",
-            "line": 10
+            "line": 14
           }
         ]
       },
       "functions": [
         {
           "name": "aiUnitTest",
-          "line": 10,
+          "line": 14,
           "type": "function",
           "params": "prompt: string",
           "async": true,
           "exported": true
         }
-      ]
+      ],
+      "description": "AI service wrapper using ChatOpenAI with semantic caching for unit test prompts."
     },
     {
       "path": "lib/services/aiSemanticCacheRedis.server.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 7521,
-        "last_modified": "2026-02-06T02:25:22.650165+00:00",
-        "md5": "46eee89611811ebe82157142d57d9e39"
+        "size_bytes": 7694,
+        "last_modified": "2026-02-10T09:16:12.483910+00:00",
+        "md5": "4528eb2a65b2322662c452d7848931f8"
       },
       "line_counts": {
-        "total": 280,
+        "total": 284,
         "code": 195,
         "blank": 34,
-        "comment": 51
+        "comment": 55
       },
       "type": "typescript",
       "imports": [
         {
           "source": "crypto",
           "default": "crypto",
-          "line": 3
+          "line": 7
         },
         {
           "source": "@langchain/openai",
@@ -5519,7 +5882,7 @@
               "name": "OpenAIEmbeddings"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "redis",
@@ -5531,7 +5894,7 @@
               "name": "type RedisClientType"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "@/app/lib/services/config/configService.server",
@@ -5540,44 +5903,44 @@
               "name": "configService"
             }
           ],
-          "line": 6
+          "line": 10
         },
         {
           "source": "server-only",
           "side_effect": true,
-          "line": 1
+          "line": 5
         }
       ],
       "exports": {
         "named": [
           {
             "name": "AiSemanticCacheRedisConfig",
-            "line": 8
+            "line": 12
           },
           {
             "name": "AiSemanticCacheRedis",
-            "line": 89
+            "line": 93
           }
         ]
       },
       "functions": [
         {
           "name": "getRedisClient",
-          "line": 46,
+          "line": 50,
           "type": "function",
           "params": "redisUrl: string",
           "return_type": "R"
         },
         {
           "name": "toFloat32Buffer",
-          "line": 57,
+          "line": 61,
           "type": "function",
           "params": "vector: number[]",
           "return_type": "B"
         },
         {
           "name": "parseFtSearchFirstHit",
-          "line": 61,
+          "line": 65,
           "type": "function",
           "params": "reply: unknown",
           "return_type": ""
@@ -5586,12 +5949,12 @@
       "classes": [
         {
           "name": "AiSemanticCacheRedis",
-          "line": 89,
+          "line": 93,
           "exported": true,
           "methods": [
             {
               "name": "init",
-              "line": 117,
+              "line": 121,
               "return_type": "P",
               "modifiers": [
                 "async"
@@ -5599,7 +5962,7 @@
             },
             {
               "name": "ensureIndex",
-              "line": 128,
+              "line": 132,
               "return_type": "P",
               "modifiers": [
                 "async"
@@ -5607,12 +5970,12 @@
             },
             {
               "name": "String",
-              "line": 162,
+              "line": 166,
               "params": "this.embeddingDim"
             },
             {
               "name": "embed",
-              "line": 167,
+              "line": 171,
               "params": "text: string, apiKey: string",
               "return_type": "P",
               "modifiers": [
@@ -5621,7 +5984,7 @@
             },
             {
               "name": "semanticLookup",
-              "line": 180,
+              "line": 184,
               "params": "embedding: number[], domain: string, version: string",
               "return_type": "P",
               "modifiers": [
@@ -5630,7 +5993,7 @@
             },
             {
               "name": "writeSemanticCache",
-              "line": 224,
+              "line": 228,
               "params": "embedding: number[],\n    answer: string,\n    domain: string,\n    version: string,\n    ttlSec: number = this.defaultTtlSec",
               "return_type": "P",
               "modifiers": [
@@ -5639,7 +6002,7 @@
             },
             {
               "name": "lookupText",
-              "line": 259,
+              "line": 263,
               "params": "text: string, domain: string, version: string, apiKey: string",
               "return_type": "P",
               "modifiers": [
@@ -5648,7 +6011,7 @@
             },
             {
               "name": "writeText",
-              "line": 268,
+              "line": 272,
               "params": "text: string,\n    answer: string,\n    domain: string,\n    version: string,\n    apiKey: string,\n    ttlSec: number = this.defaultTtlSec",
               "return_type": "P",
               "modifiers": [
@@ -5661,30 +6024,31 @@
       "interfaces": [
         {
           "name": "AiSemanticCacheRedisConfig",
-          "line": 8,
+          "line": 12,
           "exported": true
         }
       ],
       "type_aliases": [
         {
           "name": "CacheHit",
-          "line": 42
+          "line": 46
         }
-      ]
+      ],
+      "description": "Redis-backed semantic caching service using vector embeddings for AI responses with similarity-based lookup."
     },
     {
       "path": "lib/services/fileService.client.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 5242,
-        "last_modified": "2026-02-05T09:54:39.975992+00:00",
-        "md5": "3fb8e881419f8e9c7b7f417adaa07ad3"
+        "size_bytes": 5406,
+        "last_modified": "2026-02-10T09:16:12.486133+00:00",
+        "md5": "9c21e3e0627eabf06b632125dcc91a49"
       },
       "line_counts": {
-        "total": 200,
+        "total": 204,
         "code": 135,
         "blank": 30,
-        "comment": 35
+        "comment": 39
       },
       "type": "typescript",
       "imports": [
@@ -5701,7 +6065,7 @@
               "name": "useQueryClient"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "@tanstack/react-query",
@@ -5710,7 +6074,7 @@
               "name": "UseQueryOptions"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "@/app/lib/react-query/queryKeys",
@@ -5719,7 +6083,7 @@
               "name": "fileQueryKeys"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "@/app/lib/services/httpClient",
@@ -5728,7 +6092,7 @@
               "name": "HttpClient"
             }
           ],
-          "line": 6
+          "line": 10
         },
         {
           "source": "@/app/lib/services/@types/fileService.client",
@@ -5752,71 +6116,71 @@
               "name": "UploadImageResult"
             }
           ],
-          "line": 8
+          "line": 12
         }
       ],
       "exports": {
         "named": [
           {
             "name": "FileService",
-            "line": 17
+            "line": 21
           },
           {
             "name": "fileService",
-            "line": 114
+            "line": 118
           },
           {
             "name": "useFileContentQuery",
-            "line": 125
+            "line": 129
           },
           {
             "name": "useFileDetailsQuery",
-            "line": 143
+            "line": 147
           },
           {
             "name": "useSaveFileMutation",
-            "line": 162
+            "line": 166
           },
           {
             "name": "useUpdateFileIconMutation",
-            "line": 180
+            "line": 184
           },
           {
             "name": "useUploadImageMutation",
-            "line": 195
+            "line": 199
           }
         ]
       },
       "functions": [
         {
           "name": "useFileContentQuery",
-          "line": 125,
+          "line": 129,
           "type": "function",
           "params": "fileId: string | null | undefined,\n  options: EnabledQueryOptions<string> = {},",
           "exported": true
         },
         {
           "name": "useFileDetailsQuery",
-          "line": 143,
+          "line": 147,
           "type": "function",
           "params": "fileId: string | null | undefined,\n  options: EnabledQueryOptions<FileDetailsResult[\"file\"]> = {},",
           "exported": true
         },
         {
           "name": "useSaveFileMutation",
-          "line": 162,
+          "line": 166,
           "type": "function",
           "exported": true
         },
         {
           "name": "useUpdateFileIconMutation",
-          "line": 180,
+          "line": 184,
           "type": "function",
           "exported": true
         },
         {
           "name": "useUploadImageMutation",
-          "line": 195,
+          "line": 199,
           "type": "function",
           "exported": true
         }
@@ -5824,12 +6188,12 @@
       "classes": [
         {
           "name": "FileService",
-          "line": 17,
+          "line": 21,
           "exported": true,
           "methods": [
             {
               "name": "saveFile",
-              "line": 26,
+              "line": 30,
               "params": "params: SaveFileParams",
               "return_type": "P",
               "modifiers": [
@@ -5838,7 +6202,7 @@
             },
             {
               "name": "loadFile",
-              "line": 39,
+              "line": 43,
               "params": "fileId: string",
               "return_type": "P",
               "modifiers": [
@@ -5847,7 +6211,7 @@
             },
             {
               "name": "getFileDetails",
-              "line": 62,
+              "line": 66,
               "params": "fileId: string",
               "return_type": "P",
               "modifiers": [
@@ -5856,7 +6220,7 @@
             },
             {
               "name": "updateFileIcon",
-              "line": 77,
+              "line": 81,
               "params": "fileId: string, icon: string | null",
               "return_type": "P",
               "modifiers": [
@@ -5865,7 +6229,7 @@
             },
             {
               "name": "uploadImage",
-              "line": 91,
+              "line": 95,
               "params": "file: File",
               "return_type": "P",
               "modifiers": [
@@ -5878,7 +6242,7 @@
       "type_aliases": [
         {
           "name": "EnabledQueryOptions",
-          "line": 116
+          "line": 120
         }
       ],
       "hooks_used": [
@@ -5890,21 +6254,22 @@
         "useSaveFileMutation",
         "useUpdateFileIconMutation",
         "useUploadImageMutation"
-      ]
+      ],
+      "description": "Client-side file service with HTTP operations and React Query hooks for saving, loading, and managing files."
     },
     {
       "path": "lib/services/fileService.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 2729,
-        "last_modified": "2026-02-05T04:09:08.753967+00:00",
-        "md5": "02264f7dfa79f0795710d1dd83a95777"
+        "size_bytes": 2893,
+        "last_modified": "2026-02-10T09:16:12.487949+00:00",
+        "md5": "852cd4d8e87e014a9345be2c55bedec2"
       },
       "line_counts": {
-        "total": 93,
+        "total": 97,
         "code": 73,
         "blank": 19,
-        "comment": 1
+        "comment": 5
       },
       "type": "typescript",
       "imports": [
@@ -5915,7 +6280,7 @@
               "name": "CollectionRepository"
             }
           ],
-          "line": 3
+          "line": 7
         },
         {
           "source": "@/app/lib/db/repository/file",
@@ -5924,7 +6289,7 @@
               "name": "FileRepository"
             }
           ],
-          "line": 4
+          "line": 8
         },
         {
           "source": "@/app/lib/services/@types/fileService",
@@ -5933,49 +6298,49 @@
               "name": "SaveFileBody"
             }
           ],
-          "line": 5
+          "line": 9
         },
         {
           "source": "server-only",
           "side_effect": true,
-          "line": 1
+          "line": 5
         }
       ],
       "exports": {
         "named": [
           {
             "name": "saveFile",
-            "line": 46
+            "line": 50
           },
           {
             "name": "loadFile",
-            "line": 84
+            "line": 88
           }
         ]
       },
       "functions": [
         {
           "name": "getExtension",
-          "line": 11,
+          "line": 15,
           "type": "function",
           "params": "name: string"
         },
         {
           "name": "normalizeSaveBody",
-          "line": 17,
+          "line": 21,
           "type": "function",
           "params": "body: SaveFileBody"
         },
         {
           "name": "ensureCollectionExists",
-          "line": 34,
+          "line": 38,
           "type": "function",
           "params": "collectionId: string",
           "async": true
         },
         {
           "name": "saveFile",
-          "line": 46,
+          "line": 50,
           "type": "function",
           "params": "body: SaveFileBody",
           "return_type": "P",
@@ -5984,27 +6349,28 @@
         },
         {
           "name": "loadFile",
-          "line": 84,
+          "line": 88,
           "type": "function",
           "params": "id: string",
           "async": true,
           "exported": true
         }
-      ]
+      ],
+      "description": "Server-side file service handling file persistence, validation, and collection management with normalization logic."
     },
     {
       "path": "lib/services/httpClient.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 4489,
-        "last_modified": "2026-02-06T02:25:13.496846+00:00",
-        "md5": "31d534fdee0db04fe0e00571f1b049d9"
+        "size_bytes": 4646,
+        "last_modified": "2026-02-10T09:16:12.490250+00:00",
+        "md5": "5d62d60b50a80b24c7f90f48b9614e22"
       },
       "line_counts": {
-        "total": 187,
+        "total": 191,
         "code": 112,
         "blank": 20,
-        "comment": 55
+        "comment": 59
       },
       "type": "typescript",
       "imports": [
@@ -6028,7 +6394,7 @@
               "name": "type InternalAxiosRequestConfig"
             }
           ],
-          "line": 1
+          "line": 5
         },
         {
           "source": "@/app/lib/services/config/publicConfig",
@@ -6037,34 +6403,34 @@
               "name": "getPublicConfig"
             }
           ],
-          "line": 8
+          "line": 12
         }
       ],
       "exports": {
         "named": [
           {
             "name": "HttpClientConfig",
-            "line": 13
+            "line": 17
           },
           {
             "name": "HttpClient",
-            "line": 23
+            "line": 27
           },
           {
             "name": "httpClient",
-            "line": 184
+            "line": 188
           }
         ]
       },
       "classes": [
         {
           "name": "HttpClient",
-          "line": 23,
+          "line": 27,
           "exported": true,
           "methods": [
             {
               "name": "setupInterceptors",
-              "line": 42,
+              "line": 46,
               "return_type": "v",
               "modifiers": [
                 "private"
@@ -6072,7 +6438,7 @@
             },
             {
               "name": "handleError",
-              "line": 70,
+              "line": 74,
               "params": "error: AxiosError",
               "return_type": "P",
               "modifiers": [
@@ -6081,7 +6447,7 @@
             },
             {
               "name": "get",
-              "line": 91,
+              "line": 95,
               "params": "url: string, config?: AxiosRequestConfig",
               "return_type": "P",
               "modifiers": [
@@ -6090,7 +6456,7 @@
             },
             {
               "name": "post",
-              "line": 99,
+              "line": 103,
               "params": "url: string,\n    data?: D,\n    config?: AxiosRequestConfig",
               "return_type": "P",
               "modifiers": [
@@ -6099,7 +6465,7 @@
             },
             {
               "name": "put",
-              "line": 111,
+              "line": 115,
               "params": "url: string,\n    data?: D,\n    config?: AxiosRequestConfig",
               "return_type": "P",
               "modifiers": [
@@ -6108,7 +6474,7 @@
             },
             {
               "name": "patch",
-              "line": 123,
+              "line": 127,
               "params": "url: string,\n    data?: D,\n    config?: AxiosRequestConfig",
               "return_type": "P",
               "modifiers": [
@@ -6117,7 +6483,7 @@
             },
             {
               "name": "delete",
-              "line": 135,
+              "line": 139,
               "params": "url: string, config?: AxiosRequestConfig",
               "return_type": "P",
               "modifiers": [
@@ -6126,35 +6492,35 @@
             },
             {
               "name": "getAxiosInstance",
-              "line": 143,
+              "line": 147,
               "return_type": "A"
             },
             {
               "name": "setHeader",
-              "line": 150,
+              "line": 154,
               "params": "key: string, value: string",
               "return_type": "v"
             },
             {
               "name": "removeHeader",
-              "line": 157,
+              "line": 161,
               "params": "key: string",
               "return_type": "v"
             },
             {
               "name": "setAuthToken",
-              "line": 164,
+              "line": 168,
               "params": "token: string",
               "return_type": "v"
             },
             {
               "name": "removeAuthToken",
-              "line": 171,
+              "line": 175,
               "return_type": "v"
             },
             {
               "name": "setBaseURL",
-              "line": 178,
+              "line": 182,
               "params": "baseURL: string",
               "return_type": "v"
             }
@@ -6164,170 +6530,173 @@
       "interfaces": [
         {
           "name": "HttpClientConfig",
-          "line": 13,
+          "line": 17,
           "exported": true
         }
-      ]
+      ],
+      "description": "Axios-based HTTP client with configurable interceptors, error handling, and utility methods for API requests."
     },
     {
       "path": "lib/services/@types/fileService.client.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 827,
-        "last_modified": "2026-02-05T04:03:53.859385+00:00",
-        "md5": "84d44bdb329d998aef87754f146e8b7e"
+        "size_bytes": 1003,
+        "last_modified": "2026-02-10T09:16:12.492745+00:00",
+        "md5": "058f200c307fcc2c9ef8b482916ae0c8"
       },
       "line_counts": {
-        "total": 52,
+        "total": 56,
         "code": 46,
         "blank": 6,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "exports": {
         "named": [
           {
             "name": "Tag",
-            "line": 1
+            "line": 5
           },
           {
             "name": "SaveFileParams",
-            "line": 7
+            "line": 11
           },
           {
             "name": "SaveFileResult",
-            "line": 16
+            "line": 20
           },
           {
             "name": "LoadFileResult",
-            "line": 22
+            "line": 26
           },
           {
             "name": "FileDetailsResult",
-            "line": 30
+            "line": 34
           },
           {
             "name": "UpdateIconResult",
-            "line": 43
+            "line": 47
           },
           {
             "name": "UploadImageResult",
-            "line": 48
+            "line": 52
           }
         ]
       },
       "type_aliases": [
         {
           "name": "Tag",
-          "line": 1,
+          "line": 5,
           "exported": true
         },
         {
           "name": "SaveFileParams",
-          "line": 7,
+          "line": 11,
           "exported": true
         },
         {
           "name": "SaveFileResult",
-          "line": 16,
+          "line": 20,
           "exported": true
         },
         {
           "name": "LoadFileResult",
-          "line": 22,
+          "line": 26,
           "exported": true
         },
         {
           "name": "FileDetailsResult",
-          "line": 30,
+          "line": 34,
           "exported": true
         },
         {
           "name": "UpdateIconResult",
-          "line": 43,
+          "line": 47,
           "exported": true
         },
         {
           "name": "UploadImageResult",
-          "line": 48,
+          "line": 52,
           "exported": true
         }
-      ]
+      ],
+      "description": "Type definitions for client-side file service operations including save, load, details, icon updates, and image uploads."
     },
     {
       "path": "lib/services/@types/fileService.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 179,
-        "last_modified": "2026-02-05T04:07:43.845549+00:00",
-        "md5": "4899c4d0c9272e6e94d18c8f0de9b105"
+        "size_bytes": 318,
+        "last_modified": "2026-02-10T09:16:12.494768+00:00",
+        "md5": "e3397901b0958562d3bcd59926561826"
       },
       "line_counts": {
-        "total": 8,
+        "total": 12,
         "code": 8,
         "blank": 0,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "exports": {
         "named": [
           {
             "name": "SaveFileBody",
-            "line": 1
+            "line": 5
           }
         ]
       },
       "type_aliases": [
         {
           "name": "SaveFileBody",
-          "line": 1,
+          "line": 5,
           "exported": true
         }
-      ]
+      ],
+      "description": "Type definition for the SaveFileBody request structure with optional file metadata fields."
     },
     {
       "path": "lib/services/config/configService.server.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 1679,
-        "last_modified": "2026-02-06T02:24:54.743147+00:00",
-        "md5": "bd6b8d1e2fe140b027f3c1f2b36a1d9f"
+        "size_bytes": 1835,
+        "last_modified": "2026-02-10T09:16:12.497174+00:00",
+        "md5": "c4986e2aeefda67544a70919d9c9da6b"
       },
       "line_counts": {
-        "total": 61,
+        "total": 65,
         "code": 36,
         "blank": 13,
-        "comment": 12
+        "comment": 16
       },
       "type": "typescript",
       "imports": [
         {
           "source": "server-only",
           "side_effect": true,
-          "line": 1
+          "line": 5
         }
       ],
       "exports": {
         "named": [
           {
             "name": "configService",
-            "line": 60
+            "line": 64
           }
         ]
       },
       "classes": [
         {
           "name": "ConfigService",
-          "line": 15,
+          "line": 19,
           "methods": [
             {
               "name": "getEnv",
-              "line": 22,
+              "line": 26,
               "return_type": "E"
             },
             {
               "name": "getOpenAiApiKey",
-              "line": 38,
+              "line": 42,
               "return_type": "P",
               "modifiers": [
                 "async"
@@ -6335,7 +6704,7 @@
             },
             {
               "name": "invalidateOpenAiApiKey",
-              "line": 54,
+              "line": 58,
               "return_type": "v"
             }
           ]
@@ -6344,45 +6713,46 @@
       "type_aliases": [
         {
           "name": "EnvServerConfig",
-          "line": 3
+          "line": 7
         },
         {
           "name": "ApiKeyCache",
-          "line": 13
+          "line": 17
         }
-      ]
+      ],
+      "description": "Server configuration service providing environment variables and cached OpenAI API key management."
     },
     {
       "path": "lib/services/config/publicConfig.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 470,
-        "last_modified": "2026-02-06T02:24:40.479382+00:00",
-        "md5": "2aa8f7de4e6783f940cc793da423c562"
+        "size_bytes": 601,
+        "last_modified": "2026-02-10T09:16:12.501817+00:00",
+        "md5": "d630effc6ace7acba9a85f7408c0ffea"
       },
       "line_counts": {
-        "total": 23,
+        "total": 27,
         "code": 11,
         "blank": 5,
-        "comment": 7
+        "comment": 11
       },
       "type": "typescript",
       "exports": {
         "named": [
           {
             "name": "PublicConfig",
-            "line": 1
+            "line": 5
           },
           {
             "name": "getPublicConfig",
-            "line": 14
+            "line": 18
           }
         ]
       },
       "functions": [
         {
           "name": "getPublicConfig",
-          "line": 14,
+          "line": 18,
           "type": "function",
           "return_type": "P",
           "exported": true
@@ -6391,24 +6761,25 @@
       "type_aliases": [
         {
           "name": "PublicConfig",
-          "line": 1,
+          "line": 5,
           "exported": true
         }
-      ]
+      ],
+      "description": "Public configuration accessor exposing browser-safe config like the API base URL."
     },
     {
       "path": "api/file/route.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 1102,
-        "last_modified": "2026-02-05T04:53:40.102320+00:00",
-        "md5": "e40e9bcc8906cc799e8547d0513d1654"
+        "size_bytes": 1266,
+        "last_modified": "2026-02-10T09:16:12.503786+00:00",
+        "md5": "d8bdbc33a799d67e7ca0c700f86b566b"
       },
       "line_counts": {
-        "total": 36,
+        "total": 40,
         "code": 31,
         "blank": 5,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "imports": [
@@ -6419,7 +6790,7 @@
               "name": "NextResponse"
             }
           ],
-          "line": 1
+          "line": 5
         },
         {
           "source": "@/app/lib/services/fileService",
@@ -6431,7 +6802,7 @@
               "name": "saveFile"
             }
           ],
-          "line": 2
+          "line": 6
         },
         {
           "source": "@/app/lib/services/@types/fileService",
@@ -6440,25 +6811,25 @@
               "name": "SaveFileBody"
             }
           ],
-          "line": 3
+          "line": 7
         }
       ],
       "exports": {
         "named": [
           {
             "name": "POST",
-            "line": 5
+            "line": 9
           },
           {
             "name": "GET",
-            "line": 16
+            "line": 20
           }
         ]
       },
       "functions": [
         {
           "name": "POST",
-          "line": 5,
+          "line": 9,
           "type": "function",
           "params": "request: Request",
           "async": true,
@@ -6466,27 +6837,28 @@
         },
         {
           "name": "GET",
-          "line": 16,
+          "line": 20,
           "type": "function",
           "params": "request: Request",
           "async": true,
           "exported": true
         }
-      ]
+      ],
+      "description": "Handles GET and POST HTTP requests for file operations, allowing clients to save and retrieve files using a file service."
     },
     {
       "path": "api/file/icon/route.ts",
       "extension": ".ts",
       "metadata": {
-        "size_bytes": 1054,
-        "last_modified": "2026-01-23T11:38:42.237389+00:00",
-        "md5": "bb6f1a26946bf46b82645cfaf78e48f9"
+        "size_bytes": 1233,
+        "last_modified": "2026-02-10T09:16:12.505817+00:00",
+        "md5": "0af659bdc0f0703076cc22b41194d4f0"
       },
       "line_counts": {
-        "total": 35,
+        "total": 39,
         "code": 29,
         "blank": 6,
-        "comment": 0
+        "comment": 4
       },
       "type": "typescript",
       "imports": [
@@ -6497,7 +6869,7 @@
               "name": "NextResponse"
             }
           ],
-          "line": 1
+          "line": 5
         },
         {
           "source": "@/app/lib/db/repository/file",
@@ -6506,7 +6878,73 @@
               "name": "FileRepository"
             }
           ],
-          "line": 2
+          "line": 6
+        }
+      ],
+      "exports": {
+        "named": [
+          {
+            "name": "POST",
+            "line": 13
+          }
+        ]
+      },
+      "functions": [
+        {
+          "name": "POST",
+          "line": 13,
+          "type": "function",
+          "params": "request: Request",
+          "async": true,
+          "exported": true
+        }
+      ],
+      "type_aliases": [
+        {
+          "name": "UpdateIconBody",
+          "line": 8
+        }
+      ],
+      "description": "Handles POST requests to update a file's icon metadata, validating the file ID and icon value before persisting changes to the database."
+    },
+    {
+      "path": "api/upload/route.ts",
+      "extension": ".ts",
+      "metadata": {
+        "size_bytes": 1697,
+        "last_modified": "2026-02-10T09:16:12.508719+00:00",
+        "md5": "1acdbc9b3c3c3797be91705b624763bd"
+      },
+      "line_counts": {
+        "total": 62,
+        "code": 41,
+        "blank": 11,
+        "comment": 10
+      },
+      "type": "typescript",
+      "imports": [
+        {
+          "source": "next/server",
+          "named": [
+            {
+              "name": "NextResponse"
+            }
+          ],
+          "line": 5
+        },
+        {
+          "source": "fs/promises",
+          "named": [
+            {
+              "name": "writeFile"
+            }
+          ],
+          "line": 6
+        },
+        {
+          "source": "path",
+          "default": "path",
+          "line": 7
         }
       ],
       "exports": {
@@ -6527,71 +6965,7 @@
           "exported": true
         }
       ],
-      "type_aliases": [
-        {
-          "name": "UpdateIconBody",
-          "line": 4
-        }
-      ]
-    },
-    {
-      "path": "api/upload/route.ts",
-      "extension": ".ts",
-      "metadata": {
-        "size_bytes": 1522,
-        "last_modified": "2026-01-26T11:09:47.666241+00:00",
-        "md5": "c17d301e06e96613c2b9c8ed899cb9fd"
-      },
-      "line_counts": {
-        "total": 58,
-        "code": 41,
-        "blank": 11,
-        "comment": 6
-      },
-      "type": "typescript",
-      "imports": [
-        {
-          "source": "next/server",
-          "named": [
-            {
-              "name": "NextResponse"
-            }
-          ],
-          "line": 1
-        },
-        {
-          "source": "fs/promises",
-          "named": [
-            {
-              "name": "writeFile"
-            }
-          ],
-          "line": 2
-        },
-        {
-          "source": "path",
-          "default": "path",
-          "line": 3
-        }
-      ],
-      "exports": {
-        "named": [
-          {
-            "name": "POST",
-            "line": 5
-          }
-        ]
-      },
-      "functions": [
-        {
-          "name": "POST",
-          "line": 5,
-          "type": "function",
-          "params": "request: Request",
-          "async": true,
-          "exported": true
-        }
-      ]
+      "description": "Handles POST requests to upload image files, validating file type and size constraints before saving to the public upload directory."
     }
   ],
   "dependency_graph": {
@@ -6651,6 +7025,11 @@
       "next/image",
       "react"
     ],
+    "ui/flow/page.tsx": [
+      "@/app/codebase-index.json",
+      "@/app/lib/components/@types/codebaseTreeTypes",
+      "@/app/lib/components/CodebaseTreeView"
+    ],
     "lib/react-query/ReactQueryProvider.tsx": [
       "@/app/lib/react-query/queryClient",
       "@tanstack/react-query"
@@ -6669,6 +7048,19 @@
       "./Logo",
       "./ThemeProvider",
       "./ThemeToggleIcon"
+    ],
+    "lib/components/CodebaseTreeNode.tsx": [
+      "./@types/codebaseTreeTypes",
+      "./ThemeProvider",
+      "lucide-react",
+      "react"
+    ],
+    "lib/components/CodebaseTreeView.tsx": [
+      "./@types/codebaseTreeTypes",
+      "./CodebaseTreeNode",
+      "./ThemeProvider",
+      "lucide-react",
+      "react"
     ],
     "lib/components/Drawer.tsx": [
       "./Drawer.css",

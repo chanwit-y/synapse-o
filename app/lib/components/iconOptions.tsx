@@ -1,3 +1,7 @@
+/**
+ * @file iconOptions.tsx
+ * @description Exports an array of icon options with id, label, and lucide-react icon components for file/folder customization.
+ */
 import {
   Activity,
   Airplay,

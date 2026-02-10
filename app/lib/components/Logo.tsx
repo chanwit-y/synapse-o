@@ -1,3 +1,7 @@
+/**
+ * @file Logo.tsx
+ * @description Component that displays the application logo image using Next.js Image component.
+ */
 
 import Image from "next/image";
 import l from "../../asset/logo.png";

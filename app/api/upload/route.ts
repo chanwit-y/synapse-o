@@ -1,3 +1,7 @@
+/**
+ * @file route.ts
+ * @description Handles POST requests to upload image files, validating file type and size constraints before saving to the public upload directory.
+ */
 import { NextResponse } from "next/server";
 import { writeFile } from "fs/promises";
 import path from "path";

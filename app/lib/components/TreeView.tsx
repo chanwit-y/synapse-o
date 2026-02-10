@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file TreeView.tsx
+ * @description Main tree view component that renders collection groups and manages node selection and favoriting state.
+ */
 
 import { useEffect, useState } from "react";
 import type { MouseEvent } from "react";

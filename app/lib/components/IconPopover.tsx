@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file IconPopover.tsx
+ * @description A popover component for selecting from a grid of icon options with keyboard and click outside handling.
+ */
 
 import { useEffect, useMemo, useRef, useState } from "react";
 

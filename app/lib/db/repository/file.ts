@@ -1,3 +1,7 @@
+/**
+ * @file file.ts
+ * @description File repository extending BaseRepository with specialized methods for updating file icons, tags, and bulk retrieval by IDs.
+ */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "server-only";
 

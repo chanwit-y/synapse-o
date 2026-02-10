@@ -1,4 +1,8 @@
 "use server";
+/**
+ * @file index.ts
+ * @description Server utility file containing sample data generation, database test functions, and mock collection creation helpers.
+ */
 
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { sql } from "drizzle-orm";

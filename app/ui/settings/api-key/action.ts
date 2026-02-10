@@ -1,4 +1,8 @@
 "use server";
+/**
+ * @file action.ts
+ * @description Server action module providing CRUD operations for managing AI API keys, including saving, retrieving, updating, and deleting stored API credentials.
+ */
 
 import { ApiKeyRepository, type ApiKeyCreateInput } from "@/app/lib/db/repository/api-key";
 import { configService } from "@/app/lib/services/config/configService.server";

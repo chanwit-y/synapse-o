@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file LoadingProvider.tsx
+ * @description Context provider for managing loading state with customizable delay, overlay rendering, and scroll locking.
+ */
 
 import {
   createContext,

@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file Snackbar.tsx
+ * @description A notification system provider and hook with configurable position, duration, variants, and dismiss actions.
+ */
 
 import {
   createContext,

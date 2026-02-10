@@ -1,3 +1,7 @@
+/**
+ * @file treeViewTypes.ts
+ * @description Type definitions for tree view structures including TreeNode (file/folder) and TreeViewGroup interfaces.
+ */
 import { Tag } from "./tagEditorTypes";
 
 export interface TreeNode {

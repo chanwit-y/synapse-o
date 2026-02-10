@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file TagEditor.tsx
+ * @description A tag editor component with autocomplete suggestions, color picker, and visual tag management.
+ */
 
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";

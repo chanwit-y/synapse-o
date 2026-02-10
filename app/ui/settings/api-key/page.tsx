@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file page.tsx
+ * @description Client component providing a UI for managing API keys with forms to add, edit, and delete keys, displaying a table of saved credentials with show/hide toggles.
+ */
 
 import { useState, useEffect } from "react";
 import { useTheme } from "@/app/lib/components/ThemeProvider";

@@ -1,3 +1,7 @@
+/**
+ * @file publicConfig.ts
+ * @description Public configuration accessor exposing browser-safe config like the API base URL.
+ */
 export type PublicConfig = {
   /**
    * Base URL used by client-side API calls.

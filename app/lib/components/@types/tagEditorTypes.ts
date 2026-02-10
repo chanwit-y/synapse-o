@@ -1,3 +1,7 @@
+/**
+ * @file tagEditorTypes.ts
+ * @description Type definitions for tag editing functionality including Tag structure and TagEditorProps.
+ */
 export type Tag = {
   id: string;
   label: string;

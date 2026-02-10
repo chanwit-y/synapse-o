@@ -1,3 +1,7 @@
+/**
+ * @file schema.ts
+ * @description Defines Drizzle ORM table schemas for collections, files, and API keys with their columns and data types.
+ */
 import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text,  } from "drizzle-orm/sqlite-core";
 

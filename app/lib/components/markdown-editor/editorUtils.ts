@@ -1,3 +1,7 @@
+/**
+ * @file editorUtils.ts
+ * @description Utility functions for markdown editor operations including getting toolbar button positions and inserting markdown at cursor.
+ */
 import type { Dispatch, SetStateAction } from 'react';
 
 export function normalizePublicPath(path: string): string {

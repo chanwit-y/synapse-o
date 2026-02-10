@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file FileSidebarModals.tsx
+ * @description Modal dialogs for managing file/folder collections including add collection, add item, and delete confirmation modals.
+ */
 
 import Modal from "./Modal";
 import type { TreeNode } from "./@types/treeViewTypes";

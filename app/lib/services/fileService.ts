@@ -1,3 +1,7 @@
+/**
+ * @file fileService.ts
+ * @description Server-side file service handling file persistence, validation, and collection management with normalization logic.
+ */
 import "server-only";
 
 import { CollectionRepository } from "@/app/lib/db/repository/collection";

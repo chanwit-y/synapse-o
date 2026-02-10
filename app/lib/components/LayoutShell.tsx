@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file LayoutShell.tsx
+ * @description Layout wrapper component providing app bar, sidebar context, and theme support to child components.
+ */
 
 import AppBar from "./AppBar";
 import { SidebarProvider } from "./SidebarContext";

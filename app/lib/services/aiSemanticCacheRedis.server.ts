@@ -1,3 +1,7 @@
+/**
+ * @file aiSemanticCacheRedis.server.ts
+ * @description Redis-backed semantic caching service using vector embeddings for AI responses with similarity-based lookup.
+ */
 import "server-only";
 
 import crypto from "crypto";

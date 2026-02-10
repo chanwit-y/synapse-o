@@ -1,4 +1,8 @@
 "use server";
+/**
+ * @file action.ts
+ * @description Server action to create a SQLite database table for storing device configuration data.
+ */
 
 import Database from "better-sqlite3";
 

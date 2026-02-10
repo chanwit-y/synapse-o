@@ -8,7 +8,106 @@ import type {
   CodebaseFileInfo,
 } from "./@types/codebaseTreeTypes";
 import { useTheme } from "./ThemeProvider";
-import { File, Folder, CheckSquare, XCircle } from "lucide-react";
+import {
+  File,
+  Folder,
+  CheckSquare,
+  XCircle,
+  Code,
+  Code2,
+  Palette,
+  Database,
+  Book,
+  Globe,
+  Image,
+  Video,
+  Music,
+  Terminal,
+  Settings,
+} from "lucide-react";
+
+// Helper function to get icon based on file extension
+function getFileIcon(fileName: string, className: string) {
+  const extension = fileName.split(".").pop()?.toLowerCase();
+
+  switch (extension) {
+    // React/JSX files
+    case "tsx":
+    case "jsx":
+      return <Code2 className={className} />;
+    
+    // JavaScript/TypeScript
+    case "ts":
+    case "js":
+    case "mjs":
+    case "cjs":
+      return <Code className={className} />;
+    
+    // Styles
+    case "css":
+    case "scss":
+    case "sass":
+    case "less":
+      return <Palette className={className} />;
+    
+    // JSON/Config
+    case "json":
+    case "jsonc":
+      return <Database className={className} />;
+    
+    // Documentation
+    case "md":
+    case "mdx":
+    case "txt":
+      return <Book className={className} />;
+    
+    // HTML
+    case "html":
+    case "htm":
+      return <Globe className={className} />;
+    
+    // Images
+    case "png":
+    case "jpg":
+    case "jpeg":
+    case "gif":
+    case "svg":
+    case "webp":
+    case "ico":
+      return <Image className={className} />;
+    
+    // Video
+    case "mp4":
+    case "mov":
+    case "avi":
+    case "webm":
+      return <Video className={className} />;
+    
+    // Audio
+    case "mp3":
+    case "wav":
+    case "ogg":
+      return <Music className={className} />;
+    
+    // Shell scripts
+    case "sh":
+    case "bash":
+    case "zsh":
+      return <Terminal className={className} />;
+    
+    // Config files
+    case "yaml":
+    case "yml":
+    case "toml":
+    case "ini":
+    case "conf":
+      return <Settings className={className} />;
+    
+    // Default
+    default:
+      return <File className={className} />;
+  }
+}
 
 interface CodebaseTreeViewProps {
   data: CodebaseIndex;
@@ -174,11 +273,12 @@ export default function CodebaseTreeView({ data }: CodebaseTreeViewProps) {
                     }`}
                   />
                 ) : (
-                  <File
-                    className={`w-5 h-5 ${
+                  getFileIcon(
+                    selectedNode.name,
+                    `w-5 h-5 ${
                       theme === "light" ? "text-gray-500" : "text-gray-400"
-                    }`}
-                  />
+                    }`
+                  )
                 )}
                 <h4 className="font-medium text-sm truncate">
                   {selectedNode.name}
@@ -187,6 +287,25 @@ export default function CodebaseTreeView({ data }: CodebaseTreeViewProps) {
 
               {currentFileInfo && (
                 <div className="space-y-2 text-sm">
+                  {currentFileInfo.description && (
+                    <div>
+                      <span
+                        className={`font-medium ${
+                          theme === "light" ? "text-gray-700" : "text-gray-300"
+                        }`}
+                      >
+                        Description:
+                      </span>
+                      <p
+                        className={`mt-1 ${
+                          theme === "light" ? "text-gray-600" : "text-gray-400"
+                        }`}
+                      >
+                        {currentFileInfo.description}
+                      </p>
+                    </div>
+                  )}
+                  
                   <div>
                     <span
                       className={`font-medium ${

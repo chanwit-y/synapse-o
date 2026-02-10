@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file Drawer.tsx
+ * @description A sliding drawer/panel component that can open from left/right/top/bottom with customizable title, size, and dismissal options.
+ */
 
 import { ReactNode, useEffect, useState } from "react";
 import { X } from "lucide-react";

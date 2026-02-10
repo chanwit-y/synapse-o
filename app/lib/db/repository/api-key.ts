@@ -1,3 +1,7 @@
+/**
+ * @file api-key.ts
+ * @description API key repository extending BaseRepository for managing stored API key entities.
+ */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "server-only";
 

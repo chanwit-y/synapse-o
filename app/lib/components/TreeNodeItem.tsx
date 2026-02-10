@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file TreeNodeItem.tsx
+ * @description A recursive tree node component that renders individual files/folders with expand/collapse, deletion, and custom icon support.
+ */
 
 import { cloneElement, isValidElement, useEffect, useState } from "react";
 import { ChevronRight, ChevronDown, Folder, FolderOpen, File, Trash2 } from "lucide-react";

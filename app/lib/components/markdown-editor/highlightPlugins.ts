@@ -1,3 +1,7 @@
+/**
+ * @file highlightPlugins.ts
+ * @description Remark and rehype plugins that parse custom highlight syntax (??text??) and render it with popover tooltips.
+ */
 type NodeLike = {
   type?: string;
   value?: string;

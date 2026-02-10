@@ -1,3 +1,7 @@
+/**
+ * @file configService.server.ts
+ * @description Server configuration service providing environment variables and cached OpenAI API key management.
+ */
 import "server-only";
 
 type EnvServerConfig = {

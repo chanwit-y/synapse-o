@@ -1,3 +1,7 @@
+/**
+ * @file collection.ts
+ * @description Collection repository extending BaseRepository for managing collection entities with UUID generation.
+ */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "server-only";
 

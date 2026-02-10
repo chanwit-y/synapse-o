@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file AppBar.tsx
+ * @description Top navigation bar component displaying logo, app title, and a theme toggle button.
+ */
 
 import { useTheme } from "./ThemeProvider";
 import Logo from "./Logo";

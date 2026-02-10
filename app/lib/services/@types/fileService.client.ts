@@ -1,3 +1,7 @@
+/**
+ * @file fileService.client.ts
+ * @description Type definitions for client-side file service operations including save, load, details, icon updates, and image uploads.
+ */
 export type Tag = {
   id: string;
   label: string;

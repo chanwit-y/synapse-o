@@ -1,3 +1,7 @@
+/**
+ * @file layout.tsx
+ * @description Root layout component that wraps the entire application with providers (React Query, Theme, Loading, Snackbar) and renders a sidebar navigation menu with links to main sections.
+ */
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";

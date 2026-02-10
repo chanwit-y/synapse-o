@@ -1,3 +1,7 @@
+/**
+ * @file base.ts
+ * @description Provides an abstract base repository class with CRUD operations and query building for SQLite tables using Drizzle ORM.
+ */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "server-only";
 

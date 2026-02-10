@@ -1,3 +1,7 @@
+/**
+ * @file editorCss.ts
+ * @description Exported CSS styles for the markdown editor including custom highlights, popovers, and syntax highlighting colors.
+ */
 export const MARKDOWN_EDITOR_CSS = `
 body .w-md-editor-text-pre > code,
 body .w-md-editor-text-input {

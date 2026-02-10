@@ -1,3 +1,7 @@
+/**
+ * @file icons.tsx
+ * @description Custom SVG icon components for markdown formatting toolbar buttons (bold, italic, link, image, heading, etc.).
+ */
 import type { ReactNode } from 'react';
 
 type IconProps = {

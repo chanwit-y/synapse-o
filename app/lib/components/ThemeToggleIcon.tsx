@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file ThemeToggleIcon.tsx
+ * @description A simple SVG icon component that displays either a moon or sun icon based on the current light/dark theme.
+ */
 
 type Theme = "light" | "dark";
 

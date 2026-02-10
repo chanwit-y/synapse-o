@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file fileService.client.ts
+ * @description Client-side file service with HTTP operations and React Query hooks for saving, loading, and managing files.
+ */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { UseQueryOptions } from "@tanstack/react-query";

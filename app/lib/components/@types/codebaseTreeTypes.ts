@@ -23,6 +23,7 @@ export interface CodebaseFileInfo {
   };
   type?: string;
   content?: string;
+  description?: string;
 }
 
 export interface CodebaseIndex {

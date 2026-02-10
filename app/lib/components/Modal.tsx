@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file Modal.tsx
+ * @description A centered modal dialog component with backdrop, animations, close button, and configurable sizing.
+ */
 
 import { ReactNode, useEffect, useState } from "react";
 import { createPortal } from "react-dom";

@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file SidebarContext.tsx
+ * @description React context for managing sidebar collapsed state with toggle and setter functions.
+ */
 
 import { createContext, useContext, useMemo, useState } from "react";
 

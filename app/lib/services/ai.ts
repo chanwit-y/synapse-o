@@ -1,3 +1,7 @@
+/**
+ * @file ai.ts
+ * @description AI service wrapper using ChatOpenAI with semantic caching for unit test prompts.
+ */
 import "server-only";
 
 import { ChatOpenAI } from "@langchain/openai";

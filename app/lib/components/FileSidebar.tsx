@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file FileSidebar.tsx
+ * @description Main file/collection sidebar managing collections, file/folder CRUD operations, and selection state with skeleton loading.
+ */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PanelLeftClose, PanelLeftOpen, PlusIcon } from "lucide-react";

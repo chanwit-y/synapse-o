@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file ThemeProvider.tsx
+ * @description React context provider for managing light/dark theme state with localStorage persistence and system preference detection.
+ */
 
 import { createContext, useContext, useEffect, useState } from "react";
 

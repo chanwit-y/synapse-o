@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file queryClient.ts
+ * @description Configured React Query client with default options for staleTime, retry behavior, and refetch settings.
+ */
 
 import { QueryClient } from "@tanstack/react-query";
 

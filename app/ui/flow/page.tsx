@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file page.tsx
+ * @description Component that displays a codebase tree view visualization using indexed codebase data for navigation and exploration.
+ */
 
 import CodebaseTreeView from "@/app/lib/components/CodebaseTreeView";
 import codebaseIndexData from "@/app/codebase-index.json";

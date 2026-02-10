@@ -1,4 +1,8 @@
 'use client';
+/**
+ * @file MarkdownEditor.tsx
+ * @description A rich text editor component that supports markdown with live preview, custom formatting commands (bold, italic, strikethrough, etc.), image/link insertion, and integrates with math rendering and custom highlight plugins.
+ */
 
 import type { AnchorHTMLAttributes, HTMLAttributes, ImgHTMLAttributes, ReactElement } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';

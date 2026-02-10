@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file page.tsx
+ * @description Markdown workspace component featuring a file sidebar for navigation, markdown editor, icon and tag editors, and a properties drawer for file metadata management.
+ */
 
 import { useEffect } from "react";
 import { PanelRightOpen } from "lucide-react";

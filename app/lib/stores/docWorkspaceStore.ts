@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file docWorkspaceStore.ts
+ * @description Zustand store managing workspace UI state including sidebar, selected files, icons, tags, and persistence.
+ */
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";

@@ -1,3 +1,7 @@
+/**
+ * @file Snackbar.css
+ * @description Styles for snackbar notifications including positioning, variants (success/error/warning/info), animations, and responsive layout.
+ */
 .snackbar-container {
   position: fixed;
   display: flex;

@@ -1,4 +1,8 @@
 "use client";
+/**
+ * @file SidebarMenu.tsx
+ * @description A collapsible navigation sidebar with submenu support, active state highlighting, and smooth animations.
+ */
 
 import React, { useState } from "react";
 import Link from "next/link";

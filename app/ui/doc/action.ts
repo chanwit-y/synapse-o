@@ -1,4 +1,8 @@
 "use server";
+/**
+ * @file action.ts
+ * @description Server action module providing functions for managing collections and files, including CRUD operations, file tagging, icon updates, and AI unit testing.
+ */
 
 import type { Tag } from "@/app/lib/components/@types/tagEditorTypes";
 import type { TreeNode } from "@/app/lib/components/@types/treeViewTypes";

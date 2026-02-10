@@ -1,3 +1,7 @@
+/**
+ * @file globals.css
+ * @description Global CSS stylesheet with Tailwind imports, custom animations (fade-in, slide-in), and commented theme variables.
+ */
 @import "tailwindcss";
 @import "katex/dist/katex.min.css";
 

@@ -1,3 +1,7 @@
+/**
+ * @file httpClient.ts
+ * @description Axios-based HTTP client with configurable interceptors, error handling, and utility methods for API requests.
+ */
 import axios, {
   type AxiosInstance,
   type AxiosRequestConfig,

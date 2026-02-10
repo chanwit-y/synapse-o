@@ -1,3 +1,7 @@
+/**
+ * @file route.ts
+ * @description Handles POST requests to update a file's icon metadata, validating the file ID and icon value before persisting changes to the database.
+ */
 import { NextResponse } from "next/server";
 import { FileRepository } from "@/app/lib/db/repository/file";
 
