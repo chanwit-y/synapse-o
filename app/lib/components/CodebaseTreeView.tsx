@@ -985,7 +985,7 @@ export default function CodebaseTreeView({ data }: CodebaseTreeViewProps) {
        (currentFileInfo.imports && currentFileInfo.imports.length > 0) && (
         <div
           className={`${
-            showFlowView ? 'w-[800px]' : 'w-0'
+            showFlowView ? 'w-[550px]' : 'w-0'
           } transition-all duration-300 overflow-hidden rounded-lg border ${
             theme === "light"
               ? "bg-white border-gray-200"
