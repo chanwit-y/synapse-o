@@ -196,6 +196,36 @@ export default function CodebaseTreeView({ data }: CodebaseTreeViewProps) {
     setSelectedFiles(new Set());
   };
 
+  // Helper function to find a node in the tree by path
+  const findNodeByPath = useCallback((path: string): CodebaseTreeNode | null => {
+    const parts = path.split('/');
+    let currentNode: CodebaseTreeNode = data.directory_tree;
+    
+    // Skip the first part if it's the root directory name
+    const startIndex = parts[0] === data.directory_tree.name ? 1 : 0;
+    
+    for (let i = startIndex; i < parts.length; i++) {
+      if (!currentNode.children) return null;
+      const found = currentNode.children.find(child => child.name === parts[i]);
+      if (!found) return null;
+      currentNode = found;
+    }
+    
+    return currentNode;
+  }, [data.directory_tree]);
+
+  // Handle clicking on a selected file to reveal it in the tree
+  const handleSelectedFileClick = useCallback((path: string) => {
+    const fullPath = path.startsWith(`${data.directory_tree.name}/`) 
+      ? path 
+      : `${data.directory_tree.name}/${path}`;
+    
+    const node = findNodeByPath(fullPath);
+    if (node) {
+      handleNodeClick(node, fullPath);
+    }
+  }, [data.directory_tree.name, findNodeByPath, handleNodeClick]);
+
   // Get file info for the currently selected node
   const currentFileInfo = useMemo(() => {
     if (!selectedPath || !selectedNode || selectedNode.type === "directory") {
@@ -549,7 +579,7 @@ export default function CodebaseTreeView({ data }: CodebaseTreeViewProps) {
     <div className="flex h-full gap-4">
       {/* Tree View Panel */}
       <div
-        className={`w-[400px] overflow-y-auto rounded-lg border ${
+        className={`w-[350px] overflow-y-auto rounded-lg border ${
           theme === "light"
             ? "bg-white border-gray-200"
             : "bg-gray-900 border-gray-700"
@@ -930,10 +960,11 @@ export default function CodebaseTreeView({ data }: CodebaseTreeViewProps) {
                 {selectedFileInfos.map((fileInfo) => (
                   <div
                     key={fileInfo.path}
-                    className={`p-2 rounded text-xs ${
+                    onClick={() => handleSelectedFileClick(fileInfo.path)}
+                    className={`p-2 rounded text-xs cursor-pointer transition-all ${
                       theme === "light"
-                        ? "bg-gray-50 border border-gray-200"
-                        : "bg-gray-800 border border-gray-700"
+                        ? "bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300"
+                        : "bg-gray-800 border border-gray-700 hover:bg-gray-750 hover:border-gray-600"
                     }`}
                   >
                     <p className="font-medium truncate">{fileInfo.path}</p>
@@ -985,7 +1016,7 @@ export default function CodebaseTreeView({ data }: CodebaseTreeViewProps) {
        (currentFileInfo.imports && currentFileInfo.imports.length > 0) && (
         <div
           className={`${
-            showFlowView ? 'w-[550px]' : 'w-0'
+            showFlowView ? 'w-[600px]' : 'w-0'
           } transition-all duration-300 overflow-hidden rounded-lg border ${
             theme === "light"
               ? "bg-white border-gray-200"
