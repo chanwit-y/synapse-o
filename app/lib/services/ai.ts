@@ -24,7 +24,7 @@ export async function aiUnitTest(prompt: string) {
 
 	// Semantic cache (RedisSearch vector KNN). If Redis isn't configured/available, this is a no-op.
 	const cacheDomain = "aiUnitTest";
-	const cacheVersion = "gpt-4.1";
+	const cacheVersion = "gpt-5 nano";
 	const cached = await semanticCache.lookupText(trimmedPrompt, cacheDomain, cacheVersion, apiKey);
 	if (cached) return cached;
 
