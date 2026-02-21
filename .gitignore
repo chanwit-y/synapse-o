@@ -45,3 +45,4 @@ synapse.db
 synapse.db-shm
 
 public/upload
+import_path.json

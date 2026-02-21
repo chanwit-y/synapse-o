@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useState } from "react";
-import { Copy, FlaskConical } from "lucide-react";
+import { Copy, FlaskConical, FolderInput } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import Modal from "./Modal";
 import { useLoading } from "./LoadingProvider";
@@ -14,6 +14,7 @@ import { findCollectionById, testAI, updateCollectionDirectories } from "@/app/u
 import MarkdownDisplay from "./MarkdownDisplay";
 import { useFileContentQuery, useSaveFileMutation } from "@/app/lib/services/fileService.client";
 import type { TreeNode } from "./@types/treeViewTypes";
+import ImportPathTreeView, { type ImportPathEntry } from "./ImportPathTreeView";
 
 interface ToolsPanelProps {
   fileId: string;
@@ -168,6 +169,10 @@ export default function ToolsPanel({
   const [aiResult, setAiResult] = useState<string>("");
   const [aiError, setAiError] = useState<string>("");
   const [isCopying, setIsCopying] = useState(false);
+  const [isImportPathModalOpen, setIsImportPathModalOpen] = useState(false);
+  const [importPathData, setImportPathData] = useState<ImportPathEntry[] | null>(null);
+  const [isImportPathLoading, setIsImportPathLoading] = useState(false);
+  const [importPathError, setImportPathError] = useState<string>("");
   const MAX_CONTEXT_CHARS = 12000;
   const defaultUnitTestPrompt = useMemo(() => {
     // This base prompt is used immediately when opening the modal.
@@ -461,25 +466,66 @@ Constraints:
     }
   };
 
+  const handleOpenImportPath = async () => {
+    setIsImportPathModalOpen(true);
+    setImportPathError("");
+    if (importPathData) return;
+
+    setIsImportPathLoading(true);
+    try {
+      const mod = await import("@/import_path.json");
+      setImportPathData((mod.default ?? []) as ImportPathEntry[]);
+    } catch (error) {
+      console.error("Failed to load import path data:", error);
+      setImportPathError("Failed to load import path data.");
+    } finally {
+      setIsImportPathLoading(false);
+    }
+  };
+
+  const handleInitAutomateTest = () => {
+    showSnackbar({
+      variant: "info",
+      title: "Initialize automate test",
+      message: "Automate test initialization is ready for wiring.",
+    });
+  };
+
   return (
     <div className="space-y-2">
       <div className="text-xs font-semibold uppercase tracking-wide text-gray-400">
         Tools
       </div>
-      <button
-        type="button"
-        onClick={handleCreateUnitTest}
-        className={[
-          "flex items-center justify-center rounded-md p-2 text-sm font-medium transition-colors",
-          theme === "dark"
-            ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
-            : "bg-gray-100 text-gray-700 hover:bg-gray-200",
-        ].join(" ")}
-        title="Create Unit Test"
-        aria-label="Create unit test"
-      >
-        <FlaskConical className="h-4 w-4" />
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={handleCreateUnitTest}
+          className={[
+            "flex items-center justify-center rounded-md p-2 text-sm font-medium transition-colors",
+            theme === "dark"
+              ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+          ].join(" ")}
+          title="Create Unit Test"
+          aria-label="Create unit test"
+        >
+          <FlaskConical className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={handleOpenImportPath}
+          className={[
+            "flex items-center justify-center rounded-md p-2 text-sm font-medium transition-colors",
+            theme === "dark"
+              ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+          ].join(" ")}
+          title="Open Import Path"
+          aria-label="Open import path"
+        >
+          <FolderInput className="h-4 w-4" />
+        </button>
+      </div>
 
       <Modal
         isOpen={isUnitTestModalOpen}
@@ -622,6 +668,58 @@ Constraints:
               ].join(" ")}
             >
               {isPreparingContext ? "Preparing..." : isGenerating ? "Generating..." : "Generate"}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isImportPathModalOpen}
+        onClose={() => setIsImportPathModalOpen(false)}
+        size="xl"
+      >
+        <div className="flex h-[75vh] flex-col">
+          <div className="shrink-0 border-b border-gray-200 pb-3 dark:border-gray-700">
+            <h2 className="text-lg font-semibold">Import Path</h2>
+            <p className="mt-0.5 text-sm text-gray-500">
+              Browse file import relationships across the project.
+            </p>
+          </div>
+          <div className="min-h-0 flex-1 overflow-hidden pt-3">
+            {isImportPathLoading ? (
+              <div className="flex h-full items-center justify-center text-sm text-gray-500">
+                Loading import path data...
+              </div>
+            ) : importPathError ? (
+              <div className="flex h-full items-center justify-center text-sm text-red-500">
+                {importPathError}
+              </div>
+            ) : importPathData ? (
+              <ImportPathTreeView data={importPathData} />
+            ) : null}
+          </div>
+          <div
+            className={[
+              "shrink-0 pt-3 flex justify-end",
+              "border-t",
+              theme === "dark"
+                ? "border-gray-700 bg-gray-800"
+                : "border-gray-200 bg-white",
+            ].join(" ")}
+          >
+            <button
+              type="button"
+              onClick={handleInitAutomateTest}
+              disabled={isImportPathLoading || !!importPathError || !importPathData}
+              className={[
+                "px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                "bg-blue-600 text-white hover:bg-blue-700",
+                isImportPathLoading || !!importPathError || !importPathData
+                  ? "opacity-60 cursor-not-allowed"
+                  : "cursor-pointer",
+              ].join(" ")}
+            >
+              Initialize Automate Test
             </button>
           </div>
         </div>

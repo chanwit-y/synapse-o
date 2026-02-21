@@ -12,7 +12,7 @@ import { ThemeProvider } from "../lib/components/ThemeProvider";
 import { ReactQueryProvider } from "../lib/react-query/ReactQueryProvider";
 import LayoutShell from "../lib/components/LayoutShell";
 import SidebarMenu from "../lib/components/SidebarMenu";
-import { Workflow, Settings, Key } from "lucide-react";
+import { Workflow, Settings, Key, FolderInput } from "lucide-react";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -102,6 +102,12 @@ const menuItems = [
     href: "/ui/flow",
     description: "Flow tools and setup",
     icon: workflowIcon,
+  },
+  {
+    label: "Import Path",
+    href: "/ui/import-path",
+    description: "Import path configuration",
+    icon: <FolderInput className="h-4 w-4" />,
   },
   {
     label: "Settings",
