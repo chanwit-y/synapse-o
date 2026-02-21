@@ -4,7 +4,7 @@
  * @description A tools panel for generating AI-powered test cases from file content, with modal interfaces for editing prompts and creating test case files.
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Copy, FlaskConical, FolderInput } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import Modal from "./Modal";
@@ -173,6 +173,7 @@ export default function ToolsPanel({
   const [importPathData, setImportPathData] = useState<ImportPathEntry[] | null>(null);
   const [isImportPathLoading, setIsImportPathLoading] = useState(false);
   const [importPathError, setImportPathError] = useState<string>("");
+  const [initAutomateTestPath, setInitAutomateTestPath] = useState(selectedFilePath ?? "");
   const MAX_CONTEXT_CHARS = 12000;
   const defaultUnitTestPrompt = useMemo(() => {
     // This base prompt is used immediately when opening the modal.
@@ -270,6 +271,10 @@ Constraints:
   const isPreparingContext = activeLoaderIds.includes(unitTestContextLoaderId);
   const isCreatingFile = activeLoaderIds.includes(createTestCaseFileLoaderId);
   const isBusy = isGenerating || isPreparingContext || isCreatingFile;
+
+  useEffect(() => {
+    setInitAutomateTestPath(selectedFilePath ?? "");
+  }, [selectedFilePath]);
 
   const handleCreateUnitTest = async () => {
     setAiResult("");
@@ -469,6 +474,7 @@ Constraints:
   const handleOpenImportPath = async () => {
     setIsImportPathModalOpen(true);
     setImportPathError("");
+    setInitAutomateTestPath(selectedFilePath ?? "");
     if (importPathData) return;
 
     setIsImportPathLoading(true);
@@ -484,10 +490,13 @@ Constraints:
   };
 
   const handleInitAutomateTest = () => {
+    const targetPath = initAutomateTestPath.trim();
     showSnackbar({
-      variant: "info",
+      variant: targetPath ? "info" : "warning",
       title: "Initialize automate test",
-      message: "Automate test initialization is ready for wiring.",
+      message: targetPath
+        ? `Automate test initialization is ready for path: ${targetPath}`
+        : "Please provide a path before initializing automate test.",
     });
   };
 
@@ -700,13 +709,27 @@ Constraints:
           </div>
           <div
             className={[
-              "shrink-0 pt-3 flex justify-end",
+              "shrink-0 pt-3 flex items-center gap-2",
               "border-t",
               theme === "dark"
                 ? "border-gray-700 bg-gray-800"
                 : "border-gray-200 bg-white",
             ].join(" ")}
           >
+            <input
+              type="text"
+              value={initAutomateTestPath}
+              onChange={(e) => setInitAutomateTestPath(e.target.value)}
+              placeholder="Path for automate test initialization"
+              className={[
+                "flex-1 rounded-md border px-3 py-2 text-sm",
+                "focus:outline-none focus:ring-2 focus:ring-blue-500/40",
+                theme === "dark"
+                  ? "border-gray-700 bg-gray-900 text-gray-100 placeholder:text-gray-500"
+                  : "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400",
+              ].join(" ")}
+              aria-label="Initialize automate test path"
+            />
             <button
               type="button"
               onClick={handleInitAutomateTest}
