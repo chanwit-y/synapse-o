@@ -40,6 +40,7 @@ export interface ImportEntry {
   from: string;
   from_path: string;
   is_external: boolean;
+  imports: ImportEntry[];
 }
 
 export interface ImportPathEntry {
@@ -285,15 +286,61 @@ function ImportDependencyGraph({
 
   const V_GAP = 60;
   const SOURCE_X = 50;
-  const TARGET_X = 380;
+  const COL_WIDTH = 330;
 
-  const initialNodes = useMemo<Node[]>(() => {
-    const totalHeight = Math.max((imports.length - 1) * V_GAP, 0);
-    const centerY = totalHeight / 2;
+  const { allNodes, allEdges } = useMemo(() => {
+    const nodes: Node[] = [];
+    const edges: Edge[] = [];
 
-    const sourceNode: Node = {
+    const parentIdForImp = (impIndex: number) => `imp-${impIndex}`;
+
+    type LayoutSlot = { id: string; imp: ImportEntry; children: LayoutSlot[] };
+    const rootSlots: LayoutSlot[] = imports.map((imp, i) => {
+      const children: LayoutSlot[] = (imp.imports ?? []).map((sub, j) => {
+        const subChildren: LayoutSlot[] = (sub.imports ?? []).map((sub2, k) => ({
+          id: `sub2-${i}-${j}-${k}`,
+          imp: sub2,
+          children: [],
+        }));
+        return { id: `sub-${i}-${j}`, imp: sub, children: subChildren };
+      });
+      return { id: parentIdForImp(i), imp, children };
+    });
+
+    function leafCount(slot: LayoutSlot): number {
+      if (slot.children.length === 0) return 1;
+      return slot.children.reduce((s, c) => s + leafCount(c), 0);
+    }
+
+    function assignY(slots: LayoutSlot[], startY: number): Map<string, number> {
+      const yMap = new Map<string, number>();
+      let cursor = startY;
+      for (const slot of slots) {
+        const childYMap = assignY(slot.children, cursor);
+        childYMap.forEach((v, k) => yMap.set(k, v));
+
+        if (slot.children.length > 0) {
+          const childYs = slot.children.map((c) => childYMap.get(c.id) ?? cursor);
+          const slotY = (Math.min(...childYs) + Math.max(...childYs)) / 2;
+          yMap.set(slot.id, slotY);
+          cursor += leafCount(slot) * V_GAP;
+        } else {
+          yMap.set(slot.id, cursor);
+          cursor += V_GAP;
+        }
+      }
+      return yMap;
+    }
+
+    const yMap = assignY(rootSlots, 0);
+
+    const impYs = rootSlots.map((s) => yMap.get(s.id) ?? 0);
+    const sourceY =
+      impYs.length > 0 ? (Math.min(...impYs) + Math.max(...impYs)) / 2 : 0;
+
+    nodes.push({
       id: "__source__",
-      position: { x: SOURCE_X, y: centerY },
+      position: { x: SOURCE_X, y: sourceY },
       data: { label: fileName },
       sourcePosition: Position.Right,
       targetPosition: Position.Left,
@@ -308,61 +355,85 @@ function ImportDependencyGraph({
         width: 210,
         textAlign: "center" as const,
       },
-    };
+    });
 
-    const importNodes: Node[] = imports.map((imp, i) => ({
-      id: `imp-${i}`,
-      position: { x: TARGET_X, y: i * V_GAP },
-      data: { label: imp.from },
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
-      style: {
-        background: imp.is_external
+    const makeStyle = (imp: ImportEntry, depth: number) => {
+      const ext = imp.is_external;
+      const w = depth === 0 ? 230 : depth === 1 ? 210 : 190;
+      const fs = depth === 0 ? "11px" : "10px";
+      return {
+        background: ext
           ? isLight ? "#faf5ff" : "#2e1065"
           : isLight ? "#f0fdf4" : "#052e16",
-        color: imp.is_external
+        color: ext
           ? isLight ? "#6b21a8" : "#e9d5ff"
           : isLight ? "#166534" : "#bbf7d0",
         border: `1.5px solid ${
-          imp.is_external
+          ext
             ? isLight ? "#a855f7" : "#7c3aed"
             : isLight ? "#22c55e" : "#16a34a"
         }`,
         borderRadius: "6px",
-        fontSize: "11px",
+        fontSize: fs,
         fontFamily: "ui-monospace, monospace",
         padding: "6px 10px",
-        width: 230,
-      },
-    }));
+        width: w,
+        opacity: depth === 2 ? 0.85 : 1,
+      };
+    };
 
-    return [sourceNode, ...importNodes];
+    const edgeStyle = (imp: ImportEntry, dashed: boolean) => {
+      const ext = imp.is_external;
+      return {
+        style: {
+          stroke: ext
+            ? isLight ? "#a855f7" : "#7c3aed"
+            : isLight ? "#22c55e" : "#16a34a",
+          strokeWidth: dashed ? 1 : 1.5,
+          ...(dashed ? { strokeDasharray: "4 2" } : {}),
+        },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: dashed ? 12 : 16,
+          height: dashed ? 12 : 16,
+          color: ext
+            ? isLight ? "#a855f7" : "#7c3aed"
+            : isLight ? "#22c55e" : "#16a34a",
+        },
+      };
+    };
+
+    function addSlotNodes(slots: LayoutSlot[], depth: number, parentId: string) {
+      const colX = SOURCE_X + (depth + 1) * COL_WIDTH;
+      for (const slot of slots) {
+        const y = yMap.get(slot.id) ?? 0;
+        nodes.push({
+          id: slot.id,
+          position: { x: colX, y },
+          data: { label: slot.imp.from },
+          sourcePosition: Position.Right,
+          targetPosition: Position.Left,
+          style: makeStyle(slot.imp, depth),
+        });
+        edges.push({
+          id: `e-${parentId}-${slot.id}`,
+          source: parentId,
+          target: slot.id,
+          ...edgeStyle(slot.imp, depth > 0),
+        });
+        if (slot.children.length > 0) {
+          addSlotNodes(slot.children, depth + 1, slot.id);
+        }
+      }
+    }
+
+    addSlotNodes(rootSlots, 0, "__source__");
+
+    return { allNodes: nodes, allEdges: edges };
   }, [imports, fileName, isLight]);
 
-  const initialEdges = useMemo<Edge[]>(() => {
-    return imports.map((imp, i) => ({
-      id: `e-${i}`,
-      source: "__source__",
-      target: `imp-${i}`,
-      style: {
-        stroke: imp.is_external
-          ? isLight ? "#a855f7" : "#7c3aed"
-          : isLight ? "#22c55e" : "#16a34a",
-        strokeWidth: 1.5,
-      },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        width: 16,
-        height: 16,
-        color: imp.is_external
-          ? isLight ? "#a855f7" : "#7c3aed"
-          : isLight ? "#22c55e" : "#16a34a",
-      },
-    }));
-  }, [imports, isLight]);
-
-  const [rfNodes, , onNodesChange] = useNodesState(initialNodes);
-  const [rfEdges, , onEdgesChange] = useEdgesState(initialEdges);
+  const [rfNodes, , onNodesChange] = useNodesState(allNodes);
+  const [rfEdges, , onEdgesChange] = useEdgesState(allEdges);
 
   if (imports.length === 0) {
     return (
