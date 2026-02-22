@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
   ReactFlow,
   Background,
@@ -30,6 +30,8 @@ import {
   Package,
   List,
   Network,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 
@@ -485,6 +487,33 @@ function ImportDetail({
   const isLight = theme === "light";
   const [filter, setFilter] = useState<"all" | "external" | "internal">("all");
   const [view, setView] = useState<"list" | "graph">("list");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenVisible, setFullscreenVisible] = useState(false);
+  const fullscreenTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const openFullscreen = useCallback(() => {
+    if (fullscreenTimeout.current) clearTimeout(fullscreenTimeout.current);
+    setIsFullscreen(true);
+    requestAnimationFrame(() => requestAnimationFrame(() => setFullscreenVisible(true)));
+  }, []);
+
+  const closeFullscreen = useCallback(() => {
+    setFullscreenVisible(false);
+    fullscreenTimeout.current = setTimeout(() => setIsFullscreen(false), 300);
+  }, []);
+
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeFullscreen();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isFullscreen, closeFullscreen]);
+
+  useEffect(() => {
+    return () => { if (fullscreenTimeout.current) clearTimeout(fullscreenTimeout.current); };
+  }, []);
 
   const filtered = node.entry.imports.filter((imp) => {
     if (filter === "external") return imp.is_external;
@@ -539,44 +568,68 @@ function ImportDetail({
           </div>
 
           {/* View toggle */}
-          <div
-            className={[
-              "flex rounded-lg overflow-hidden border shrink-0",
-              isLight ? "border-gray-200" : "border-gray-700",
-            ].join(" ")}
-          >
-            <button
-              onClick={() => setView("list")}
-              title="List view"
+          <div className="flex items-center gap-1.5 shrink-0">
+            <div
               className={[
-                "p-1.5 transition-colors",
-                view === "list"
-                  ? isLight
-                    ? "bg-gray-800 text-white"
-                    : "bg-gray-100 text-gray-900"
-                  : isLight
-                  ? "text-gray-500 hover:bg-gray-100"
-                  : "text-gray-400 hover:bg-gray-800",
+                "flex rounded-lg overflow-hidden border",
+                isLight ? "border-gray-200" : "border-gray-700",
               ].join(" ")}
             >
-              <List className="h-3.5 w-3.5" />
-            </button>
-            <button
-              onClick={() => setView("graph")}
-              title="Graph view"
-              className={[
-                "p-1.5 transition-colors",
-                view === "graph"
-                  ? isLight
-                    ? "bg-gray-800 text-white"
-                    : "bg-gray-100 text-gray-900"
-                  : isLight
-                  ? "text-gray-500 hover:bg-gray-100"
-                  : "text-gray-400 hover:bg-gray-800",
-              ].join(" ")}
+              <button
+                onClick={() => setView("list")}
+                title="List view"
+                className={[
+                  "p-1.5 transition-colors",
+                  view === "list"
+                    ? isLight
+                      ? "bg-gray-800 text-white"
+                      : "bg-gray-100 text-gray-900"
+                    : isLight
+                    ? "text-gray-500 hover:bg-gray-100"
+                    : "text-gray-400 hover:bg-gray-800",
+                ].join(" ")}
+              >
+                <List className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setView("graph")}
+                title="Graph view"
+                className={[
+                  "p-1.5 transition-colors",
+                  view === "graph"
+                    ? isLight
+                      ? "bg-gray-800 text-white"
+                      : "bg-gray-100 text-gray-900"
+                    : isLight
+                    ? "text-gray-500 hover:bg-gray-100"
+                    : "text-gray-400 hover:bg-gray-800",
+                ].join(" ")}
+              >
+                <Network className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            <div
+              className="overflow-hidden flex items-center"
+              style={{
+                width: view === "graph" ? 32 : 0,
+                opacity: view === "graph" ? 1 : 0,
+                transition: "width 250ms cubic-bezier(0.4,0,0.2,1), opacity 200ms ease",
+              }}
             >
-              <Network className="h-3.5 w-3.5" />
-            </button>
+              <button
+                onClick={openFullscreen}
+                title="Fullscreen"
+                className={[
+                  "p-1.5 rounded-lg border transition-colors shrink-0",
+                  isLight
+                    ? "border-gray-200 text-gray-500 hover:bg-gray-100"
+                    : "border-gray-700 text-gray-400 hover:bg-gray-800",
+                ].join(" ")}
+              >
+                <Maximize2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -654,6 +707,96 @@ function ImportDetail({
             fileName={node.name}
             theme={theme}
           />
+        </div>
+      )}
+
+      {/* Fullscreen overlay */}
+      {isFullscreen && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col"
+          style={{
+            background: isLight ? "#ffffff" : "#0f1117",
+            opacity: fullscreenVisible ? 1 : 0,
+            transform: fullscreenVisible ? "scale(1)" : "scale(0.97)",
+            transition: "opacity 300ms cubic-bezier(0.4,0,0.2,1), transform 300ms cubic-bezier(0.4,0,0.2,1)",
+          }}
+        >
+          <div
+            className={[
+              "flex items-center justify-between px-4 py-3 border-b shrink-0",
+              isLight ? "border-gray-200 bg-white" : "border-gray-700 bg-gray-900",
+            ].join(" ")}
+            style={{
+              opacity: fullscreenVisible ? 1 : 0,
+              transform: fullscreenVisible ? "translateY(0)" : "translateY(-8px)",
+              transition: "opacity 300ms 50ms ease, transform 300ms 50ms ease",
+            }}
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              {getFileIcon(node.name, "h-4 w-4 text-sky-400 shrink-0")}
+              <span className="font-semibold text-sm truncate">{node.name}</span>
+              <span className={["text-xs truncate", isLight ? "text-gray-400" : "text-gray-500"].join(" ")}>
+                — {node.fullPath}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex gap-1">
+                {(["all", "external", "internal"] as const).map((f) => {
+                  const count =
+                    f === "all"
+                      ? node.entry.imports.length
+                      : f === "external"
+                      ? externalCount
+                      : internalCount;
+                  return (
+                    <button
+                      key={f}
+                      onClick={() => setFilter(f)}
+                      className={[
+                        "px-2.5 py-1 text-xs rounded-full font-medium transition-colors",
+                        filter === f
+                          ? isLight
+                            ? "bg-gray-800 text-white"
+                            : "bg-gray-100 text-gray-900"
+                          : isLight
+                          ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          : "bg-gray-800 text-gray-400 hover:bg-gray-700",
+                      ].join(" ")}
+                    >
+                      {f.charAt(0).toUpperCase() + f.slice(1)} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                onClick={closeFullscreen}
+                title="Exit fullscreen"
+                className={[
+                  "p-1.5 rounded-lg border transition-colors",
+                  isLight
+                    ? "border-gray-200 text-gray-500 hover:bg-gray-100"
+                    : "border-gray-700 text-gray-400 hover:bg-gray-800",
+                ].join(" ")}
+              >
+                <Minimize2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          <div
+            className="flex-1 min-h-0"
+            style={{
+              opacity: fullscreenVisible ? 1 : 0,
+              transform: fullscreenVisible ? "translateY(0)" : "translateY(12px)",
+              transition: "opacity 350ms 100ms ease, transform 350ms 100ms ease",
+            }}
+          >
+            <ImportDependencyGraph
+              key={`fs-${node.fullPath}::${filter}`}
+              imports={filtered}
+              fileName={node.name}
+              theme={theme}
+            />
+          </div>
         </div>
       )}
     </div>
