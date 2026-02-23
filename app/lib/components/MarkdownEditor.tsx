@@ -18,7 +18,7 @@ import rehypeKatex from 'rehype-katex';
 import { useTheme } from './ThemeProvider';
 import { useSnackbar } from './Snackbar';
 import { MARKDOWN_EDITOR_CSS } from './markdown-editor/editorCss';
-import { useFileContentQuery, useSaveFileMutation, useUploadImageMutation } from '../services/fileService.client';
+import { useFileContentQuery, useSaveFileMutation, useUploadImageMutation, useAnalyzeImageMutation } from '../services/fileService.client';
 import {
   BoldIcon,
   ClearIcon,
@@ -34,7 +34,7 @@ import {
   StrikethroughIcon,
   UnderlineIcon,
 } from './markdown-editor/icons';
-import { rehypeHighlight, remarkHighlight } from './markdown-editor/highlightPlugins';
+import { rehypeHighlight, remarkHighlight, remarkHiddenText } from './markdown-editor/highlightPlugins';
 import {
   getToolbarButtonCenter,
   insertAtMdEditorCursor,
@@ -239,6 +239,7 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
   const tooltip = useHighlightTooltip();
   const saveFileMutation = useSaveFileMutation();
   const uploadImageMutation = useUploadImageMutation();
+  const analyzeImageMutation = useAnalyzeImageMutation();
   const selectedFileId = selectedFile?.id ?? null;
   const { data: loadedContent } = useFileContentQuery(selectedFileId);
   const lastHydratedFileIdRef = useRef<string | null>(null);
@@ -261,6 +262,7 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
 
   const [linkText, setLinkText] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
+  const [isImageProcessing, setIsImageProcessing] = useState(false);
 
   const imageUploadPopoverRef = useRef<HTMLDivElement>(null);
   const linkPopoverRef = useRef<HTMLDivElement>(null);
@@ -540,21 +542,48 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
         return;
       }
 
+      setIsImageProcessing(true);
+
       try {
         const path = await uploadImageMutation.mutateAsync(file);
         const imagePath = normalizePublicPath(path);
         const altText = file.name.replace(/\.[^/.]+$/, '');
         insertMarkdown(`![${altText}](${imagePath})`);
 
-        setImageUploadPopover({ visible: false, x: 0, y: 0 });
+        analyzeImageMutation.mutate(
+          { file, question: 'Describe the content of this image.' },
+          {
+            onSuccess: (analysisText) => {
+              insertMarkdown(`\n\`\`\`\n${analysisText}\n\`\`\`\n`);
+              showSnackbar({
+                title: 'Image Analyzed',
+                message: 'AI analysis has been inserted below the image.',
+                variant: 'success',
+              });
+              setIsImageProcessing(false);
+              setImageUploadPopover({ visible: false, x: 0, y: 0 });
+            },
+            onError: (err) => {
+              console.error('AI image analysis failed:', err);
+              showSnackbar({
+                title: 'Analysis Failed',
+                message: err instanceof Error ? err.message : 'Could not analyze image.',
+                variant: 'error',
+              });
+              setIsImageProcessing(false);
+              setImageUploadPopover({ visible: false, x: 0, y: 0 });
+            },
+          },
+        );
       } catch (error) {
         console.error('Error uploading image:', error);
         alert(error instanceof Error ? error.message : 'Error uploading image. Please try again.');
+        setIsImageProcessing(false);
       } finally {
         if (fileInputRef.current) fileInputRef.current.value = '';
       }
     },
-    [insertMarkdown, uploadImageMutation]
+    [analyzeImageMutation, insertMarkdown, showSnackbar, uploadImageMutation]
   );
 
   const handleLinkSubmit = useCallback(
@@ -730,7 +759,7 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
         visibleDragbar={false}
         previewOptions={{
           rehypePlugins: [rehypeKatex, rehypeHighlight],
-          remarkPlugins: [remarkMath, remarkHighlight],
+          remarkPlugins: [remarkMath, remarkHighlight, remarkHiddenText],
           components: previewComponents as any,
         }}
         commands={commands}
@@ -754,13 +783,22 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
           style={{ left: `${imageUploadPopover.x - 320}px`, top: `${imageUploadPopover.y - 60}px`, transform: 'translateX(-50%)' }}
         >
           <h3>Upload Image</h3>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-            style={{ display: 'block', width: '100%' }}
-          />
+          {isImageProcessing ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0' }}>
+              <span className="image-upload-spinner" />
+              <span style={{ fontSize: '0.85rem', opacity: 0.8 }}>
+                {uploadImageMutation.isPending ? 'Uploading image…' : 'Analyzing image with AI…'}
+              </span>
+            </div>
+          ) : (
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              style={{ display: 'block', width: '100%' }}
+            />
+          )}
         </div>
       )}
 

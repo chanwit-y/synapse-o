@@ -290,6 +290,24 @@ body .w-md-editor-text-input {
 .heading-popover select:hover {
   border-color: #0ba6df;
 }
+
+.hidden-text {
+  display: none;
+}
+
+.image-upload-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(150, 150, 150, 0.3);
+  border-top-color: #0BA6DF;
+  border-radius: 50%;
+  animation: spinUpload 0.6s linear infinite;
+}
+
+@keyframes spinUpload {
+  to { transform: rotate(360deg); }
+}
 `;
 
 

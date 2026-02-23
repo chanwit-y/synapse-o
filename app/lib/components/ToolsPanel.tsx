@@ -479,7 +479,7 @@ Constraints:
 
     setIsImportPathLoading(true);
     try {
-      const mod = await import("@/import_path.json");
+      const mod = await import("@/code_bases_mybp.json");
       setImportPathData((mod.default ?? []) as ImportPathEntry[]);
     } catch (error) {
       console.error("Failed to load import path data:", error);

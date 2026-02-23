@@ -1,12 +1,12 @@
 /**
  * @file page.tsx
  * @description Import path explorer — renders a searchable tree view of file
- * import relationships from import_path.json.
+ * import relationships from code_bases_mybp.json.
  */
 import ImportPathTreeView, {
   type ImportPathEntry,
 } from "@/app/lib/components/ImportPathTreeView";
-import importPathData from "@/import_path.json";
+import importPathData from "@/code_bases_mybp.json";
 
 export default function ImportPathPage() {
   return (

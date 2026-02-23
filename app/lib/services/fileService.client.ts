@@ -16,6 +16,7 @@ import type {
   SaveFileResult,
   UpdateIconResult,
   UploadImageResult,
+  AnalyzeImageResult,
 } from "@/app/lib/services/@types/fileService.client";
 
 export class FileService {
@@ -87,6 +88,37 @@ export class FileService {
     if (!result.success) {
       throw new Error(result.error || "Failed to update file icon");
     }
+  }
+
+  /**
+   * Send an image to the AI for analysis and return the response text.
+   */
+  async analyzeImage(file: File, question?: string): Promise<string> {
+    const base64Image = await this.fileToBase64(file);
+
+    const result = await this.httpClient.post<AnalyzeImageResult>(
+      "/api/ai/analyze-image",
+      { base64Image, mimeType: file.type, question },
+    );
+
+    if (!result.success || !result.result) {
+      throw new Error(result.error || "Failed to analyze image");
+    }
+
+    return result.result;
+  }
+
+  private fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        const base64 = dataUrl.split(",")[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 
   /**
@@ -199,6 +231,16 @@ export function useUpdateFileIconMutation() {
 export function useUploadImageMutation() {
   return useMutation({
     mutationFn: (file: File) => fileService.uploadImage(file),
+  });
+}
+
+/**
+ * React Query hook: analyze an image via AI (returns analysis text).
+ */
+export function useAnalyzeImageMutation() {
+  return useMutation({
+    mutationFn: (vars: { file: File; question?: string }) =>
+      fileService.analyzeImage(vars.file, vars.question),
   });
 }
 

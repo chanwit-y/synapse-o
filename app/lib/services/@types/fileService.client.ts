@@ -54,3 +54,9 @@ export type UploadImageResult = {
   path?: string;
   error?: string;
 };
+
+export type AnalyzeImageResult = {
+  success: boolean;
+  result?: string;
+  error?: string;
+};
