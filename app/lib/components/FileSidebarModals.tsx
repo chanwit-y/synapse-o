@@ -15,6 +15,8 @@ type SelectedNodeForDelete =
   | { node: TreeNode; path: string; groupIndex: number }
   | null;
 
+type FileFormat = "md" | "datatable";
+
 type FileSidebarModalsProps = {
   theme: string;
   isCollectionModalOpen: boolean;
@@ -28,6 +30,8 @@ type FileSidebarModalsProps = {
   itemType: "file" | "folder";
   itemName: string;
   onChangeItemName: (value: string) => void;
+  fileFormat: FileFormat;
+  onChangeFileFormat: (value: FileFormat) => void;
   onSubmitItem: () => void;
   isSavingItem: boolean;
   selectedNodeForAdd: SelectedNodeForAdd;
@@ -51,6 +55,8 @@ export default function FileSidebarModals({
   itemType,
   itemName,
   onChangeItemName,
+  fileFormat,
+  onChangeFileFormat,
   onSubmitItem,
   isSavingItem,
   selectedNodeForAdd,
@@ -134,6 +140,31 @@ export default function FileSidebarModals({
           >
             Add {itemType === "file" ? "File" : "Folder"}
           </h3>
+          {itemType === "file" && (
+            <div className="space-y-2">
+              <label
+                htmlFor="file-format"
+                className={`block text-sm font-medium ${
+                  theme === "light" ? "text-gray-700" : "text-gray-300"
+                }`}
+              >
+                File Type
+              </label>
+              <select
+                id="file-format"
+                value={fileFormat}
+                onChange={(e) => onChangeFileFormat(e.target.value as FileFormat)}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  theme === "light"
+                    ? "border-gray-300 bg-white text-gray-900"
+                    : "border-gray-600 bg-gray-700 text-gray-100"
+                }`}
+              >
+                <option value="md">Markdown (.md)</option>
+                <option value="datatable">Data Table (.datatable)</option>
+              </select>
+            </div>
+          )}
           <div className="space-y-2">
             <label
               htmlFor="item-name"
@@ -154,7 +185,11 @@ export default function FileSidebarModals({
                 }
               }}
               placeholder={`Enter ${itemType} name${
-                itemType === "file" ? " (e.g., example.md)" : ""
+                itemType === "file"
+                  ? fileFormat === "datatable"
+                    ? " (e.g., my-data)"
+                    : " (e.g., example.md)"
+                  : ""
               }`}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 theme === "light"

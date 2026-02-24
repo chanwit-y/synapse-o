@@ -228,7 +228,7 @@ You understand:
 - Business logic and real-world user behavior
 
 Objective:
-Create a comprehensive test suite for the following feature/requirement:
+Create a comprehensive table of test suite for the following feature/requirement:
 
 > **Generate test cases for the behavior of \`${fileName}\` (File ID: ${fileId}).**
 
@@ -239,14 +239,14 @@ ${truncated}
 
 Instructions:
 
-1. Analyze the Requirement: briefly identify any logical gaps or ambiguity in the feature description before writing the cases.
-2. Coverage: You must include:
+1. Coverage: You must include:
+* Use App ID in the test case steps.
 * Positive Test Cases (Happy Path)
 * Negative Test Cases (Error handling, invalid inputs)
 * Boundary/Edge Cases (Min/max limits, empty states, special characters)
 * Security/Performance (If applicable to the context)
 
-3. Format: Output the test cases in a Markdown Table with the following columns:
+2. Format: Output the test cases in a JSON with the following columns:
 * TC_ID (e.g., TC001)
 * Type (Positive/Negative/Edge)
 * Scenario Description

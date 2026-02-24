@@ -252,6 +252,7 @@ export default function FileSidebar({
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [itemName, setItemName] = useState("");
   const [itemType, setItemType] = useState<"file" | "folder">("file");
+  const [fileFormat, setFileFormat] = useState<"md" | "datatable">("md");
   const [isSavingItem, setIsSavingItem] = useState(false);
   const [selectedNodeForAdd, setSelectedNodeForAdd] = useState<{ node: TreeNode | null; path: string | null; groupIndex: number } | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -404,6 +405,7 @@ export default function FileSidebar({
     setSelectedNodeForAdd({ node: selectedNode, path: selectedNodePath, groupIndex });
     setItemType("file");
     setItemName("");
+    setFileFormat("md");
     setIsAddItemModalOpen(true);
   };
 
@@ -417,6 +419,7 @@ export default function FileSidebar({
   const handleCloseAddItemModal = () => {
     setIsAddItemModalOpen(false);
     setItemName("");
+    setFileFormat("md");
     setSelectedNodeForAdd(null);
   };
 
@@ -425,14 +428,19 @@ export default function FileSidebar({
     if (!name || isSavingItem) return;
     if (!selectedNodeForAdd) return;
 
+    const resolvedExtension = itemType === "file" ? fileFormat : null;
+    const resolvedName = itemType === "file" && !name.includes(".")
+      ? `${name}.${fileFormat}`
+      : name;
+
     const newItem: TreeNode = {
       id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : mockUuid(),
-      name,
+      name: resolvedName,
       tags: [],
       type: itemType,
       ...(itemType === "folder" ? { children: [] } : {}),
       collectionId: "",
-      extension: null,
+      extension: resolvedExtension,
       content: null,
       createdAt: 0,
       updatedAt: 0
@@ -699,6 +707,8 @@ export default function FileSidebar({
         itemType={itemType}
         itemName={itemName}
         onChangeItemName={setItemName}
+        fileFormat={fileFormat}
+        onChangeFileFormat={setFileFormat}
         onSubmitItem={handleAddItem}
         isSavingItem={isSavingItem}
         selectedNodeForAdd={selectedNodeForAdd}

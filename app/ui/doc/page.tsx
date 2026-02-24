@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { PanelRightOpen } from "lucide-react";
 import Image from "next/image";
 import MarkdownEditor from "../../lib/components/MarkdownEditor";
+import DataTable from "../../lib/components/DataTable";
 import FileSidebar from "../../lib/components/FileSidebar";
 import type { TreeNode } from "../../lib/components/@types/treeViewTypes";
 import IconPopover from "../../lib/components/IconPopover";
@@ -117,9 +118,13 @@ export default function Home() {
             </Drawer>
             <div
               key={selectedFile.id}
-              className="flex  justify-center font-sans px-4 py-2 markdown-fade-in"
+              className="flex justify-center font-sans px-4 py-2 markdown-fade-in"
             >
-              <MarkdownEditor selectedFile={selectedFile} />
+              {selectedFile.extension === "datatable" || selectedFile.name.endsWith(".datatable") ? (
+                <DataTable selectedFile={selectedFile} />
+              ) : (
+                <MarkdownEditor selectedFile={selectedFile} />
+              )}
             </div>
           </>
         ) : (
