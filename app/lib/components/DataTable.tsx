@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Plus, Save, Trash2, GripVertical } from "lucide-react";
+import { Plus, Save, Trash2, GripVertical, Eye, X } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { useSnackbar } from "./Snackbar";
 import { useFileContentQuery, useSaveFileMutation } from "../services/fileService.client";
@@ -54,6 +54,7 @@ export default function DataTable({ selectedFile }: { selectedFile: TreeNode | n
 
   const [tableData, setTableData] = useState<DataTableData>(structuredClone(EMPTY_TABLE));
   const [editingHeader, setEditingHeader] = useState<number | null>(null);
+  const [viewingRowIndex, setViewingRowIndex] = useState<number | null>(null);
   const headerInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -213,6 +214,7 @@ export default function DataTable({ selectedFile }: { selectedFile: TreeNode | n
         <table className={`w-full border-collapse text-sm ${borderColor}`}>
           <thead className="sticky top-0 z-10">
             <tr>
+              <th className={`w-10 border ${borderColor} ${thBg} px-2 py-2 text-center ${mutedText}`} />
               <th
                 className={`w-10 border ${borderColor} ${thBg} px-2 py-2 text-center ${mutedText}`}
               >
@@ -258,12 +260,33 @@ export default function DataTable({ selectedFile }: { selectedFile: TreeNode | n
                   )}
                 </th>
               ))}
-              <th className={`w-10 border ${borderColor} ${thBg}`} />
             </tr>
           </thead>
           <tbody>
             {tableData.rows.map((row, rowIndex) => (
               <tr key={rowIndex} className={`${hoverBg} transition-colors`}>
+                <td className={`border ${borderColor} ${thBg} px-1 py-1.5 text-center`}>
+                  <div className="flex items-center justify-center gap-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setViewingRowIndex(rowIndex)}
+                      className={`p-0.5 rounded transition-colors ${mutedText} hover:text-blue-500 hover:bg-blue-500/10`}
+                      title="View row details"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                    </button>
+                    {tableData.rows.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeRow(rowIndex)}
+                        className="p-0.5 rounded transition-colors text-red-400 hover:text-red-500 hover:bg-red-500/10"
+                        title="Remove row"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </td>
                 <td
                   className={`border ${borderColor} ${thBg} px-2 py-1.5 text-center text-xs ${mutedText} select-none`}
                 >
@@ -285,18 +308,6 @@ export default function DataTable({ selectedFile }: { selectedFile: TreeNode | n
                     />
                   </td>
                 ))}
-                <td className={`border ${borderColor} ${thBg} px-1 py-1.5 text-center`}>
-                  {tableData.rows.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeRow(rowIndex)}
-                      className="p-0.5 rounded transition-colors text-red-400 hover:text-red-500 hover:bg-red-500/10"
-                      title="Remove row"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </td>
               </tr>
             ))}
           </tbody>
@@ -308,6 +319,57 @@ export default function DataTable({ selectedFile }: { selectedFile: TreeNode | n
         <span>{tableData.rows.length} row{tableData.rows.length !== 1 ? "s" : ""} &times; {tableData.columns.length} column{tableData.columns.length !== 1 ? "s" : ""}</span>
         <span>Double-click column headers to rename</span>
       </div>
+
+      {/* Row detail modal */}
+      {viewingRowIndex !== null && tableData.rows[viewingRowIndex] && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={() => setViewingRowIndex(null)}
+        >
+          <div
+            className={`relative w-full max-w-lg mx-4 rounded-xl border shadow-2xl ${borderColor} ${isDark ? "bg-gray-900" : "bg-white"}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={`flex items-center justify-between border-b ${borderColor} px-5 py-4`}>
+              <h3 className={`text-sm font-semibold ${textColor}`}>
+                Row {viewingRowIndex + 1} Details
+              </h3>
+              <button
+                type="button"
+                onClick={() => setViewingRowIndex(null)}
+                className={`p-1 rounded-md transition-colors ${mutedText} hover:${textColor} ${hoverBg}`}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-3 max-h-[60vh] overflow-y-auto">
+              {tableData.columns.map((col, colIndex) => (
+                <div key={colIndex}>
+                  <label className={`block text-xs font-medium ${mutedText} mb-1`}>
+                    {col}
+                  </label>
+                  <div
+                    className={`w-full rounded-md border px-3 py-2 text-sm ${borderColor} ${cellBg} ${textColor} min-h-[36px] wrap-break-word`}
+                  >
+                    {tableData.rows[viewingRowIndex][colIndex] || (
+                      <span className={`italic ${mutedText}`}>Empty</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className={`flex justify-end border-t ${borderColor} px-5 py-3`}>
+              <button
+                type="button"
+                onClick={() => setViewingRowIndex(null)}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${btnBg} ${textColor}`}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
