@@ -11,7 +11,6 @@ import Modal from "./Modal";
 import { useLoading } from "./LoadingProvider";
 import { useSnackbar } from "./Snackbar";
 import { findCollectionById, testAI, updateCollectionDirectories } from "@/app/ui/doc/action";
-import MarkdownDisplay from "./MarkdownDisplay";
 import { useFileContentQuery, useSaveFileMutation } from "@/app/lib/services/fileService.client";
 import type { TreeNode } from "./@types/treeViewTypes";
 import ImportPathTreeView, { type ImportPathEntry } from "./ImportPathTreeView";
@@ -75,7 +74,7 @@ function getExtension(name: string) {
 }
 
 function pickUniqueName(baseName: string, existing: Set<string>) {
-  const normalizedBase = (baseName ?? "").trim() || "untitled.md";
+  const normalizedBase = (baseName ?? "").trim() || "untitled.datatable";
   if (!existing.has(normalizedBase)) return normalizedBase;
 
   const stem = getStem(normalizedBase);
@@ -85,13 +84,59 @@ function pickUniqueName(baseName: string, existing: Set<string>) {
     if (!existing.has(candidate)) return candidate;
   }
   // Worst case fallback
-  return `${stem}-${Date.now()}.${ext ?? "md"}`;
+  return `${stem}-${Date.now()}.${ext ?? "datatable"}`;
 }
 
 function createId() {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function extractDataTableJson(raw: string): string {
+  const trimmed = raw.trim();
+  // Strip markdown code fences if present
+  const fenceMatch = trimmed.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+  const jsonStr = fenceMatch ? fenceMatch[1].trim() : trimmed;
+
+  try {
+    const parsed = JSON.parse(jsonStr) as unknown;
+
+    // Already in DataTable format
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      "columns" in parsed &&
+      "rows" in parsed &&
+      Array.isArray((parsed as { columns: unknown }).columns) &&
+      Array.isArray((parsed as { rows: unknown }).rows)
+    ) {
+      return JSON.stringify(parsed, null, 2);
+    }
+
+    // Array of objects – convert to DataTable format
+    if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === "object") {
+      const allKeys = new Set<string>();
+      for (const item of parsed) {
+        if (item && typeof item === "object") {
+          Object.keys(item as Record<string, unknown>).forEach((k) => allKeys.add(k));
+        }
+      }
+      const columns = Array.from(allKeys);
+      const rows = parsed.map((item) =>
+        columns.map((col) => String((item as Record<string, unknown>)[col] ?? ""))
+      );
+      return JSON.stringify({ columns, rows }, null, 2);
+    }
+  } catch {
+    /* not valid JSON – return as-is wrapped in a single-cell table */
+  }
+
+  return JSON.stringify(
+    { columns: ["Content"], rows: [[raw.trim()]] },
+    null,
+    2,
+  );
 }
 
 function insertNextToSelectedFile(opts: {
@@ -153,6 +198,97 @@ function findNodePathById(nodes: TreeNode[], nodeId: string, prefix: string[] = 
   return null;
 }
 
+function AiResultTablePreview({ raw, theme }: { raw: string; theme: string }) {
+  const isDark = theme === "dark";
+  const parsed = (() => {
+    try {
+      const trimmed = raw.trim();
+      const fenceMatch = trimmed.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+      const jsonStr = fenceMatch ? fenceMatch[1].trim() : trimmed;
+      const obj = JSON.parse(jsonStr) as unknown;
+
+      if (
+        obj &&
+        typeof obj === "object" &&
+        "columns" in obj &&
+        "rows" in obj &&
+        Array.isArray((obj as { columns: unknown }).columns) &&
+        Array.isArray((obj as { rows: unknown }).rows)
+      ) {
+        return obj as { columns: string[]; rows: string[][] };
+      }
+
+      if (Array.isArray(obj) && obj.length > 0 && typeof obj[0] === "object") {
+        const allKeys = new Set<string>();
+        for (const item of obj) {
+          if (item && typeof item === "object") {
+            Object.keys(item as Record<string, unknown>).forEach((k) => allKeys.add(k));
+          }
+        }
+        const columns = Array.from(allKeys);
+        const rows = obj.map((item) =>
+          columns.map((col) => String((item as Record<string, unknown>)[col] ?? ""))
+        );
+        return { columns, rows };
+      }
+    } catch {
+      /* not valid JSON */
+    }
+    return null;
+  })();
+
+  if (!parsed) {
+    return (
+      <pre
+        className={[
+          "whitespace-pre-wrap text-xs overflow-auto max-h-[40vh]",
+          isDark ? "text-gray-300" : "text-gray-700",
+        ].join(" ")}
+      >
+        {raw}
+      </pre>
+    );
+  }
+
+  const borderColor = isDark ? "border-gray-700" : "border-gray-200";
+  const thBg = isDark ? "bg-gray-800" : "bg-gray-100";
+  const textColor = isDark ? "text-gray-100" : "text-gray-900";
+  const cellBg = isDark ? "bg-gray-900" : "bg-white";
+
+  return (
+    <div className="overflow-auto max-h-[40vh] rounded-md border" style={{ borderColor: isDark ? "#374151" : "#e5e7eb" }}>
+      <table className={`w-full border-collapse text-xs ${borderColor}`}>
+        <thead className="sticky top-0 z-10">
+          <tr>
+            {parsed.columns.map((col, i) => (
+              <th
+                key={i}
+                className={`border ${borderColor} ${thBg} px-2 py-1.5 text-left font-semibold ${textColor} whitespace-nowrap`}
+              >
+                {col}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {parsed.rows.map((row, ri) => (
+            <tr key={ri}>
+              {row.map((cell, ci) => (
+                <td
+                  key={ci}
+                  className={`border ${borderColor} ${cellBg} px-2 py-1.5 ${textColor} whitespace-pre-wrap`}
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function ToolsPanel({
   fileId,
   fileName,
@@ -176,8 +312,6 @@ export default function ToolsPanel({
   const [initAutomateTestPath, setInitAutomateTestPath] = useState(selectedFilePath ?? "");
   const MAX_CONTEXT_CHARS = 12000;
   const defaultUnitTestPrompt = useMemo(() => {
-    // This base prompt is used immediately when opening the modal.
-    // We then enrich it with the current file content loaded by `fileId`.
     return `Role:
 Act as a Senior Quality Assurance Engineer with 10+ years of experience in software testing. You are detail-oriented, critical of vague requirements, and expert at finding edge cases.
 
@@ -195,21 +329,21 @@ Instructions:
 * Boundary/Edge Cases (Min/max limits, empty states, special characters)
 * Security/Performance (If applicable to the context)
 
-3. Format: Output the test cases in a Markdown Table with the following columns:
-* TC_ID (e.g., TC001)
-* Type (Positive/Negative/Edge)
-* Scenario Description
-* Pre-conditions
-* Test Steps (Clear, numbered actions)
-* Test Data (Specific inputs to use)
-* Expected Result
-* Priority (P1-Critical, P2-High, P3-Medium)
+3. Format: Output ONLY a valid JSON object (no markdown fences, no extra text) with this exact structure:
+{
+  "columns": ["TC_ID", "Type", "Scenario Description", "Pre-conditions", "Test Steps", "Test Data", "Expected Result", "Priority"],
+  "rows": [
+    ["TC001", "Positive", "...", "...", "1. Step one\\n2. Step two", "...", "...", "P1-Critical"],
+    ["TC002", "Negative", "...", "...", "1. Step one", "...", "...", "P2-High"]
+  ]
+}
 
 Constraints:
 
 * Ensure steps are atomic and reproducible.
 * Do not assume knowledge that isn't in the requirement; if you must assume, note it.
-* Keep the tone professional and technical.`;
+* Keep the tone professional and technical.
+* Return ONLY the JSON object. No explanation, no markdown code fences.`;
   }, [fileId, fileName]);
 
   const buildUnitTestPromptWithContext = (content: string) => {
@@ -220,7 +354,7 @@ Constraints:
         : normalized;
 
     return `Role: Act as a Senior Quality Assurance Engineer with over 10 years of experience in software testing. You specialize in translating Business Requirements, Functional Requirements, and User Stories into clear, structured, and comprehensive test cases.
- 
+
 You understand:
 - Web applications
 - Positive, negative, and edge case scenarios
@@ -228,7 +362,7 @@ You understand:
 - Business logic and real-world user behavior
 
 Objective:
-Create a comprehensive table of test suite for the following feature/requirement:
+Create a comprehensive test suite for the following feature/requirement:
 
 > **Generate test cases for the behavior of \`${fileName}\` (File ID: ${fileId}).**
 
@@ -246,21 +380,21 @@ Instructions:
 * Boundary/Edge Cases (Min/max limits, empty states, special characters)
 * Security/Performance (If applicable to the context)
 
-2. Format: Output the test cases in a JSON with the following columns:
-* TC_ID (e.g., TC001)
-* Type (Positive/Negative/Edge)
-* Scenario Description
-* Pre-conditions
-* Test Steps (Clear, numbered actions)
-* Test Data (Specific inputs to use)
-* Expected Result
-* Priority (P1-Critical, P2-High, P3-Medium)
+2. Format: Output ONLY a valid JSON object (no markdown fences, no extra text) with this exact structure:
+{
+  "columns": ["TC_ID", "Type", "Scenario Description", "Pre-conditions", "Test Steps", "Test Data", "Expected Result", "Priority"],
+  "rows": [
+    ["TC001", "Positive", "...", "...", "1. Step one\\n2. Step two", "...", "...", "P1-Critical"],
+    ["TC002", "Negative", "...", "...", "1. Step one", "...", "...", "P2-High"]
+  ]
+}
 
 Constraints:
 
 * Ensure steps are atomic and reproducible.
 * Do not assume knowledge that isn't in the requirement; if you must assume, note it.
-* Keep the tone professional and technical.`;
+* Keep the tone professional and technical.
+* Return ONLY the JSON object. No explanation, no markdown code fences.`;
   };
 
   const [unitTestPrompt, setUnitTestPrompt] = useState(defaultUnitTestPrompt);
@@ -353,14 +487,16 @@ Constraints:
         const existingNames = new Set<string>();
         collectFileNames(directories, existingNames);
 
-        const base = `${getStem(fileName)}.test-cases.md`;
+        const base = `${getStem(fileName)}.test-cases.datatable`;
         const name = pickUniqueName(base, existingNames);
+
+        const dataTableContent = extractDataTableJson(content);
 
         const saved = await saveFileMutation.mutateAsync({
           id: null,
           name,
           collectionId,
-          content,
+          content: dataTableContent,
           icon: "flask-conical",
           tags: [{ id: createId(), label: "Test Case", color: "#60a5fa" }],
         });
@@ -610,16 +746,10 @@ Constraints:
                     {aiError}
                   </div>
                 ) : aiResult ? (
-                  <MarkdownDisplay
-                    content={aiResult}
-                    theme={theme}
-                    className="markdown-fade-in"
-                    animate={{ enabled: true, intervalMs: 10, chunkSize: 8 }}
-                    autoScroll={{ enabled: true, behavior: "auto" }}
-                  />
+                  <AiResultTablePreview raw={aiResult} theme={theme} />
                 ) : (
                   <div className={theme === "dark" ? "text-gray-400 text-sm" : "text-gray-500 text-sm"}>
-                    Click “Generate” to see the markdown response here.
+                    Click “Generate” to see the JSON data table response here.
                   </div>
                 )}
               </div>
@@ -661,7 +791,7 @@ Constraints:
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300",
                 isBusy || !aiResult.trim() ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
               ].join(" ")}
-              title={aiResult.trim() ? "Create a new markdown file from the AI result" : "Generate a result first"}
+              title={aiResult.trim() ? "Create a new datatable file from the AI result" : "Generate a result first"}
               aria-label="Create test case file"
             >
               {isCreatingFile ? "Creating..." : "Create test case file"}
