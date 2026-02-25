@@ -32,3 +32,12 @@ export const apiKeyTable = sqliteTable("api_key", {
 	createdAt: integer("created_at").default(sql`CURRENT_TIMESTAMP`),
 	updatedAt: integer("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const codebases = sqliteTable("codebase", {
+	id: text("id").primaryKey(),
+	name: text("name").notNull(),
+	description: text("description"),
+	importFilePath: text("import_path").notNull(),
+	createdAt: integer("created_at").default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: integer("updated_at").default(sql`CURRENT_TIMESTAMP`),
+});
