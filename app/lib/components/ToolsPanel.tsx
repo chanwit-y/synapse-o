@@ -11,6 +11,8 @@ import Modal from "./Modal";
 import { useLoading } from "./LoadingProvider";
 import { useSnackbar } from "./Snackbar";
 import { findCollectionById, testAI, updateCollectionDirectories } from "@/app/ui/doc/action";
+import { getAllCodebases, getImportPathData } from "@/app/ui/codebase/action";
+import type { CodebaseRow } from "@/app/lib/db/repository/codebase";
 import { useFileContentQuery, useSaveFileMutation } from "@/app/lib/services/fileService.client";
 import type { TreeNode } from "./@types/treeViewTypes";
 import ImportPathTreeView, { type ImportPathEntry } from "./ImportPathTreeView";
@@ -309,6 +311,9 @@ export default function ToolsPanel({
   const [importPathData, setImportPathData] = useState<ImportPathEntry[] | null>(null);
   const [isImportPathLoading, setIsImportPathLoading] = useState(false);
   const [importPathError, setImportPathError] = useState<string>("");
+  const [codebases, setCodebases] = useState<CodebaseRow[]>([]);
+  const [isCodebasesLoading, setIsCodebasesLoading] = useState(false);
+  const [selectedCodebaseId, setSelectedCodebaseId] = useState<string>("");
   const [initAutomateTestPath, setInitAutomateTestPath] = useState(selectedFilePath ?? "");
   const MAX_CONTEXT_CHARS = 12000;
   const defaultUnitTestPrompt = useMemo(() => {
@@ -611,12 +616,43 @@ Constraints:
     setIsImportPathModalOpen(true);
     setImportPathError("");
     setInitAutomateTestPath(selectedFilePath ?? "");
-    if (importPathData) return;
+
+    if (codebases.length > 0) return;
+
+    setIsCodebasesLoading(true);
+    try {
+      const result = await getAllCodebases();
+      if (result.success && result.data) {
+        setCodebases(result.data);
+      } else {
+        setImportPathError(result.error ?? "Failed to load codebases.");
+      }
+    } catch (error) {
+      console.error("Failed to load codebases:", error);
+      setImportPathError("Failed to load codebases.");
+    } finally {
+      setIsCodebasesLoading(false);
+    }
+  };
+
+  const handleSelectCodebase = async (codebaseId: string) => {
+    setSelectedCodebaseId(codebaseId);
+    setImportPathData(null);
+    setImportPathError("");
+
+    if (!codebaseId) return;
+
+    const selected = codebases.find((c) => c.id === codebaseId);
+    if (!selected) return;
 
     setIsImportPathLoading(true);
     try {
-      const mod = await import("@/code_bases_mybp.json");
-      setImportPathData((mod.default ?? []) as ImportPathEntry[]);
+      const result = await getImportPathData(selected.importFilePath);
+      if (result.success && result.data) {
+        setImportPathData(result.data);
+      } else {
+        setImportPathError(result.error ?? "Failed to load import path data.");
+      }
     } catch (error) {
       console.error("Failed to load import path data:", error);
       setImportPathError("Failed to load import path data.");
@@ -821,11 +857,42 @@ Constraints:
           <div className="shrink-0 border-b border-gray-200 pb-3 dark:border-gray-700">
             <h2 className="text-lg font-semibold">Import Path</h2>
             <p className="mt-0.5 text-sm text-gray-500">
-              Browse file import relationships across the project.
+              Select a codebase to browse file import relationships.
             </p>
+
+            <div className="mt-3">
+              <select
+                value={selectedCodebaseId}
+                onChange={(e) => handleSelectCodebase(e.target.value)}
+                disabled={isCodebasesLoading}
+                className={[
+                  "w-full rounded-md border px-3 py-2 text-sm",
+                  "focus:outline-none focus:ring-2 focus:ring-blue-500/40",
+                  theme === "dark"
+                    ? "border-gray-700 bg-gray-900 text-gray-100"
+                    : "border-gray-300 bg-white text-gray-900",
+                  isCodebasesLoading ? "opacity-60 cursor-not-allowed" : "",
+                ].join(" ")}
+                aria-label="Select codebase"
+              >
+                <option value="">
+                  {isCodebasesLoading ? "Loading codebases..." : "— Select a codebase —"}
+                </option>
+                {codebases.map((cb) => (
+                  <option key={cb.id} value={cb.id}>
+                    {cb.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
+
           <div className="min-h-0 flex-1 overflow-hidden pt-3">
-            {isImportPathLoading ? (
+            {!selectedCodebaseId ? (
+              <div className="flex h-full items-center justify-center text-sm text-gray-400">
+                Please select a codebase above to view import paths.
+              </div>
+            ) : isImportPathLoading ? (
               <div className="flex h-full items-center justify-center text-sm text-gray-500">
                 Loading import path data...
               </div>
@@ -837,6 +904,7 @@ Constraints:
               <ImportPathTreeView data={importPathData} />
             ) : null}
           </div>
+
           <div
             className={[
               "shrink-0 pt-3 flex items-center gap-2",
