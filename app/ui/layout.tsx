@@ -12,7 +12,7 @@ import { ThemeProvider } from "../lib/components/ThemeProvider";
 import { ReactQueryProvider } from "../lib/react-query/ReactQueryProvider";
 import LayoutShell from "../lib/components/LayoutShell";
 import SidebarMenu from "../lib/components/SidebarMenu";
-import { Workflow, Settings, Key, FolderInput } from "lucide-react";
+import { Workflow, Settings, Key, FolderInput, Code } from "lucide-react";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -90,6 +90,12 @@ const menuItems = [
     href: "/ui/doc",
     description: "Markdown workspace",
     icon: docsIcon,
+  },
+  {
+    label: "Codebase",
+    href: "/ui/codebase",
+    description: "Code management",
+    icon: <Code className="h-4 w-4" />,
   },
   {
     label: "Database",
