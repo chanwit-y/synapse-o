@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTheme } from "@/app/lib/components/ThemeProvider";
 import { Code, Plus } from "lucide-react";
 import { getAllCodebases, deleteCodebase, createCodebase } from "./action";
@@ -14,6 +14,8 @@ import CodebaseEmptyState from "@/app/lib/components/CodebaseEmptyState";
 import CodebaseDetailModal from "@/app/lib/components/CodebaseDetailModal";
 import DeleteConfirmModal from "@/app/lib/components/DeleteConfirmModal";
 import AddCodebaseModal from "@/app/lib/components/AddCodebaseModal";
+
+import { invoke } from "@tauri-apps/api/core";
 
 export default function CodebasePage() {
   const { theme } = useTheme();
@@ -83,6 +85,12 @@ export default function CodebasePage() {
     }
     setDeleteTarget(null);
   };
+
+  const handleRun = useCallback(async (codebase: CodebaseRow) => {
+    const result = await invoke('greet', {name: codebase.importFilePath});
+    console.log(result);
+
+  }, [])
 
   const toggleSort = (field: SortField) => {
     if (sortField === field) {
@@ -173,6 +181,7 @@ export default function CodebasePage() {
                 pillBg={styles.pillBg}
                 onView={setDetailItem}
                 onDelete={setDeleteTarget}
+                onRun={handleRun}
               />
             ))}
           </div>

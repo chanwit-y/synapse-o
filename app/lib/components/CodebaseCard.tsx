@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Code, Eye, Trash2, FolderOpen, Calendar, ExternalLink } from "lucide-react";
+import { Code, Eye, Trash2, FolderOpen, Calendar, ExternalLink, Play } from "lucide-react";
 import type { CodebaseRow } from "@/app/lib/db/repository/codebase";
 import { formatDate } from "@/app/ui/codebase/types";
 
@@ -14,6 +14,7 @@ interface CodebaseCardProps {
   pillBg: string;
   onView: (codebase: CodebaseRow) => void;
   onDelete: (codebase: CodebaseRow) => void;
+  onRun: (codebase: CodebaseRow) => void;
 }
 
 export default function CodebaseCard({
@@ -25,6 +26,7 @@ export default function CodebaseCard({
   pillBg,
   onView,
   onDelete,
+  onRun
 }: CodebaseCardProps) {
   return (
     <div className={`group relative rounded-xl border p-5 transition-all duration-200 ${cardBg} ${cardHover}`}>
@@ -61,6 +63,16 @@ export default function CodebaseCard({
             title="View details"
           >
             <Eye className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onRun(codebase)}
+            className={`p-1.5 rounded-md transition-colors ${
+              isDark ? "hover:bg-gray-700 text-gray-400 hover:text-green-400" : "hover:bg-green-50 text-gray-400 hover:text-green-600"
+            }`}
+            title="Run"
+          >
+            <Play className="h-4 w-4" />
           </button>
           <button
             type="button"
