@@ -116,7 +116,7 @@ export default function CodebasePage() {
   }, [codebases, search, sortField, sortDir]);
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto w-screen">
       <div
         className="mx-auto max-w-6xl p-8"
         style={{

@@ -77,7 +77,7 @@ export default function CodebaseDetailPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 flex w-screen flex-col overflow-hidden">
       {/* Header */}
       <div className={`shrink-0 border-b px-6 py-4 ${borderColor}`}>
         <div className="flex items-center gap-4">
