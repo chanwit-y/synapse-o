@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTheme } from "@/app/lib/components/ThemeProvider";
-import { ArrowLeft, Code, FolderOpen, Calendar, Loader2 } from "lucide-react";
+import { ArrowLeft, Code, FolderOpen, Calendar, Loader2, PanelRightOpen, Bot } from "lucide-react";
 import { getCodebaseById, getImportPathData } from "../action";
 import { formatDate } from "../types";
 import type { CodebaseRow } from "@/app/lib/db/repository/codebase";
 import type { ImportPathEntry } from "@/app/lib/components/ImportPathTreeView";
 import ImportPathTreeView from "@/app/lib/components/ImportPathTreeView";
+import Drawer from "@/app/lib/components/Drawer";
+import Modal from "@/app/lib/components/Modal";
 
 export default function CodebaseDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +22,8 @@ export default function CodebaseDetailPage() {
   const [importData, setImportData] = useState<ImportPathEntry[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -118,6 +122,34 @@ export default function CodebaseDetailPage() {
               <Calendar className="h-3 w-3" />
               {formatDate(codebase?.createdAt)}
             </span>
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className={[
+                "flex h-8 w-8 items-center justify-center rounded-md transition-colors cursor-pointer",
+                isDark
+                  ? "text-gray-300 hover:bg-gray-800"
+                  : "text-gray-600 hover:bg-gray-100",
+              ].join(" ")}
+              aria-label="Open codebase modal"
+              title="Open modal"
+            >
+              <Bot className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsDrawerOpen(true)}
+              className={[
+                "flex h-8 w-8 items-center justify-center rounded-md transition-colors cursor-pointer",
+                isDark
+                  ? "text-gray-300 hover:bg-gray-800"
+                  : "text-gray-600 hover:bg-gray-100",
+              ].join(" ")}
+              aria-label="Open codebase details drawer"
+              title="Open details"
+            >
+              <PanelRightOpen className="h-4 w-4" />
+            </button>
           </div>
         </div>
 
@@ -127,6 +159,31 @@ export default function CodebaseDetailPage() {
           </div>
         )}
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size="md">
+        <div className="space-y-4 pr-6">
+          <h2 className="text-lg font-semibold">Codebase Overview</h2>
+          <p className={`text-sm ${mutedText}`}>
+            This is a quick modal view for the selected codebase.
+          </p>
+          <div className={`rounded-lg border p-3 text-sm ${borderColor} ${cardBg}`}>
+            <p><span className="font-medium">Name:</span> {codebase?.name ?? "-"}</p>
+            <p><span className="font-medium">Path:</span> {codebase?.importFilePath ?? "-"}</p>
+            <p><span className="font-medium">Created:</span> {formatDate(codebase?.createdAt)}</p>
+          </div>
+        </div>
+      </Modal>
+
+      <Drawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        position="right"
+        title="Codebase Details"
+      >
+        <div className="space-y-4 text-sm">
+        
+        </div>
+      </Drawer>
 
       {/* Import Tree View */}
       <div className="flex-1 min-h-0 overflow-hidden">
