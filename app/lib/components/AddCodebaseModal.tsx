@@ -8,10 +8,12 @@ interface AddCodebaseModalProps {
   isDark: boolean;
   name: string;
   description: string;
+  importSrcPath: string;
   importPath: string;
   isSaving: boolean;
   onNameChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
+  onImportSrcPathChange: (value: string) => void;
   onImportPathChange: (value: string) => void;
   onClose: () => void;
   onSave: () => void;
@@ -22,10 +24,12 @@ export default function AddCodebaseModal({
   isDark,
   name,
   description,
+  importSrcPath,
   importPath,
   isSaving,
   onNameChange,
   onDescriptionChange,
+  onImportSrcPathChange,
   onImportPathChange,
   onClose,
   onSave,
@@ -82,8 +86,25 @@ export default function AddCodebaseModal({
           </div>
 
           <div>
+            <label htmlFor="add-import-src-path" className={labelClasses}>
+              Import Src Path <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="add-import-src-path"
+              type="text"
+              value={importSrcPath}
+              onChange={(e) => onImportSrcPathChange(e.target.value)}
+              placeholder="e.g., /path/to/source"
+              className={`${inputClasses} font-mono`}
+            />
+            <p className={`mt-1.5 text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+              The source path to import from.
+            </p>
+          </div>
+
+          <div>
             <label htmlFor="add-import-path" className={labelClasses}>
-              Import File Path <span className="text-red-500">*</span>
+              Import File Path
             </label>
             <input
               id="add-import-path"
@@ -114,7 +135,7 @@ export default function AddCodebaseModal({
           <button
             type="button"
             onClick={onSave}
-            disabled={!name.trim() || !importPath.trim() || isSaving}
+            disabled={!name.trim() || !importSrcPath.trim() || isSaving}
             className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="h-4 w-4" />

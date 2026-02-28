@@ -34,6 +34,7 @@ export default function CodebasePage() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [addName, setAddName] = useState("");
   const [addDescription, setAddDescription] = useState("");
+  const [addImportSrcPath, setAddImportSrcPath] = useState("");
   const [addImportPath, setAddImportPath] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -53,23 +54,34 @@ export default function CodebasePage() {
     setAddModalOpen(false);
     setAddName("");
     setAddDescription("");
+    setAddImportSrcPath("");
     setAddImportPath("");
   };
 
   const handleCreate = async () => {
-    if (!addName.trim() || !addImportPath.trim()) return;
+    if (!addName.trim() || !addImportSrcPath.trim()) return;
     setIsSaving(true);
-    const result = await createCodebase({
-      name: addName.trim(),
-      description: addDescription.trim() || undefined,
-      importFilePath: addImportPath.trim(),
-    });
-    if (result.success) {
-      showSnackbar({ message: "Codebase created successfully", variant: "success" });
-      closeAddModal();
-      await loadCodebases();
-    } else {
-      showSnackbar({ message: result.error || "Failed to create codebase", variant: "error" });
+    try {
+      const importFilePath = addImportPath.trim() || await invoke<string>('import', { srcPath: addImportSrcPath.trim() });
+      if(importFilePath === "") {
+        showSnackbar({ message: "Import failed", variant: "error" });
+        return;
+      }
+      const result = await createCodebase({
+        name: addName.trim(),
+        description: addDescription.trim() || undefined,
+        importSrcPath: addImportSrcPath.trim(),
+        importFilePath: `./store/${importFilePath}.json`,
+      });
+      if (result.success) {
+        showSnackbar({ message: "Codebase created successfully", variant: "success" });
+        closeAddModal();
+        await loadCodebases();
+      } else {
+        showSnackbar({ message: result.error || "Failed to create codebase", variant: "error" });
+      }
+    } catch (err) {
+      showSnackbar({ message: `Import failed: ${err}`, variant: "error" });
     }
     setIsSaving(false);
   };
@@ -87,7 +99,7 @@ export default function CodebasePage() {
   };
 
   const handleRun = useCallback(async (codebase: CodebaseRow) => {
-    const result = await invoke('greet', {name: codebase.importFilePath});
+    const result = await invoke('import', {src_path: codebase.importFilePath});
     console.log(result);
 
   }, [])
@@ -208,10 +220,12 @@ export default function CodebasePage() {
         isDark={isDark}
         name={addName}
         description={addDescription}
+        importSrcPath={addImportSrcPath}
         importPath={addImportPath}
         isSaving={isSaving}
         onNameChange={setAddName}
         onDescriptionChange={setAddDescription}
+        onImportSrcPathChange={setAddImportSrcPath}
         onImportPathChange={setAddImportPath}
         onClose={closeAddModal}
         onSave={handleCreate}

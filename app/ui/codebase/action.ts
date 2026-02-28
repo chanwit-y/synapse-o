@@ -38,11 +38,12 @@ export async function getImportPathData(filePath: string): Promise<{ success: bo
 	}
 }
 
-export async function createCodebase(data: { name: string; description?: string; importFilePath: string }) {
+export async function createCodebase(data: { name: string; description?: string; importSrcPath: string; importFilePath: string }) {
 	try {
 		const input: CodebaseCreateInput = {
 			name: data.name,
 			description: data.description || null,
+			importSrcPath: data.importSrcPath,
 			importFilePath: data.importFilePath,
 		};
 		const result = await codebaseRepo.create(input);

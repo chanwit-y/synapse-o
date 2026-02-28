@@ -91,11 +91,19 @@ export default function CodebaseCard({
         {codebase.description || "No description provided."}
       </p>
 
-      <div className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-mono truncate ${pillBg}`}>
-        <FolderOpen className="h-3.5 w-3.5 shrink-0 opacity-60" />
-        <span className="truncate" title={codebase.importFilePath}>
-          {codebase.importFilePath}
-        </span>
+      <div className="space-y-1.5">
+        <div className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-mono truncate ${pillBg}`}>
+          <FolderOpen className="h-3.5 w-3.5 shrink-0 opacity-60" />
+          <span className="truncate" title={codebase.importSrcPath}>
+            {codebase.importSrcPath}
+          </span>
+        </div>
+        <div className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-mono truncate ${pillBg}`}>
+          <FolderOpen className="h-3.5 w-3.5 shrink-0 opacity-60" />
+          <span className="truncate" title={codebase.importFilePath}>
+            {codebase.importFilePath}
+          </span>
+        </div>
       </div>
 
       <div className={`flex items-center gap-4 mt-3 text-[11px] ${mutedText}`}>

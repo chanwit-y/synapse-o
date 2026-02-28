@@ -1,0 +1,1 @@
+ALTER TABLE `codebase` ADD `import_src_path` text NOT NULL;

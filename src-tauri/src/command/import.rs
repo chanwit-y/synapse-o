@@ -1,7 +1,12 @@
 use regex::Regex;
 use serde::Serialize;
-use std::{error::Error, fs, path::Path};
-
+use std::{
+    error::Error,
+    fs::{self, File},
+    io::BufWriter,
+    path::Path,
+};
+use uuid::Uuid;
 #[derive(Debug, Serialize)]
 struct Import {
     items: Vec<String>,
@@ -10,7 +15,6 @@ struct Import {
     is_external: bool,
     imports: Vec<Import>,
 }
-
 #[derive(Debug, Serialize)]
 struct CodeBase {
     indent: usize,
@@ -207,15 +211,6 @@ fn deep_path(
     Ok(result)
 }
 
-fn write_json(code_bases: &Vec<CodeBase>) -> Result<(), Box<dyn Error>> {
-    let file = File::create("code_bases.json")?;
-    let writer = BufWriter::new(file);
-
-    serde_json::to_writer_pretty(writer, &code_bases)?;
-
-    Ok(())
-}
-
 fn deep_import(
     code_bases: &Vec<CodeBase>,
     imports: &Vec<Import>,
@@ -287,8 +282,34 @@ fn deep_import_recursive(
     Ok(result)
 }
 
-#[tauri::command]
-pub fn run() -> String {
+fn generate_uuid() -> String {
+    Uuid::new_v4().to_string()
+}
+
+fn write_json(code_bases: &Vec<CodeBase>) -> Result<String, Box<dyn Error>> {
+    let name = generate_uuid();
+    let path = format!("../store/{}.json", name);
+    let path = Path::new(&path);
+    if !path.parent().unwrap().exists() {
+        fs::create_dir_all(path.parent().unwrap())?;
+    }
+    let file = File::create(&path);
+    match file {
+        Ok(file) => {
+            let writer = BufWriter::new(file);
+
+            serde_json::to_writer_pretty(writer, &code_bases)?;
+
+            Ok(name)
+        }
+        Err(e) => {
+            println!("Failed to create file: {}", e);
+            Err(e.into())
+        }
+    }
+}
+
+pub fn run(src_path: &str) -> Result<String, Box<dyn Error>> {
     let ignore_dirs = vec![
         "node_modules".to_string(),
         ".git".to_string(),
@@ -310,13 +331,12 @@ pub fn run() -> String {
         "env.test".to_string(),
         "env.production".to_string(),
     ];
-    let base_path = "/Users/chanwit_y/Desktop/Projects/banpu/fingw-ui/src";
-    let code_bases = deep_path(base_path, 0, &ignore_dirs)?;
+    let code_bases = deep_path(src_path, 0, &ignore_dirs)?;
 
     let code_bases: Vec<CodeBase> = code_bases
         .iter()
         .map(|cb| {
-            let imports = deep_import(&code_bases, &cb.imports, base_path).unwrap_or_default();
+            let imports = deep_import(&code_bases, &cb.imports, src_path).unwrap_or_default();
             CodeBase {
                 indent: cb.indent,
                 path: cb.path.clone(),
@@ -324,6 +344,7 @@ pub fn run() -> String {
             }
         })
         .collect();
-
-    write_json(&code_bases)?;
+    println!("create json file");
+    let path = write_json(&code_bases)?;
+    Ok(path)
 }
