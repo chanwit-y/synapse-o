@@ -47,3 +47,4 @@ synapse.db-shm
 public/upload
 import_path.json
 code_bases_mybp.json
+store/
