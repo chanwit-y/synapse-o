@@ -14,9 +14,10 @@ export type { ImportEntry, ImportPathEntry } from "./import-path-tree-view/types
 
 interface ImportPathTreeViewProps {
   data: ImportPathEntry[];
+  onCheckedPathsChange?: (paths: Set<string>) => void;
 }
 
-export default function ImportPathTreeView({ data }: ImportPathTreeViewProps) {
+export default function ImportPathTreeView({ data, onCheckedPathsChange }: ImportPathTreeViewProps) {
   const { theme } = useTheme();
   const isLight = theme === "light";
 
@@ -63,20 +64,14 @@ export default function ImportPathTreeView({ data }: ImportPathTreeViewProps) {
 
   const handleToggleChecked = useCallback((node: FileNode) => {
     const path = node.fullPath;
-    // setSelectedFileSet((previous) => {
-    //   const newSet = new Set(previous);
-    //   if (newSet.has(node)) newSet.delete(node);
-    //   else newSet.add(node);
-    //   return newSet;
-    // });
     setCheckedPaths((previous) => {
       const next = new Set(previous);
       if (next.has(path)) next.delete(path);
       else next.add(path);
-      console.log('next', next)
+      onCheckedPathsChange?.(next);
       return next;
     });
-  }, []);
+  }, [onCheckedPathsChange]);
 
   const totalFiles = data.length;
   const selectedCount = checkedPaths.size;

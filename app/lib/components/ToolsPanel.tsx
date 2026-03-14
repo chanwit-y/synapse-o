@@ -4,7 +4,7 @@
  * @description A tools panel for generating AI-powered test cases from file content, with modal interfaces for editing prompts and creating test case files.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronDown, Copy, FlaskConical, FolderInput, Search } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import Modal from "./Modal";
@@ -563,6 +563,7 @@ export default function ToolsPanel({
   const [isCodebasesLoading, setIsCodebasesLoading] = useState(false);
   const [selectedCodebaseId, setSelectedCodebaseId] = useState<string>("");
   const [initAutomateTestPath, setInitAutomateTestPath] = useState(selectedFilePath ?? "");
+  const [checkedFiles, setCheckedFiles] = useState<Set<string>>(new Set());
   const MAX_CONTEXT_CHARS = 12000;
   const defaultUnitTestPrompt = useMemo(() => {
     return `Role:
@@ -909,8 +910,15 @@ Constraints:
     }
   };
 
+  const handleCheckedPathsChange = useCallback((paths: Set<string>) => {
+    setCheckedFiles(new Set(paths));
+  }, []);
+
   const handleInitAutomateTest = () => {
     const targetPath = initAutomateTestPath.trim();
+    const selectedFilesList = Array.from(checkedFiles);
+    console.log("[Initialize Automate Test] selected files:", selectedFilesList);
+
     showSnackbar({
       variant: targetPath ? "info" : "warning",
       title: "Initialize automate test",
@@ -1135,7 +1143,7 @@ Constraints:
                 {importPathError}
               </div>
             ) : importPathData ? (
-              <ImportPathTreeView data={importPathData} />
+              <ImportPathTreeView data={importPathData} onCheckedPathsChange={handleCheckedPathsChange} />
             ) : null}
           </div>
 
