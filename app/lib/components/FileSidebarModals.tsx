@@ -142,27 +142,16 @@ export default function FileSidebarModals({
           </h3>
           {itemType === "file" && (
             <div className="space-y-2">
-              <label
-                htmlFor="file-format"
+              <span
                 className={`block text-sm font-medium ${
                   theme === "light" ? "text-gray-700" : "text-gray-300"
                 }`}
               >
-                File Type
-              </label>
-              <select
-                id="file-format"
-                value={fileFormat}
-                onChange={(e) => onChangeFileFormat(e.target.value as FileFormat)}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  theme === "light"
-                    ? "border-gray-300 bg-white text-gray-900"
-                    : "border-gray-600 bg-gray-700 text-gray-100"
-                }`}
-              >
-                <option value="md">Markdown (.md)</option>
-                <option value="datatable">Data Table (.datatable)</option>
-              </select>
+                File Type:{" "}
+                <span className={`font-normal ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
+                  {fileFormat === "md" ? "Markdown (.md)" : "Data Table (.datatable)"}
+                </span>
+              </span>
             </div>
           )}
           <div className="space-y-2">

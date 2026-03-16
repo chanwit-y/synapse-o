@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { PanelLeftClose, PanelLeftOpen, PlusIcon } from "lucide-react";
 import TreeView from "./TreeView";
 import type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
+import type { FileType } from "./TreeViewGroupItem";
 import FileSidebarModals from "./FileSidebarModals";
 import { useSnackbar } from "./Snackbar";
 import { useTheme } from "./ThemeProvider";
@@ -401,11 +402,11 @@ export default function FileSidebar({
     setCollectionName("");
   };
 
-  const handleAddFile = (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => {
+  const handleAddFile = (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number, fileType: FileType) => {
     setSelectedNodeForAdd({ node: selectedNode, path: selectedNodePath, groupIndex });
     setItemType("file");
     setItemName("");
-    setFileFormat("md");
+    setFileFormat(fileType);
     setIsAddItemModalOpen(true);
   };
 
