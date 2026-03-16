@@ -8,11 +8,12 @@ import { useEffect, useState } from "react";
 import type { MouseEvent } from "react";
 import TreeViewGroupItem from "./TreeViewGroupItem";
 import type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
+import type { FileType } from "./TreeViewGroupItem";
 
 interface TreeViewProps {
   data: TreeViewGroup[];
   onNodeClick?: (node: TreeNode, nodePath: string) => void;
-  onAddFile?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
+  onAddFile?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number, fileType: FileType) => void;
   onAddFolder?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
   onRequestDeleteNode?: (node: TreeNode, nodePath: string, groupIndex: number) => void;
   /**
