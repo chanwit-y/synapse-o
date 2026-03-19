@@ -13,6 +13,10 @@ import FileSidebarModals from "./FileSidebarModals";
 import { useSnackbar } from "./Snackbar";
 import { useTheme } from "./ThemeProvider";
 import { createCollection, findAllCollections, findFileIconsByIds, updateCollectionDirectories } from "@/app/ui/doc/action";
+import { hasAzurePatConfigured } from "@/app/ui/settings/azure-api-key/action";
+import { fileService } from "@/app/lib/services/fileService.client";
+
+type BacklogNode = { id: number; title: string; state: string; workItemType: string; children: BacklogNode[] };
 
 const mockUuid = (() => {
   let i = 0;
@@ -259,6 +263,18 @@ export default function FileSidebar({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeletingItem, setIsDeletingItem] = useState(false);
   const [selectedNodeForDelete, setSelectedNodeForDelete] = useState<{ node: TreeNode; path: string; groupIndex: number } | null>(null);
+  const [isImportAzureModalOpen, setIsImportAzureModalOpen] = useState(false);
+  const [azureMarkdownUrl, setAzureMarkdownUrl] = useState("");
+  const [azureMarkdownName, setAzureMarkdownName] = useState("");
+  const [azureAuthHeader, setAzureAuthHeader] = useState("");
+  const [isImportingAzure, setIsImportingAzure] = useState(false);
+  const [isAzureDevopsModalOpen, setIsAzureDevopsModalOpen] = useState(false);
+  const [isLoadingAzureProjects, setIsLoadingAzureProjects] = useState(false);
+  const [azureProjects, setAzureProjects] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedAzureProject, setSelectedAzureProject] = useState("");
+  const [isLoadingAzureBacklog, setIsLoadingAzureBacklog] = useState(false);
+  const [azureBacklog, setAzureBacklog] = useState<BacklogNode[]>([]);
+  const [azurePatConfigured, setAzurePatConfigured] = useState<boolean | null>(null);
 
   const resolvedCollections = useMemo(() => {
     if (!iconOverrides || Object.keys(iconOverrides).length === 0) {
@@ -317,6 +333,18 @@ export default function FileSidebar({
       isMounted = false;
     };
   }, [reloadKey, reloadCollections]);
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      const result = await hasAzurePatConfigured();
+      if (!isMounted) return;
+      setAzurePatConfigured(result.success ? result.configured : false);
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, [reloadKey]);
 
   const SkeletonTree = ({ rows = 10 }: { rows?: number }) => (
     <div className="px-3 py-3 space-y-3">
@@ -410,6 +438,75 @@ export default function FileSidebar({
     setIsAddItemModalOpen(true);
   };
 
+  const handleImportAzureMarkdown = async (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => {
+    // Repurposed: show Azure DevOps projects -> epics table.
+    setSelectedNodeForAdd({ node: selectedNode, path: selectedNodePath, groupIndex });
+    setIsAzureDevopsModalOpen(true);
+    setSelectedAzureProject("");
+    setAzureBacklog([]);
+
+    setIsLoadingAzureProjects(true);
+    try {
+      const res = await fetch("/api/azure/devops/projects", { cache: "no-store" });
+      const payload = (await res.json().catch(() => null)) as unknown;
+      const parsed = payload as { success?: boolean; error?: string; projects?: Array<{ id: string; name: string }> } | null;
+      if (!res.ok || !parsed?.success) {
+        throw new Error(parsed?.error || `Failed to load projects (HTTP ${res.status})`);
+      }
+      setAzureProjects(parsed.projects ?? []);
+    } catch (err) {
+      console.error("Failed to load Azure DevOps projects:", err);
+      showSnackbar({
+        variant: "error",
+        message: err instanceof Error ? err.message : "Failed to load Azure DevOps projects",
+      });
+      setAzureProjects([]);
+    } finally {
+      setIsLoadingAzureProjects(false);
+    }
+  };
+
+  const handleCloseAzureDevopsModal = () => {
+    setIsAzureDevopsModalOpen(false);
+    setSelectedAzureProject("");
+    setAzureProjects([]);
+    setAzureBacklog([]);
+    setIsLoadingAzureProjects(false);
+    setIsLoadingAzureBacklog(false);
+  };
+
+  const handleChangeSelectedAzureProject = async (project: string) => {
+    setSelectedAzureProject(project);
+    if (!project) return;
+    // Only fetch when the typed value matches a known project name.
+    if (!azureProjects.some((p) => p.name === project)) return;
+
+    setIsLoadingAzureBacklog(true);
+    setAzureBacklog([]);
+    try {
+      const res = await fetch("/api/azure/devops/backlog", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ project }),
+      });
+      const payload = (await res.json().catch(() => null)) as unknown;
+      const parsed = payload as { success?: boolean; error?: string; backlog?: BacklogNode[] } | null;
+      if (!res.ok || !parsed?.success) {
+        throw new Error(parsed?.error || `Failed to load backlog (HTTP ${res.status})`);
+      }
+      setAzureBacklog(parsed.backlog ?? []);
+    } catch (err) {
+      console.error("Failed to load Azure DevOps backlog:", err);
+      showSnackbar({
+        variant: "error",
+        message: err instanceof Error ? err.message : "Failed to load Azure DevOps backlog",
+      });
+      setAzureBacklog([]);
+    } finally {
+      setIsLoadingAzureBacklog(false);
+    }
+  };
+
   const handleAddFolder = (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => {
     setSelectedNodeForAdd({ node: selectedNode, path: selectedNodePath, groupIndex });
     setItemType("folder");
@@ -422,6 +519,26 @@ export default function FileSidebar({
     setItemName("");
     setFileFormat("md");
     setSelectedNodeForAdd(null);
+  };
+
+  const handleCloseImportAzureModal = () => {
+    if (isImportingAzure) return;
+    setIsImportAzureModalOpen(false);
+    setAzureMarkdownUrl("");
+    setAzureMarkdownName("");
+    setAzureAuthHeader("");
+    setSelectedNodeForAdd(null);
+  };
+
+  const guessNameFromUrl = (url: string) => {
+    try {
+      const u = new URL(url);
+      const last = u.pathname.split("/").filter(Boolean).pop() ?? "";
+      if (!last) return "";
+      return decodeURIComponent(last);
+    } catch {
+      return "";
+    }
   };
 
   const handleAddItem = async () => {
@@ -515,6 +632,123 @@ export default function FileSidebar({
       });
     } finally {
       setIsSavingItem(false);
+    }
+  };
+
+  const handleSubmitAzureImport = async () => {
+    const url = azureMarkdownUrl.trim();
+    if (!url || isImportingAzure) return;
+    if (!selectedNodeForAdd) return;
+
+    const targetGroupIndex = selectedNodeForAdd.groupIndex ?? 0;
+    const existingGroup = collections[targetGroupIndex];
+    if (!existingGroup) return;
+
+    setIsImportingAzure(true);
+    try {
+      const response = await fetch("/api/azure/markdown", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url,
+          authorization: azureAuthHeader.trim() || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as unknown;
+        const parsed = payload as { error?: string } | null;
+        throw new Error(parsed?.error || `Failed to fetch markdown (HTTP ${response.status})`);
+      }
+
+      const payload = (await response.json()) as { success: boolean; content?: string; error?: string };
+      if (!payload.success || typeof payload.content !== "string") {
+        throw new Error(payload.error || "Failed to fetch markdown");
+      }
+
+      const resolvedNameRaw = azureMarkdownName.trim() || guessNameFromUrl(url) || "imported.md";
+      const resolvedName = resolvedNameRaw.toLowerCase().endsWith(".md") ? resolvedNameRaw : `${resolvedNameRaw}.md`;
+
+      // Persist file content to DB first so we can use its id in the tree.
+      const saveResult = await fileService.saveFile({
+        id: null,
+        name: resolvedName,
+        collectionId: existingGroup.id,
+        content: payload.content,
+        tags: [],
+      });
+
+      const newItem: TreeNode = {
+        id: saveResult.id ?? (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : mockUuid()),
+        name: resolvedName,
+        tags: [],
+        type: "file",
+        collectionId: existingGroup.id,
+        extension: "md",
+        content: null,
+        createdAt: 0,
+        updatedAt: 0,
+      };
+
+      const updatedCollections: TreeViewGroup[] = JSON.parse(JSON.stringify(collections)); // Deep clone
+      const group = updatedCollections[targetGroupIndex];
+
+      const findNodeByPath = (nodes: TreeNode[], path: string[]): TreeNode | null => {
+        if (path.length === 0) return null;
+        const [head, ...rest] = path;
+        const current = nodes.find((n) => n.name === head) ?? null;
+        if (!current) return null;
+        if (rest.length === 0) return current;
+        if (current.type !== "folder") return null;
+        return findNodeByPath(current.children ?? [], rest);
+      };
+
+      if (!selectedNodeForAdd.node || !selectedNodeForAdd.path) {
+        group.directories.push(newItem);
+      } else {
+        const selected = selectedNodeForAdd.node;
+        const pathSegments = selectedNodeForAdd.path.split("/");
+
+        if (selected.type === "folder") {
+          const folder = findNodeByPath(group.directories, pathSegments);
+          if (folder && folder.type === "folder") {
+            folder.children = folder.children ?? [];
+            folder.children.push(newItem);
+          } else {
+            group.directories.push(newItem);
+          }
+        } else {
+          if (pathSegments.length > 1) {
+            const parentPath = pathSegments.slice(0, -1);
+            const parent = findNodeByPath(group.directories, parentPath);
+            if (parent && parent.type === "folder") {
+              parent.children = parent.children ?? [];
+              parent.children.push(newItem);
+            } else {
+              group.directories.push(newItem);
+            }
+          } else {
+            group.directories.push(newItem);
+          }
+        }
+      }
+
+      setCollections(updatedCollections);
+      handleCloseImportAzureModal();
+
+      await updateCollectionDirectories(group.id, group.directories);
+      showSnackbar({
+        variant: "success",
+        message: `Imported "${resolvedName}" from Azure.`,
+      });
+    } catch (err) {
+      console.error("Failed to import markdown from Azure:", err);
+      showSnackbar({
+        variant: "error",
+        message: err instanceof Error ? err.message : "Failed to import markdown. Please try again.",
+      });
+    } finally {
+      setIsImportingAzure(false);
     }
   };
 
@@ -687,6 +921,8 @@ export default function FileSidebar({
                 onNodeClick={handleNodeClick}
                 onAddFile={handleAddFile}
                 onAddFolder={handleAddFolder}
+                onImportAzureMarkdown={handleImportAzureMarkdown}
+                azurePatConfigured={azurePatConfigured}
                 onRequestDeleteNode={handleRequestDeleteNode}
                 selectedNodePath={selectedNodePath}
               />
@@ -709,10 +945,27 @@ export default function FileSidebar({
         itemName={itemName}
         onChangeItemName={setItemName}
         fileFormat={fileFormat}
-        onChangeFileFormat={setFileFormat}
         onSubmitItem={handleAddItem}
         isSavingItem={isSavingItem}
         selectedNodeForAdd={selectedNodeForAdd}
+        isAzureDevopsModalOpen={isAzureDevopsModalOpen}
+        onCloseAzureDevopsModal={handleCloseAzureDevopsModal}
+        azureProjects={azureProjects}
+        selectedAzureProject={selectedAzureProject}
+        onChangeSelectedAzureProject={handleChangeSelectedAzureProject}
+        azureBacklog={azureBacklog}
+        isLoadingAzureProjects={isLoadingAzureProjects}
+        isLoadingAzureBacklog={isLoadingAzureBacklog}
+        isImportAzureModalOpen={isImportAzureModalOpen}
+        onCloseImportAzureModal={handleCloseImportAzureModal}
+        azureMarkdownUrl={azureMarkdownUrl}
+        onChangeAzureMarkdownUrl={setAzureMarkdownUrl}
+        azureMarkdownName={azureMarkdownName}
+        onChangeAzureMarkdownName={setAzureMarkdownName}
+        azureAuthHeader={azureAuthHeader}
+        onChangeAzureAuthHeader={setAzureAuthHeader}
+        onSubmitAzureImport={handleSubmitAzureImport}
+        isImportingAzure={isImportingAzure}
         isDeleteModalOpen={isDeleteModalOpen}
         onCloseDeleteModal={handleCloseDeleteModal}
         onConfirmDelete={handleConfirmDelete}

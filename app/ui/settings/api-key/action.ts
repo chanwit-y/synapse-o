@@ -6,12 +6,14 @@
 
 import { ApiKeyRepository, type ApiKeyCreateInput } from "@/app/lib/db/repository/api-key";
 import { configService } from "@/app/lib/services/config/configService.server";
+import { eq } from "drizzle-orm";
 
 const apiKeyRepo = new ApiKeyRepository();
 
 export async function saveApiKey(data: { name: string; description?: string; apiKey: string }) {
 	try {
 		const input: ApiKeyCreateInput = {
+			type: "AI",
 			name: data.name,
 			description: data.description || null,
 			apiKey: data.apiKey,
@@ -26,13 +28,13 @@ export async function saveApiKey(data: { name: string; description?: string; api
 	}
 }
 
-export async function getAllApiKeys() {
+export async function getAllAIKeys() {
 	try {
-		const apiKeys = await apiKeyRepo.findAll();
+		const apiKeys = await apiKeyRepo.findWhere([{ key: "type", value: "AI", condition: eq }]);
 		return { success: true, data: apiKeys };
 	} catch (error) {
-		console.error("Failed to fetch API keys:", error);
-		return { success: false, error: "Failed to fetch API keys" };
+		console.error("Failed to fetch AI API keys:", error);
+		return { success: false, error: "Failed to fetch AI API keys" };
 	}
 }
 

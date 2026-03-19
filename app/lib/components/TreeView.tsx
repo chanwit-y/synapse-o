@@ -15,6 +15,9 @@ interface TreeViewProps {
   onNodeClick?: (node: TreeNode, nodePath: string) => void;
   onAddFile?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number, fileType: FileType) => void;
   onAddFolder?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
+  onImportAzureMarkdown?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
+  /** `false` = no PAT saved; `null` = not loaded yet (import allowed to avoid blocking). */
+  azurePatConfigured?: boolean | null;
   onRequestDeleteNode?: (node: TreeNode, nodePath: string, groupIndex: number) => void;
   /**
    * Optional external selection control (by path). When provided, TreeView will
@@ -28,6 +31,8 @@ export default function TreeView({
   onNodeClick,
   onAddFile,
   onAddFolder,
+  onImportAzureMarkdown,
+  azurePatConfigured,
   onRequestDeleteNode,
   selectedNodePath: externalSelectedNodePath,
 }: TreeViewProps) {
@@ -96,6 +101,8 @@ export default function TreeView({
             setSelectedNode={setSelectedNode}
             onAddFile={onAddFile}
             onAddFolder={onAddFolder}
+            onImportAzureMarkdown={onImportAzureMarkdown}
+            azurePatConfigured={azurePatConfigured}
             onRequestDeleteNode={onRequestDeleteNode}
             isFavorited={favoritedGroups.has(groupIndex)}
             onToggleFavorite={handleToggleFavorite}

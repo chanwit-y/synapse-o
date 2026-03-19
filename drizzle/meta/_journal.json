@@ -44,5 +44,13 @@
       "tag": "0005_reflective_rogue",
       "breakpoints": true
     }
+    ,
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1772247964076,
+      "tag": "0006_add_api_key_type",
+      "breakpoints": true
+    }
   ]
 }
