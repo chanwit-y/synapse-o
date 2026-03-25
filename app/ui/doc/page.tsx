@@ -5,7 +5,7 @@
  */
 
 import { useEffect } from "react";
-import { PanelRightOpen } from "lucide-react";
+import { Languages, PanelRightOpen } from "lucide-react";
 import Image from "next/image";
 import MarkdownEditor from "../../lib/components/MarkdownEditor";
 import DataTable from "../../lib/components/DataTable";
@@ -75,6 +75,19 @@ export default function Home() {
                 />
                 <span className="">{selectedFile.name}</span>
               </div>
+<div className="flex items-center gap-2">
+              <button
+                type="button"
+                className={[
+                  "mr-0 mt-6 flex h-8 w-8 items-center justify-center rounded-md transition-colors cursor-pointer",
+                  theme === "dark"
+                    ? "text-gray-300 hover:bg-gray-700"
+                    : "text-gray-600 hover:bg-gray-100",
+                ].join(" ")}
+                aria-label="Translate"
+              >
+                <Languages className="h-5 w-5" />
+              </button>
               <button
                 type="button"
                 onClick={() => setDrawerOpen(true)}
@@ -88,6 +101,8 @@ export default function Home() {
               >
                 <PanelRightOpen className="h-5 w-5" />
               </button>
+</div>
+
             </div>
             <Drawer
               isOpen={isDrawerOpen}
