@@ -43,6 +43,13 @@
       "when": 1772247964075,
       "tag": "0005_reflective_rogue",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1773920376624,
+      "tag": "0006_public_johnny_blaze",
+      "breakpoints": true
     }
   ]
 }

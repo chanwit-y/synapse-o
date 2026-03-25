@@ -13,6 +13,7 @@ export interface TreeNode {
   icon?: string | null;
   extension: string | null;
   content?: string | null;
+  contentTH?: string | null;
   createdAt?: number;
   updatedAt?: number;
   children?: TreeNode[];
