@@ -229,7 +229,7 @@ function createInsertCommand(opts: {
   };
 }
 
-export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNode | null }) {
+export default function MarkdownEditor({ selectedFile, disableContentQuery = false }: { selectedFile: TreeNode | null; disableContentQuery?: boolean }) {
   const { theme } = useTheme();
   const { showSnackbar } = useSnackbar();
 
@@ -241,7 +241,7 @@ export default function MarkdownEditor({ selectedFile }: { selectedFile: TreeNod
   const uploadImageMutation = useUploadImageMutation();
   const analyzeImageMutation = useAnalyzeImageMutation();
   const selectedFileId = selectedFile?.id ?? null;
-  const { data: loadedContent } = useFileContentQuery(selectedFileId);
+  const { data: loadedContent } = useFileContentQuery(disableContentQuery ? null : selectedFileId);
   const lastHydratedFileIdRef = useRef<string | null>(null);
 
   const [imageUploadPopover, setImageUploadPopover] = useState<PositionedPopoverState>({

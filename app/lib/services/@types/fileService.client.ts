@@ -60,3 +60,10 @@ export type AnalyzeImageResult = {
   result?: string;
   error?: string;
 };
+
+export type TranslateResult = {
+  success: boolean;
+  md?: string;
+  markdown?: string;
+  error?: string;
+};
