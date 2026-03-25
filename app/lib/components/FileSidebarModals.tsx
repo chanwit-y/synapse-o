@@ -6,8 +6,8 @@
 
 import Modal from "./Modal";
 import type { TreeNode } from "./@types/treeViewTypes";
-import { ChevronDown, ChevronRight, Crown, Trophy, BookOpen, ClipboardCheck } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ChevronDown, ChevronRight, Crown, Trophy, BookOpen, ClipboardCheck, Loader2 } from "lucide-react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type SelectedNodeForAdd =
   | { node: TreeNode | null; path: string | null; groupIndex: number }
@@ -47,16 +47,227 @@ function filterBacklogToVisibleTypes(nodes: BacklogNode[]): BacklogNode[] {
   return out;
 }
 
+function backlogTypeIcon(t: string) {
+  switch (t) {
+    case "Epic":
+      return <Crown className="h-4 w-4 text-amber-600 dark:text-amber-400" />;
+    case "Feature":
+      return <Trophy className="h-4 w-4 text-purple-600 dark:text-purple-400" />;
+    case "User Story":
+      return <BookOpen className="h-4 w-4 text-sky-600 dark:text-sky-400" />;
+    case "Task":
+      return <ClipboardCheck className="h-4 w-4 text-yellow-700 dark:text-yellow-400" />;
+    default:
+      return null;
+  }
+}
+
+function BacklogNodeRows({
+  theme,
+  items,
+  level,
+  rootOrderById,
+  openBelow,
+  toggleBelow,
+  selectedId,
+  onSelectRow,
+  childrenCache,
+  loadingChildren,
+  childErrors,
+  getDisplayChildren,
+  showExpandChevron,
+  checkedUserStoryIds,
+  onToggleUserStoryCheck,
+}: {
+  theme: string;
+  items: BacklogNode[];
+  level: number;
+  rootOrderById: Map<number, number>;
+  openBelow: Record<number, boolean>;
+  toggleBelow: (id: number) => void;
+  selectedId: number | null;
+  onSelectRow: (id: number) => void;
+  childrenCache: Record<number, BacklogNode[]>;
+  loadingChildren: Record<number, boolean>;
+  childErrors: Record<number, string>;
+  getDisplayChildren: (node: BacklogNode) => BacklogNode[];
+  showExpandChevron: (node: BacklogNode) => boolean;
+  checkedUserStoryIds: Set<number>;
+  onToggleUserStoryCheck: (id: number) => void;
+}) {
+  return (
+    <>
+      {items.map((node, siblingIndex) => {
+        const expandable = showExpandChevron(node);
+        const panelOpen = Boolean(openBelow[node.id]);
+        const isSelected = selectedId === node.id;
+        const orderDisplay = level === 0 ? rootOrderById.get(node.id) ?? siblingIndex + 1 : "";
+        const loaded = Object.prototype.hasOwnProperty.call(childrenCache, node.id);
+        const loading = Boolean(loadingChildren[node.id]);
+        const err = childErrors[node.id];
+        const displayKids = getDisplayChildren(node);
+        const rowBg =
+          theme === "light"
+            ? isSelected
+              ? "bg-sky-100/80"
+              : "bg-white hover:bg-gray-50/90"
+            : isSelected
+              ? "bg-sky-950/50"
+              : "bg-gray-900/40 hover:bg-gray-800/60";
+
+        const fetchingChildren = loading && !loaded;
+
+        return (
+          <Fragment key={node.id}>
+            <tr
+              className={`${rowBg} border-b ${theme === "light" ? "border-gray-100" : "border-gray-700/80"} cursor-pointer`}
+              aria-busy={fetchingChildren}
+              onClick={() => {
+                onSelectRow(node.id);
+                if (expandable) toggleBelow(node.id);
+              }}
+            >
+              <td className={`px-3 py-1.5 align-middle text-right font-mono text-xs tabular-nums ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
+                {orderDisplay}
+              </td>
+              <td className={`px-3 py-1.5 align-middle whitespace-nowrap ${theme === "light" ? "text-gray-800" : "text-gray-200"}`}>
+                {node.workItemType}
+              </td>
+              <td className="px-3 py-1.5 align-middle min-w-0">
+                <div className="flex items-center gap-1 min-w-0" style={{ paddingLeft: `${level * 12}px` }}>
+                  {expandable ? (
+                    <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleBelow(node.id);
+                        }}
+                        className={
+                          theme === "light"
+                            ? "rounded p-0.5 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
+                            : "rounded p-0.5 text-gray-400 hover:bg-gray-700 hover:text-gray-100"
+                        }
+                        aria-label={panelOpen ? "Collapse nested tree" : "Expand nested tree"}
+                        title={panelOpen ? "Collapse nested tree" : "Expand nested tree"}
+                      >
+                        {panelOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                      </button>
+                    </span>
+                  ) : null}
+                  {node.workItemType === "User Story" ? (
+                    <input
+                      type="checkbox"
+                      checked={checkedUserStoryIds.has(node.id)}
+                      onChange={() => onToggleUserStoryCheck(node.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      className={
+                        theme === "light"
+                          ? "h-4 w-4 mr-2 shrink-0 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          : "h-4 w-4 mr-2 shrink-0 cursor-pointer rounded border-gray-500 bg-gray-800 text-blue-500 focus:ring-blue-400"
+                      }
+                      aria-label={`Select user story: ${node.title}`}
+                    />
+                  ) : null}
+                  <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center">{backlogTypeIcon(node.workItemType)}</span>
+                  <span className={`min-w-0 flex-1 truncate ${theme === "light" ? "text-gray-900" : "text-gray-100"}`}>{node.title}</span>
+                  {fetchingChildren ? (
+                    <Loader2
+                      className={`h-4 w-4 shrink-0 animate-spin ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}
+                      aria-label="Loading children"
+                    />
+                  ) : null}
+                </div>
+              </td>
+            </tr>
+            {panelOpen && !fetchingChildren && (err || displayKids.length > 0) && (
+              <tr className={theme === "light" ? "bg-white" : "bg-gray-900/20"}>
+                <td colSpan={3} className={`p-0 align-top border-b ${theme === "light" ? "border-gray-100" : "border-gray-700/80"}`}>
+                  {err ? (
+                    <p className={`px-3 py-2 text-xs ${theme === "light" ? "text-red-700" : "text-red-400"}`}>{err}</p>
+                  ) : (
+                    <table className="w-full border-collapse text-sm table-fixed">
+                      <colgroup>
+                        <col className="w-14" />
+                        <col className="w-38" />
+                        <col />
+                      </colgroup>
+                      <tbody>
+                        <BacklogNodeRows
+                          theme={theme}
+                          items={displayKids}
+                          level={level + 1}
+                          rootOrderById={rootOrderById}
+                          openBelow={openBelow}
+                          toggleBelow={toggleBelow}
+                          selectedId={selectedId}
+                          onSelectRow={onSelectRow}
+                          childrenCache={childrenCache}
+                          loadingChildren={loadingChildren}
+                          childErrors={childErrors}
+                          getDisplayChildren={getDisplayChildren}
+                          showExpandChevron={showExpandChevron}
+                          checkedUserStoryIds={checkedUserStoryIds}
+                          onToggleUserStoryCheck={onToggleUserStoryCheck}
+                        />
+                      </tbody>
+                    </table>
+                  )}
+                </td>
+              </tr>
+            )}
+          </Fragment>
+        );
+      })}
+    </>
+  );
+}
+
 function BacklogTree({
   theme,
   nodes,
   isLoading,
+  projectName,
 }: {
   theme: string;
   nodes: BacklogNode[];
   isLoading: boolean;
+  /** Azure DevOps project (team backlog); used for workitem-children API. */
+  projectName: string;
 }) {
-  const [expanded, setExpanded] = useState<Record<number, boolean>>({});
+  const [openBelow, setOpenBelow] = useState<Record<number, boolean>>({});
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [childrenCache, setChildrenCache] = useState<Record<number, BacklogNode[]>>({});
+  const [loadingChildren, setLoadingChildren] = useState<Record<number, boolean>>({});
+  const [childErrors, setChildErrors] = useState<Record<number, string>>({});
+  const [checkedUserStoryIds, setCheckedUserStoryIds] = useState<Set<number>>(() => new Set());
+
+  const cacheRef = useRef<Record<number, BacklogNode[]>>({});
+  const inFlightRef = useRef<Set<number>>(new Set());
+
+  useEffect(() => {
+    cacheRef.current = childrenCache;
+  }, [childrenCache]);
+
+  useEffect(() => {
+    setOpenBelow({});
+    setSelectedId(null);
+    setChildrenCache({});
+    setLoadingChildren({});
+    setChildErrors({});
+    setCheckedUserStoryIds(new Set());
+    cacheRef.current = {};
+    inFlightRef.current = new Set();
+  }, [projectName]);
+
+  const toggleUserStoryCheck = useCallback((id: number) => {
+    setCheckedUserStoryIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
 
   const rootOrderById = useMemo(() => {
     const map = new Map<number, number>();
@@ -64,36 +275,93 @@ function BacklogTree({
     return map;
   }, [nodes]);
 
-  const rows = useMemo(() => {
-    const out: Array<{ node: BacklogNode; level: number }> = [];
-    const walk = (items: BacklogNode[], level: number) => {
-      for (const n of items) {
-        out.push({ node: n, level });
-        if (expanded[n.id] && n.children?.length) {
-          walk(n.children, level + 1);
-        }
+  const loadChildrenFor = useCallback(async (parentId: number) => {
+    if (!projectName) return;
+    if (cacheRef.current[parentId] !== undefined) return;
+    if (inFlightRef.current.has(parentId)) return;
+    inFlightRef.current.add(parentId);
+    setLoadingChildren((l) => ({ ...l, [parentId]: true }));
+    setChildErrors((e) => {
+      const next = { ...e };
+      delete next[parentId];
+      return next;
+    });
+    try {
+      const res = await fetch("/api/azure/devops/workitem-children", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ project: projectName, workItemId: parentId }),
+      });
+      const payload = (await res.json().catch(() => null)) as {
+        success?: boolean;
+        error?: string;
+        children?: BacklogNode[];
+      } | null;
+      if (!res.ok || !payload?.success) {
+        throw new Error(payload?.error || `Failed to load children (HTTP ${res.status})`);
       }
-    };
-    walk(nodes, 0);
-    return out;
-  }, [nodes, expanded]);
-
-  const toggle = (id: number) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
-
-  const typeIcon = (t: string) => {
-    switch (t) {
-      case "Epic":
-        return <Crown className="h-4 w-4 text-amber-600 dark:text-amber-400" />;
-      case "Feature":
-        return <Trophy className="h-4 w-4 text-purple-600 dark:text-purple-400" />;
-      case "User Story":
-        return <BookOpen className="h-4 w-4 text-sky-600 dark:text-sky-400" />;
-      case "Task":
-        return <ClipboardCheck className="h-4 w-4 text-yellow-700 dark:text-yellow-400" />;
-      default:
-        return null;
+      const list = payload.children ?? [];
+      setChildrenCache((c) => {
+        const next = { ...c, [parentId]: list };
+        cacheRef.current = next;
+        return next;
+      });
+      if (list.length === 0) {
+        setOpenBelow((o) => ({ ...o, [parentId]: false }));
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to load children";
+      setChildErrors((er) => ({ ...er, [parentId]: msg }));
+      setChildrenCache((c) => {
+        const next = { ...c, [parentId]: [] };
+        cacheRef.current = next;
+        return next;
+      });
+    } finally {
+      inFlightRef.current.delete(parentId);
+      setLoadingChildren((l) => ({ ...l, [parentId]: false }));
     }
-  };
+  }, [projectName]);
+
+  const toggleBelow = useCallback(
+    (id: number) => {
+      setOpenBelow((prev) => {
+        const opening = !prev[id];
+        if (opening && projectName) {
+          void loadChildrenFor(id);
+        }
+        return { ...prev, [id]: opening };
+      });
+    },
+    [projectName, loadChildrenFor],
+  );
+
+  const getDisplayChildren = useCallback(
+    (n: BacklogNode) => {
+      if (Object.prototype.hasOwnProperty.call(childrenCache, n.id)) {
+        return childrenCache[n.id];
+      }
+      return n.children ?? [];
+    },
+    [childrenCache],
+  );
+
+  /** User Story is a leaf in this UI (no expand / child fetch). Epic & Feature may load children. */
+  const showExpandChevron = useCallback(
+    (n: BacklogNode) => {
+      if (n.workItemType === "User Story") return false;
+      if (Object.prototype.hasOwnProperty.call(childrenCache, n.id)) {
+        return childrenCache[n.id].length > 0;
+      }
+      const canHaveChildren = n.workItemType === "Epic" || n.workItemType === "Feature";
+      return (n.children?.length ?? 0) > 0 || canHaveChildren;
+    },
+    [childrenCache],
+  );
+
+  const thDivider =
+    theme === "light" ? "border-r border-gray-200 last:border-r-0" : "border-r border-gray-600 last:border-r-0";
+  const theadBg = theme === "light" ? "bg-[#fafafa]" : "bg-gray-800/90";
 
   if (isLoading) {
     return (
@@ -104,69 +372,50 @@ function BacklogTree({
   }
 
   return (
-    <table className="w-full text-sm table-fixed">
-      <thead className={(theme === "light" ? "bg-gray-50" : "bg-gray-800") + " sticky top-0 z-10"}>
-        <tr>
-          <th className="px-3 py-2 text-left font-medium w-10">
-            <div className="flex items-center gap-1">
-              <span>Order</span>
-            </div>
+    <table className="w-full text-sm border-collapse table-fixed">
+      <colgroup>
+        <col className="w-14" />
+        <col className="w-38" />
+        <col />
+      </colgroup>
+      <thead className={`${theadBg} sticky top-0 z-10 border-b ${theme === "light" ? "border-gray-200" : "border-gray-600"}`}>
+        <tr className="text-left">
+          <th className={`px-3 py-2 text-right font-semibold text-xs uppercase tracking-wide ${thDivider} ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
+            Order
           </th>
-          <th className="px-3 py-2 text-left font-medium w-20">Work Item Type</th>
-          <th className="px-3 py-2 text-left font-medium w-3/4">Title</th>
+          <th className={`px-3 py-2 font-semibold text-xs uppercase tracking-wide ${thDivider} ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
+            Work Item Type
+          </th>
+          <th className={`px-3 py-2 font-semibold text-xs uppercase tracking-wide ${thDivider} ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
+            Title
+          </th>
         </tr>
       </thead>
       <tbody>
-        {rows.map(({ node, level }) => {
-          const hasChildren = (node.children?.length ?? 0) > 0;
-          const isOpen = Boolean(expanded[node.id]);
-          return (
-            <tr
-              key={node.id}
-              className={theme === "light" ? "border-t border-gray-100 hover:bg-gray-50" : "border-t border-gray-700 hover:bg-gray-800/50"}
-              onClick={() => {
-                if (hasChildren) toggle(node.id);
-              }}
-            >
-              <td className="px-3 py-2 font-mono text-xs text-gray-500">
-                {level === 0 ? rootOrderById.get(node.id) ?? "" : ""}
-              </td>
-              <td className="px-3 py-2">
-                <div style={{ paddingLeft: `${level * 16}px` }}>
-                  {hasChildren ? (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggle(node.id);
-                      }}
-                      className={theme === "light" ? "text-gray-700 hover:text-gray-900" : "text-gray-300 hover:text-gray-100"}
-                      aria-label={isOpen ? "Collapse" : "Expand"}
-                      title={isOpen ? "Collapse" : "Expand"}
-                    >
-                      {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                    </button>
-                  ) : (
-                    <span className="h-4 w-4" />
-                  )}
-                  <span className="whitespace-nowrap">{node.workItemType}</span>
-                </div>
-              </td>
-              <td className="px-3 py-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="inline-flex w-4 justify-center shrink-0">{typeIcon(node.workItemType)}</span>
-                  <span className="truncate block">{node.title}</span>
-                </div>
-              </td>
-            </tr>
-          );
-        })}
-        {rows.length === 0 && (
+        {nodes.length === 0 ? (
           <tr>
             <td colSpan={3} className={theme === "light" ? "px-3 py-4 text-center text-gray-500" : "px-3 py-4 text-center text-gray-400"}>
               No items
             </td>
           </tr>
+        ) : (
+          <BacklogNodeRows
+            theme={theme}
+            items={nodes}
+            level={0}
+            rootOrderById={rootOrderById}
+            openBelow={openBelow}
+            toggleBelow={toggleBelow}
+            selectedId={selectedId}
+            onSelectRow={setSelectedId}
+            childrenCache={childrenCache}
+            loadingChildren={loadingChildren}
+            childErrors={childErrors}
+            getDisplayChildren={getDisplayChildren}
+            showExpandChevron={showExpandChevron}
+            checkedUserStoryIds={checkedUserStoryIds}
+            onToggleUserStoryCheck={toggleUserStoryCheck}
+          />
         )}
       </tbody>
     </table>
@@ -487,9 +736,11 @@ export default function FileSidebarModals({
               <div className="rounded-md border border-gray-200 dark:border-gray-700">
                 <div className="max-h-[420px] overflow-auto">
                   <BacklogTree
+                    key={selectedAzureProject}
                     theme={theme}
                     nodes={filteredAzureBacklog}
                     isLoading={isLoadingAzureBacklog}
+                    projectName={selectedAzureProject}
                   />
                 </div>
               </div>

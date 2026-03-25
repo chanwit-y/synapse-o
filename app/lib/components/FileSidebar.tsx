@@ -484,17 +484,18 @@ export default function FileSidebar({
     setIsLoadingAzureBacklog(true);
     setAzureBacklog([]);
     try {
-      const res = await fetch("/api/azure/devops/backlog", {
+      // Team Work API: same source as Azure Boards Epics backlog (ordered backlog work items).
+      const res = await fetch("/api/azure/devops/workitems", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ project }),
       });
       const payload = (await res.json().catch(() => null)) as unknown;
-      const parsed = payload as { success?: boolean; error?: string; backlog?: BacklogNode[] } | null;
+      const parsed = payload as { success?: boolean; error?: string; workItems?: BacklogNode[] } | null;
       if (!res.ok || !parsed?.success) {
         throw new Error(parsed?.error || `Failed to load backlog (HTTP ${res.status})`);
       }
-      setAzureBacklog(parsed.backlog ?? []);
+      setAzureBacklog(parsed.workItems ?? []);
     } catch (err) {
       console.error("Failed to load Azure DevOps backlog:", err);
       showSnackbar({

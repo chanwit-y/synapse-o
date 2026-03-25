@@ -118,7 +118,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, backlog: backlogMeta, workItems: [] satisfies WorkItemNode[] });
     }
 
-    // 3) Fetch each work item detail using WIT endpoint + relations.
+    // 3) Fetch details + relations in batches (same fields as backlog UI).
     const witBase =
       `https://dev.azure.com/${encodeURIComponent(creds.organization)}` +
       `/${encodeURIComponent(project)}`;
@@ -130,38 +130,31 @@ export async function POST(request: Request) {
       relations?: Array<{ rel?: string; url?: string }>;
     }> = [];
 
-    const chunkSize = 50;
-    for (let i = 0; i < ids.length; i += chunkSize) {
-      const chunk = ids.slice(i, i + chunkSize);
-
-      const results = await Promise.all(
-        chunk.map(async (workItemId) => {
-          const url =
-            `${witBase}/_apis/wit/workitems/${workItemId}` +
-            `?$expand=relations&fields=${encodeURIComponent(fields.join(","))}` +
-            `&api-version=${apiVersion}`;
-
-          const res = await fetch(url, {
-            method: "GET",
-            headers: { Accept: "application/json", Authorization: authHeader },
-            cache: "no-store",
-          });
-
-          if (!res.ok) {
-            const text = await res.text();
-            throw new Error(`Failed to load work item ${workItemId} (${res.status}): ${text.slice(0, 200)}`);
-          }
-
-          const wi = (await res.json()) as {
-            id: number;
-            fields?: Record<string, unknown>;
-            relations?: Array<{ rel?: string; url?: string }>;
-          };
-          return wi;
+    const batchSize = 200;
+    for (let i = 0; i < ids.length; i += batchSize) {
+      const chunk = ids.slice(i, i + batchSize);
+      const batchRes = await fetch(`${witBase}/_apis/wit/workitemsbatch?api-version=${apiVersion}`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: authHeader,
+        },
+        body: JSON.stringify({
+          ids: chunk,
+          fields,
+          expand: "relations",
         }),
-      );
+        cache: "no-store",
+      });
 
-      allItems.push(...results);
+      if (!batchRes.ok) {
+        const text = await batchRes.text();
+        throw new Error(`Failed to load work items (${batchRes.status}): ${text.slice(0, 200)}`);
+      }
+
+      const batchData = (await batchRes.json()) as { value?: typeof allItems };
+      allItems.push(...(batchData.value ?? []));
     }
 
     // 4) Build parent/child hierarchy using relations.
