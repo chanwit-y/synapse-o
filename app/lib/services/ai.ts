@@ -98,3 +98,46 @@ export async function aiAnalyzeImage(
 	return analyzeImageChain.invoke({ base64Image, mimeType, question });
 }
 
+const HTML_TO_MD_MAX_CHARS = 100_000;
+
+/**
+ * Converts Azure DevOps work item HTML (description) to Markdown via LLM.
+ */
+export async function HtmlToMarkdown(html: string, workItemTitle: string, workItemId: number): Promise<string> {
+	const apiKey = await configService.getOpenAiApiKey();
+	if (!apiKey) {
+		throw new Error("OpenAI API key not found. Please add one in Settings.");
+	}
+
+	const trimmed = (html ?? "").trim();
+	const body =
+		trimmed.length > HTML_TO_MD_MAX_CHARS
+			? `${trimmed.slice(0, HTML_TO_MD_MAX_CHARS)}\n\n<!-- truncated: description exceeded ${HTML_TO_MD_MAX_CHARS} characters -->`
+			: trimmed;
+
+	const llm = new ChatOpenAI({
+		apiKey,
+		model: "gpt-4.1",
+	});
+
+	const prompt = `Convert the following HTML (from an Azure DevOps work item) into clean, readable Markdown.
+
+Work item: #${workItemId} — ${workItemTitle || "(no title)"}
+
+Rules:
+- Preserve structure: headings, lists, numbered steps, tables, and links when possible.
+- For images, keep src paths that start with /upload/ as Markdown images using the same path (e.g. ![alt](/upload/...)).
+- Use a single top-level title if appropriate; otherwise start with body content.
+- Do not wrap the entire output in a markdown code fence.
+- Output Markdown only — no preamble or explanation.
+
+HTML:
+${body || "<p>(empty description)</p>"}`;
+
+	const completion = await llm.invoke(prompt);
+	if (typeof completion === "string") return completion;
+	const content: unknown = (completion as { content?: unknown })?.content;
+	if (typeof content === "string") return content;
+	return JSON.stringify(content ?? completion);
+}
+

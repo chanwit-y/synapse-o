@@ -66,6 +66,8 @@ function BacklogNodeRows({
   theme,
   items,
   level,
+  scopeKey,
+  parentId,
   rootOrderById,
   openBelow,
   toggleBelow,
@@ -82,9 +84,11 @@ function BacklogNodeRows({
   theme: string;
   items: BacklogNode[];
   level: number;
+  scopeKey: string;
+  parentId: number | null;
   rootOrderById: Map<number, number>;
-  openBelow: Record<number, boolean>;
-  toggleBelow: (id: number) => void;
+  openBelow: Record<string, boolean>;
+  toggleBelow: (rowKey: string, id: number) => void;
   selectedId: number | null;
   onSelectRow: (id: number) => void;
   childrenCache: Record<number, BacklogNode[]>;
@@ -92,14 +96,16 @@ function BacklogNodeRows({
   childErrors: Record<number, string>;
   getDisplayChildren: (node: BacklogNode) => BacklogNode[];
   showExpandChevron: (node: BacklogNode) => boolean;
-  checkedUserStoryIds: Set<number>;
+  checkedUserStoryIds: number[];
   onToggleUserStoryCheck: (id: number) => void;
 }) {
   return (
     <>
       {items.map((node, siblingIndex) => {
         const expandable = showExpandChevron(node);
-        const panelOpen = Boolean(openBelow[node.id]);
+        const rowKey = `${scopeKey}:${parentId ?? "root"}:${node.id}:${siblingIndex}`;
+        const panelId = `backlog-children-${rowKey.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+        const panelOpen = Boolean(openBelow[rowKey]);
         const isSelected = selectedId === node.id;
         const orderDisplay = level === 0 ? rootOrderById.get(node.id) ?? siblingIndex + 1 : "";
         const loaded = Object.prototype.hasOwnProperty.call(childrenCache, node.id);
@@ -118,13 +124,13 @@ function BacklogNodeRows({
         const fetchingChildren = loading && !loaded;
 
         return (
-          <Fragment key={node.id}>
+          <Fragment key={rowKey}>
             <tr
               className={`${rowBg} border-b ${theme === "light" ? "border-gray-100" : "border-gray-700/80"} cursor-pointer`}
               aria-busy={fetchingChildren}
               onClick={() => {
                 onSelectRow(node.id);
-                if (expandable) toggleBelow(node.id);
+                if (expandable) toggleBelow(rowKey, node.id);
               }}
             >
               <td className={`px-3 py-1.5 align-middle text-right font-mono text-xs tabular-nums ${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
@@ -141,13 +147,15 @@ function BacklogNodeRows({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleBelow(node.id);
+                          toggleBelow(rowKey, node.id);
                         }}
                         className={
                           theme === "light"
                             ? "rounded p-0.5 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
                             : "rounded p-0.5 text-gray-400 hover:bg-gray-700 hover:text-gray-100"
                         }
+                        aria-controls={panelId}
+                        aria-expanded={panelOpen}
                         aria-label={panelOpen ? "Collapse nested tree" : "Expand nested tree"}
                         title={panelOpen ? "Collapse nested tree" : "Expand nested tree"}
                       >
@@ -158,7 +166,7 @@ function BacklogNodeRows({
                   {node.workItemType === "User Story" ? (
                     <input
                       type="checkbox"
-                      checked={checkedUserStoryIds.has(node.id)}
+                      checked={checkedUserStoryIds.includes(node.id)}
                       onChange={() => onToggleUserStoryCheck(node.id)}
                       onClick={(e) => e.stopPropagation()}
                       className={
@@ -181,7 +189,7 @@ function BacklogNodeRows({
               </td>
             </tr>
             {panelOpen && !fetchingChildren && (err || displayKids.length > 0) && (
-              <tr className={theme === "light" ? "bg-white" : "bg-gray-900/20"}>
+              <tr id={panelId} className={theme === "light" ? "bg-white" : "bg-gray-900/20"}>
                 <td colSpan={3} className={`p-0 align-top border-b ${theme === "light" ? "border-gray-100" : "border-gray-700/80"}`}>
                   {err ? (
                     <p className={`px-3 py-2 text-xs ${theme === "light" ? "text-red-700" : "text-red-400"}`}>{err}</p>
@@ -197,6 +205,8 @@ function BacklogNodeRows({
                           theme={theme}
                           items={displayKids}
                           level={level + 1}
+                          scopeKey={scopeKey}
+                          parentId={node.id}
                           rootOrderById={rootOrderById}
                           openBelow={openBelow}
                           toggleBelow={toggleBelow}
@@ -228,19 +238,25 @@ function BacklogTree({
   nodes,
   isLoading,
   projectName,
+  teamName,
+  checkedUserStoryIds,
+  onToggleUserStoryCheck,
 }: {
   theme: string;
   nodes: BacklogNode[];
   isLoading: boolean;
   /** Azure DevOps project (team backlog); used for workitem-children API. */
   projectName: string;
+  /** Used to reset UI state when team changes. */
+  teamName: string;
+  checkedUserStoryIds: number[];
+  onToggleUserStoryCheck: (id: number) => void;
 }) {
-  const [openBelow, setOpenBelow] = useState<Record<number, boolean>>({});
+  const [openBelow, setOpenBelow] = useState<Record<string, boolean>>({});
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [childrenCache, setChildrenCache] = useState<Record<number, BacklogNode[]>>({});
   const [loadingChildren, setLoadingChildren] = useState<Record<number, boolean>>({});
   const [childErrors, setChildErrors] = useState<Record<number, string>>({});
-  const [checkedUserStoryIds, setCheckedUserStoryIds] = useState<Set<number>>(() => new Set());
 
   const cacheRef = useRef<Record<number, BacklogNode[]>>({});
   const inFlightRef = useRef<Set<number>>(new Set());
@@ -255,19 +271,9 @@ function BacklogTree({
     setChildrenCache({});
     setLoadingChildren({});
     setChildErrors({});
-    setCheckedUserStoryIds(new Set());
     cacheRef.current = {};
     inFlightRef.current = new Set();
-  }, [projectName]);
-
-  const toggleUserStoryCheck = useCallback((id: number) => {
-    setCheckedUserStoryIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
+  }, [projectName, teamName]);
 
   const rootOrderById = useMemo(() => {
     const map = new Map<number, number>();
@@ -275,7 +281,7 @@ function BacklogTree({
     return map;
   }, [nodes]);
 
-  const loadChildrenFor = useCallback(async (parentId: number) => {
+  const loadChildrenFor = useCallback(async (parentId: number, rowKey: string) => {
     if (!projectName) return;
     if (cacheRef.current[parentId] !== undefined) return;
     if (inFlightRef.current.has(parentId)) return;
@@ -307,7 +313,7 @@ function BacklogTree({
         return next;
       });
       if (list.length === 0) {
-        setOpenBelow((o) => ({ ...o, [parentId]: false }));
+        setOpenBelow((o) => ({ ...o, [rowKey]: false }));
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to load children";
@@ -324,13 +330,13 @@ function BacklogTree({
   }, [projectName]);
 
   const toggleBelow = useCallback(
-    (id: number) => {
+    (rowKey: string, id: number) => {
       setOpenBelow((prev) => {
-        const opening = !prev[id];
+        const opening = !prev[rowKey];
         if (opening && projectName) {
-          void loadChildrenFor(id);
+          void loadChildrenFor(id, rowKey);
         }
-        return { ...prev, [id]: opening };
+        return { ...prev, [rowKey]: opening };
       });
     },
     [projectName, loadChildrenFor],
@@ -403,6 +409,8 @@ function BacklogTree({
             theme={theme}
             items={nodes}
             level={0}
+            scopeKey={`${projectName}::${teamName}`}
+            parentId={null}
             rootOrderById={rootOrderById}
             openBelow={openBelow}
             toggleBelow={toggleBelow}
@@ -414,7 +422,7 @@ function BacklogTree({
             getDisplayChildren={getDisplayChildren}
             showExpandChevron={showExpandChevron}
             checkedUserStoryIds={checkedUserStoryIds}
-            onToggleUserStoryCheck={toggleUserStoryCheck}
+            onToggleUserStoryCheck={onToggleUserStoryCheck}
           />
         )}
       </tbody>
@@ -444,9 +452,17 @@ type FileSidebarModalsProps = {
   azureProjects: { id: string; name: string }[];
   selectedAzureProject: string;
   onChangeSelectedAzureProject: (project: string) => void;
+  selectedAzureTeam: string;
+  onChangeSelectedAzureTeam: (team: string) => void;
+  azureTeams: { id: string; name: string }[];
+  isLoadingAzureTeams: boolean;
   azureBacklog: BacklogNode[];
   isLoadingAzureProjects: boolean;
   isLoadingAzureBacklog: boolean;
+  azureCheckedUserStoryIds: number[];
+  onToggleAzureUserStoryCheck: (id: number) => void;
+  onImportUserStoriesToMd: () => void;
+  isImportingUserStoriesMd: boolean;
   isImportAzureModalOpen: boolean;
   onCloseImportAzureModal: () => void;
   azureMarkdownUrl: string;
@@ -486,9 +502,17 @@ export default function FileSidebarModals({
   azureProjects,
   selectedAzureProject,
   onChangeSelectedAzureProject,
+  selectedAzureTeam,
+  onChangeSelectedAzureTeam,
+  azureTeams,
+  isLoadingAzureTeams,
   azureBacklog,
   isLoadingAzureProjects,
   isLoadingAzureBacklog,
+  azureCheckedUserStoryIds,
+  onToggleAzureUserStoryCheck,
+  onImportUserStoriesToMd,
+  isImportingUserStoriesMd,
   isImportAzureModalOpen,
   onCloseImportAzureModal,
   azureMarkdownUrl,
@@ -519,18 +543,16 @@ export default function FileSidebarModals({
       <Modal isOpen={isCollectionModalOpen} onClose={onCloseCollectionModal}>
         <div className="space-y-4">
           <h3
-            className={`text-lg font-semibold ${
-              theme === "light" ? "text-gray-900" : "text-gray-100"
-            }`}
+            className={`text-lg font-semibold ${theme === "light" ? "text-gray-900" : "text-gray-100"
+              }`}
           >
             Add Collection
           </h3>
           <div className="space-y-2">
             <label
               htmlFor="collection-name"
-              className={`block text-sm font-medium ${
-                theme === "light" ? "text-gray-700" : "text-gray-300"
-              }`}
+              className={`block text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"
+                }`}
             >
               Collection Name
             </label>
@@ -545,22 +567,20 @@ export default function FileSidebarModals({
                 }
               }}
               placeholder="Enter collection name"
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                theme === "light"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${theme === "light"
                   ? "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
                   : "border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400"
-              }`}
+                }`}
               autoFocus
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <button
               onClick={onCloseCollectionModal}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                theme === "light"
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${theme === "light"
                   ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
                   : "text-gray-300 bg-gray-700 hover:bg-gray-600"
-              }`}
+                }`}
             >
               Cancel
             </button>
@@ -578,18 +598,16 @@ export default function FileSidebarModals({
       <Modal isOpen={isAddItemModalOpen} onClose={onCloseAddItemModal}>
         <div className="space-y-4">
           <h3
-            className={`text-lg font-semibold ${
-              theme === "light" ? "text-gray-900" : "text-gray-100"
-            }`}
+            className={`text-lg font-semibold ${theme === "light" ? "text-gray-900" : "text-gray-100"
+              }`}
           >
             Add {itemType === "file" ? "File" : "Folder"}
           </h3>
           {itemType === "file" && (
             <div className="space-y-2">
               <span
-                className={`block text-sm font-medium ${
-                  theme === "light" ? "text-gray-700" : "text-gray-300"
-                }`}
+                className={`block text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"
+                  }`}
               >
                 File Type:{" "}
                 <span className={`font-normal ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
@@ -601,9 +619,8 @@ export default function FileSidebarModals({
           <div className="space-y-2">
             <label
               htmlFor="item-name"
-              className={`block text-sm font-medium ${
-                theme === "light" ? "text-gray-700" : "text-gray-300"
-              }`}
+              className={`block text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"
+                }`}
             >
               {itemType === "file" ? "File" : "Folder"} Name
             </label>
@@ -617,25 +634,22 @@ export default function FileSidebarModals({
                   onSubmitItem();
                 }
               }}
-              placeholder={`Enter ${itemType} name${
-                itemType === "file"
+              placeholder={`Enter ${itemType} name${itemType === "file"
                   ? fileFormat === "datatable"
                     ? " (e.g., my-data)"
                     : " (e.g., example.md)"
                   : ""
-              }`}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                theme === "light"
+                }`}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${theme === "light"
                   ? "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
                   : "border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400"
-              }`}
+                }`}
               autoFocus
             />
             {selectedNodeForAdd?.node && (
               <p
-                className={`text-xs ${
-                  theme === "light" ? "text-gray-500" : "text-gray-400"
-                }`}
+                className={`text-xs ${theme === "light" ? "text-gray-500" : "text-gray-400"
+                  }`}
               >
                 Will be added{" "}
                 {selectedNodeForAdd.node.type === "folder"
@@ -648,11 +662,10 @@ export default function FileSidebarModals({
           <div className="flex justify-end gap-2 pt-2">
             <button
               onClick={onCloseAddItemModal}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                theme === "light"
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${theme === "light"
                   ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
                   : "text-gray-300 bg-gray-700 hover:bg-gray-600"
-              }`}
+                }`}
             >
               Cancel
             </button>
@@ -670,9 +683,8 @@ export default function FileSidebarModals({
       <Modal isOpen={isAzureDevopsModalOpen} onClose={onCloseAzureDevopsModal} size="lg">
         <div className="space-y-4">
           <h3
-            className={`text-lg font-semibold ${
-              theme === "light" ? "text-gray-900" : "text-gray-100"
-            }`}
+            className={`text-lg font-semibold ${theme === "light" ? "text-gray-900" : "text-gray-100"
+              }`}
           >
             Azure DevOps Backlog
           </h3>
@@ -680,9 +692,8 @@ export default function FileSidebarModals({
           <div className="space-y-2">
             <label
               htmlFor="azure-project"
-              className={`block text-sm font-medium ${
-                theme === "light" ? "text-gray-700" : "text-gray-300"
-              }`}
+              className={`block text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"
+                }`}
             >
               Project
             </label>
@@ -696,11 +707,10 @@ export default function FileSidebarModals({
                 id="azure-project"
                 value={selectedAzureProject}
                 onChange={(e) => onChangeSelectedAzureProject(e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  theme === "light"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${theme === "light"
                     ? "border-gray-300 bg-white text-gray-900"
                     : "border-gray-600 bg-gray-700 text-gray-100"
-                }`}
+                  }`}
               >
                 <option value="" disabled>
                   Select a project…
@@ -713,6 +723,45 @@ export default function FileSidebarModals({
               </select>
             )}
           </div>
+
+          {selectedAzureProject ? (
+            <div className="space-y-2">
+              <label
+                htmlFor="azure-team"
+                className={`block text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"
+                  }`}
+              >
+                Team
+              </label>
+              {isLoadingAzureTeams ? (
+                <p className={theme === "light" ? "text-sm text-gray-600" : "text-sm text-gray-400"}>
+                  Loading teams…
+                </p>
+              ) : (
+                <select
+                  id="azure-team"
+                  value={selectedAzureTeam}
+                  onChange={(e) => onChangeSelectedAzureTeam(e.target.value)}
+                  disabled={azureTeams.length === 0}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${theme === "light"
+                      ? "border-gray-300 bg-white text-gray-900 disabled:bg-gray-100"
+                      : "border-gray-600 bg-gray-700 text-gray-100 disabled:bg-gray-800"
+                    }`}
+                >
+                  {azureTeams.length === 0 ? (
+                    <option value="">
+                      No teams found
+                    </option>
+                  ) : null}
+                  {azureTeams.map((t) => (
+                    <option key={t.id} value={t.name}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          ) : null}
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -736,27 +785,46 @@ export default function FileSidebarModals({
               <div className="rounded-md border border-gray-200 dark:border-gray-700">
                 <div className="max-h-[420px] overflow-auto">
                   <BacklogTree
-                    key={selectedAzureProject}
+                    key={`${selectedAzureProject}::${selectedAzureTeam}`}
                     theme={theme}
                     nodes={filteredAzureBacklog}
                     isLoading={isLoadingAzureBacklog}
                     projectName={selectedAzureProject}
+                    teamName={selectedAzureTeam}
+                    checkedUserStoryIds={azureCheckedUserStoryIds}
+                    onToggleUserStoryCheck={onToggleAzureUserStoryCheck}
                   />
                 </div>
               </div>
             )}
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
             <button
+              type="button"
               onClick={onCloseAzureDevopsModal}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                theme === "light"
-                  ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
-                  : "text-gray-300 bg-gray-700 hover:bg-gray-600"
-              }`}
+              disabled={isImportingUserStoriesMd}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${theme === "light"
+                  ? "text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+                  : "text-gray-300 bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
+                }`}
             >
               Close
+            </button>
+            <button
+              type="button"
+              onClick={onImportUserStoriesToMd}
+              disabled={isImportingUserStoriesMd || !selectedAzureProject || azureCheckedUserStoryIds.length === 0}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md transition-colors"
+            >
+              {isImportingUserStoriesMd ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin shrink-0" aria-hidden />
+                  Importing…
+                </>
+              ) : (
+                "Import to .md"
+              )}
             </button>
           </div>
         </div>
@@ -765,9 +833,8 @@ export default function FileSidebarModals({
       <Modal isOpen={isImportAzureModalOpen} onClose={onCloseImportAzureModal} size="md">
         <div className="space-y-4">
           <h3
-            className={`text-lg font-semibold ${
-              theme === "light" ? "text-gray-900" : "text-gray-100"
-            }`}
+            className={`text-lg font-semibold ${theme === "light" ? "text-gray-900" : "text-gray-100"
+              }`}
           >
             Import Markdown from Azure
           </h3>
@@ -775,9 +842,8 @@ export default function FileSidebarModals({
           <div className="space-y-2">
             <label
               htmlFor="azure-md-url"
-              className={`block text-sm font-medium ${
-                theme === "light" ? "text-gray-700" : "text-gray-300"
-              }`}
+              className={`block text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"
+                }`}
             >
               Markdown URL
             </label>
@@ -787,11 +853,10 @@ export default function FileSidebarModals({
               value={azureMarkdownUrl}
               onChange={(e) => onChangeAzureMarkdownUrl(e.target.value)}
               placeholder="https://.../file.md (SAS URLs work)"
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                theme === "light"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${theme === "light"
                   ? "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
                   : "border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400"
-              }`}
+                }`}
               autoFocus
             />
             <p className={theme === "light" ? "text-xs text-gray-500" : "text-xs text-gray-400"}>
@@ -802,9 +867,8 @@ export default function FileSidebarModals({
           <div className="space-y-2">
             <label
               htmlFor="azure-md-name"
-              className={`block text-sm font-medium ${
-                theme === "light" ? "text-gray-700" : "text-gray-300"
-              }`}
+              className={`block text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"
+                }`}
             >
               File name (optional)
             </label>
@@ -814,20 +878,18 @@ export default function FileSidebarModals({
               value={azureMarkdownName}
               onChange={(e) => onChangeAzureMarkdownName(e.target.value)}
               placeholder="example.md"
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                theme === "light"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${theme === "light"
                   ? "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
                   : "border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400"
-              }`}
+                }`}
             />
           </div>
 
           <div className="space-y-2">
             <label
               htmlFor="azure-auth-header"
-              className={`block text-sm font-medium ${
-                theme === "light" ? "text-gray-700" : "text-gray-300"
-              }`}
+              className={`block text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"
+                }`}
             >
               Authorization header (optional)
             </label>
@@ -837,11 +899,10 @@ export default function FileSidebarModals({
               value={azureAuthHeader}
               onChange={(e) => onChangeAzureAuthHeader(e.target.value)}
               placeholder='e.g. Bearer <token>  (or leave empty if using SAS URL)'
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                theme === "light"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${theme === "light"
                   ? "border-gray-300 bg-white text-gray-900 placeholder-gray-500"
                   : "border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400"
-              }`}
+                }`}
             />
           </div>
 
@@ -857,11 +918,10 @@ export default function FileSidebarModals({
             <button
               onClick={onCloseImportAzureModal}
               disabled={isImportingAzure}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                theme === "light"
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${theme === "light"
                   ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
                   : "text-gray-300 bg-gray-700 hover:bg-gray-600"
-              } disabled:opacity-70`}
+                } disabled:opacity-70`}
             >
               Cancel
             </button>
@@ -879,9 +939,8 @@ export default function FileSidebarModals({
       <Modal isOpen={isDeleteModalOpen} onClose={onCloseDeleteModal}>
         <div className="space-y-4">
           <h3
-            className={`text-lg font-semibold ${
-              theme === "light" ? "text-gray-900" : "text-gray-100"
-            }`}
+            className={`text-lg font-semibold ${theme === "light" ? "text-gray-900" : "text-gray-100"
+              }`}
           >
             Delete {selectedNodeForDelete?.node.type === "folder" ? "Folder" : "File"}
           </h3>
@@ -904,11 +963,10 @@ export default function FileSidebarModals({
             <button
               onClick={onCloseDeleteModal}
               disabled={isDeletingItem}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                theme === "light"
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${theme === "light"
                   ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
                   : "text-gray-300 bg-gray-700 hover:bg-gray-600"
-              } disabled:opacity-70`}
+                } disabled:opacity-70`}
             >
               Cancel
             </button>

@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       `/${encodeURIComponent(project)}` +
       `/${encodeURIComponent(team)}`;
 
-    // 1) Find Epics backlog id + columns.
+    // 1) Find backlog levels for this team (Epics/Features/Stories/Requirements...).
     const backlogsRes = await fetch(`${workBase}/_apis/work/backlogs?api-version=${apiVersion}`, {
       method: "GET",
       headers: { Accept: "application/json", Authorization: authHeader },
@@ -72,44 +72,75 @@ export async function POST(request: Request) {
     };
 
     const backlogLevels = backlogsPayload.value ?? [];
-    const epicsBacklog = backlogLevels.find((b) => (b.name ?? "").toLowerCase() === "epics");
-    if (!epicsBacklog?.id) {
+    if (backlogLevels.length === 0) {
       return NextResponse.json(
-        { success: false, error: `Could not find Epics backlog for team "${team}"` },
+        { success: false, error: `No backlogs found for team "${team}"` },
         { status: 404 },
       );
     }
 
-    // 2) Get work item IDs in Epics backlog level.
-    const backlogItemsRes = await fetch(
-      `${workBase}/_apis/work/backlogs/${encodeURIComponent(epicsBacklog.id)}/workItems?api-version=${apiVersion}`,
-      {
-        method: "GET",
-        headers: { Accept: "application/json", Authorization: authHeader },
-        cache: "no-store",
-      },
-    );
+    // Prefer higher-level backlogs first, but fall back to whatever has items.
+    // Examples:
+    // - Scrum/Agile: Epics, Features, Stories
+    // - CMMI: Epics, Features, Requirements
+    const preferredNames = ["epics", "features", "stories", "backlog items", "requirements"];
+    const byName = new Map<string, { id: string; name?: string; columnFields?: Array<{ columnFieldReference?: { referenceName?: string; name?: string } }> }>();
+    for (const b of backlogLevels) byName.set((b.name ?? "").toLowerCase(), b);
 
-    if (!backlogItemsRes.ok) {
-      const text = await backlogItemsRes.text();
-      return NextResponse.json(
-        { success: false, error: `Failed to load backlog work items (${backlogItemsRes.status}): ${text.slice(0, 200)}` },
-        { status: 502 },
+    const candidates = [
+      ...preferredNames.map((n) => byName.get(n)).filter(Boolean),
+      ...backlogLevels,
+    ].filter((b, idx, arr) => Boolean(b?.id) && arr.findIndex((x) => x?.id === b?.id) === idx) as Array<{
+      id: string;
+      name?: string;
+      columnFields?: Array<{ columnFieldReference?: { referenceName?: string; name?: string } }>;
+    }>;
+
+    let selectedBacklog: (typeof candidates)[number] | null = null;
+    let ids: number[] = [];
+
+    // 2) Try backlog levels until we find one that has items.
+    for (const candidate of candidates) {
+      const backlogItemsRes = await fetch(
+        `${workBase}/_apis/work/backlogs/${encodeURIComponent(candidate.id)}/workItems?api-version=${apiVersion}`,
+        {
+          method: "GET",
+          headers: { Accept: "application/json", Authorization: authHeader },
+          cache: "no-store",
+        },
       );
+
+      if (!backlogItemsRes.ok) {
+        // If one backlog level fails, continue to try others.
+        continue;
+      }
+
+      const backlogItemsPayload = (await backlogItemsRes.json()) as {
+        workItems?: Array<{ target?: { id?: number } }>;
+      };
+
+      const nextIds = (backlogItemsPayload.workItems ?? [])
+        .map((link) => link.target?.id)
+        .filter((id): id is number => typeof id === "number" && Number.isFinite(id));
+
+      if (nextIds.length > 0) {
+        selectedBacklog = candidate;
+        ids = nextIds;
+        break;
+      }
+
+      // Keep the first candidate as a fallback so we can return an empty but valid payload.
+      if (!selectedBacklog) selectedBacklog = candidate;
     }
 
-    const backlogItemsPayload = (await backlogItemsRes.json()) as {
-      workItems?: Array<{ target?: { id?: number } }>;
-    };
-
-    const ids = (backlogItemsPayload.workItems ?? [])
-      .map((link) => link.target?.id)
-      .filter((id): id is number => typeof id === "number" && Number.isFinite(id));
+    if (!selectedBacklog) {
+      selectedBacklog = backlogLevels[0]!;
+    }
 
     const backlogMeta = {
-      id: epicsBacklog.id,
-      name: epicsBacklog.name ?? "Epics",
-      columns: (epicsBacklog.columnFields ?? [])
+      id: selectedBacklog.id,
+      name: selectedBacklog.name ?? "Backlog",
+      columns: (selectedBacklog.columnFields ?? [])
         .map((c) => c.columnFieldReference)
         .filter((c): c is { referenceName?: string; name?: string } => Boolean(c)),
     };

@@ -3,7 +3,7 @@
  * @description Handles GET and POST HTTP requests for file operations, allowing clients to save and retrieve files using a file service.
  */
 import { NextResponse } from "next/server";
-import { loadFile, saveFile } from "@/app/lib/services/fileService";
+import { deleteFileRecord, loadFile, saveFile } from "@/app/lib/services/fileService";
 import type { SaveFileBody } from "@/app/lib/services/@types/fileService";
 
 export async function POST(request: Request) {
@@ -35,6 +35,23 @@ export async function GET(request: Request) {
 	} catch (error) {
 		console.error("Error loading file:", error);
 		return NextResponse.json({ error: "Failed to load file" }, { status: 500 });
+	}
+}
+
+export async function DELETE(request: Request) {
+	try {
+		const url = new URL(request.url);
+		const id = url.searchParams.get("id");
+		if (!id?.trim()) {
+			return NextResponse.json({ success: false, error: "Missing id" }, { status: 400 });
+		}
+
+		await deleteFileRecord(id.trim());
+		return NextResponse.json({ success: true });
+	} catch (error) {
+		console.error("Error deleting file:", error);
+		const message = error instanceof Error ? error.message : "Failed to delete file";
+		return NextResponse.json({ success: false, error: message }, { status: 500 });
 	}
 }
 
