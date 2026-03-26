@@ -140,20 +140,6 @@ export default function TreeViewGroupItem({
           <span title={group.name}>{group.name}</span>
         </div>
         <div className="flex items-center gap-1">
-          <button
-            className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (azurePatConfigured === false) {
-                setIsPatRequiredModalOpen(true);
-                return;
-              }
-              onImportAzureMarkdown?.(selectedNode, selectedNodePath, groupIndex);
-            }}
-            title="Import Markdown from Azure"
-          >
-            <CloudDownload className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-          </button>
           <div ref={fileTypeRef} className="relative">
             <button
               className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
@@ -194,6 +180,30 @@ export default function TreeViewGroupItem({
                     <span>{label}</span>
                   </button>
                 ))}
+                <div
+                  className={`my-1 border-t ${
+                    theme === "light" ? "border-gray-200" : "border-gray-700"
+                  }`}
+                />
+                <button
+                  className={`flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left transition-colors ${
+                    theme === "light"
+                      ? "text-gray-700 hover:bg-gray-100"
+                      : "text-gray-300 hover:bg-gray-700"
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsFileTypeOpen(false);
+                    if (azurePatConfigured === false) {
+                      setIsPatRequiredModalOpen(true);
+                      return;
+                    }
+                    onImportAzureMarkdown?.(selectedNode, selectedNodePath, groupIndex);
+                  }}
+                >
+                  <CloudDownload className="w-3.5 h-3.5" />
+                  <span>Import from Azure</span>
+                </button>
               </div>
             )}
           </div>
