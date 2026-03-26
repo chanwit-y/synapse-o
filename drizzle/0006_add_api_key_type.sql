@@ -1,0 +1,2 @@
+ALTER TABLE `api_key` ADD COLUMN `type` text NOT NULL DEFAULT 'AI';
+
