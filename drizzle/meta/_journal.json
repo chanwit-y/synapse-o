@@ -50,6 +50,20 @@
       "when": 1773920376624,
       "tag": "0006_public_johnny_blaze",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1772247964076,
+      "tag": "0006_add_api_key_type",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1774521398872,
+      "tag": "0007_safe_tempest",
+      "breakpoints": true
     }
   ]
 }

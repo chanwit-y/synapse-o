@@ -2,12 +2,12 @@
  * @file api-key.ts
  * @description API key repository extending BaseRepository for managing stored API key entities.
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import "server-only";
 
 import { apiKeyTable } from "@/app/lib/db/schema";
 import { BaseRepository, type RepoOptions } from "@/app/lib/db/repository/base";
 
+export type ApiKeyType = "AI" | "AZURE";
 export type ApiKeyRow = typeof apiKeyTable.$inferSelect;
 export type ApiKeyInsert = typeof apiKeyTable.$inferInsert;
 export type ApiKeyCreateInput = Omit<ApiKeyInsert, "id" | "createdAt" | "updatedAt"> & { id?: string };

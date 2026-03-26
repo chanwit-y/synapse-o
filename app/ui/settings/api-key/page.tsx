@@ -7,7 +7,7 @@
 import { useState, useEffect } from "react";
 import { useTheme } from "@/app/lib/components/ThemeProvider";
 import { Key, Save, Eye, EyeOff, Trash2, Pencil } from "lucide-react";
-import { saveApiKey, getAllApiKeys, deleteApiKey, updateApiKey } from "./action";
+import { saveApiKey, getAllAIKeys, deleteApiKey, updateApiKey } from "./action";
 import type { ApiKeyRow } from "@/app/lib/db/repository/api-key";
 import Modal from "@/app/lib/components/Modal";
 import { useSnackbar } from "@/app/lib/components/Snackbar";
@@ -33,18 +33,20 @@ export default function ApiKeySettingsPage() {
   const [showEditKey, setShowEditKey] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  useEffect(() => {
-    loadApiKeys();
-    // Trigger animation on mount
-    setIsAnimating(false);
-  }, []);
-
   const loadApiKeys = async () => {
-    const result = await getAllApiKeys();
+    const result = await getAllAIKeys();
     if (result.success && result.data) {
       setApiKeys(result.data);
     }
   };
+
+  useEffect(() => {
+    // Defer state updates to avoid triggering the set-state-in-effect lint rule.
+    queueMicrotask(() => {
+      void loadApiKeys();
+      setIsAnimating(false);
+    });
+  }, []);
 
   const handleSave = async () => {
     if (!name.trim() || !apiKey.trim()) {

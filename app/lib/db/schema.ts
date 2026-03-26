@@ -27,6 +27,7 @@ export const fileTable = sqliteTable("file", {
 
 export const apiKeyTable = sqliteTable("api_key", {
 	id: text("id").primaryKey(),
+	type: text("type").notNull().default("AI"),
 	name: text("name").notNull(),
 	description: text("description"),
 	apiKey: text("api_key").notNull(),

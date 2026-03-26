@@ -6,6 +6,7 @@ import "server-only";
 
 import { CollectionRepository } from "@/app/lib/db/repository/collection";
 import { FileRepository } from "@/app/lib/db/repository/file";
+import { deletePublicUploadAssetsReferencedInContent } from "@/app/lib/server/uploadCleanup.server";
 import type { SaveFileBody } from "@/app/lib/services/@types/fileService";
 export type { SaveFileBody } from "@/app/lib/services/@types/fileService";
 
@@ -93,5 +94,20 @@ export async function loadFile(id: string) {
   // Ensure tags is always an array.
   const tags = Array.isArray(file.tags) ? file.tags : [];
   return { ...file, tags };
+}
+
+/**
+ * Deletes DB row after removing any public/upload assets referenced in file content.
+ */
+export async function deleteFileRecord(id: string): Promise<{ ok: boolean }> {
+  const fileRepo = new FileRepository();
+  const row = await fileRepo.findById(id);
+  if (!row) {
+    return { ok: true };
+  }
+  const content = typeof row.content === "string" ? row.content : "";
+  await deletePublicUploadAssetsReferencedInContent(content);
+  await fileRepo.delete(id);
+  return { ok: true };
 }
 

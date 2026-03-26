@@ -5,10 +5,12 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, ChevronDown, Folder, File, Star, FileText, Table } from "lucide-react";
+import { ChevronRight, ChevronDown, Folder, File, Star, FileText, Table, CloudDownload } from "lucide-react";
 import type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
 import TreeNodeItem from "./TreeNodeItem";
 import { useTheme } from "./ThemeProvider";
+import Modal from "./Modal";
+import { useRouter } from "next/navigation";
 
 export type FileType = "md" | "datatable";
 
@@ -22,6 +24,9 @@ export interface TreeViewGroupItemProps {
   setSelectedNode: (node: TreeNode | null) => void;
   onAddFile?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number, fileType: FileType) => void;
   onAddFolder?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
+  onImportAzureMarkdown?: (selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
+  /** When `false`, Azure import is blocked until PAT is saved in Settings. `null` = check not finished yet. */
+  azurePatConfigured?: boolean | null;
   onRequestDeleteNode?: (node: TreeNode, nodePath: string, groupIndex: number) => void;
   isFavorited: boolean;
   onToggleFavorite: (groupIndex: number) => void;
@@ -37,16 +42,23 @@ export default function TreeViewGroupItem({
   setSelectedNode,
   onAddFile,
   onAddFolder,
+  onImportAzureMarkdown,
+  azurePatConfigured,
   onRequestDeleteNode,
   isFavorited,
   onToggleFavorite,
 }: TreeViewGroupItemProps) {
   const { theme } = useTheme();
+  const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isPatRequiredModalOpen, setIsPatRequiredModalOpen] = useState(false);
   const [isFileTypeOpen, setIsFileTypeOpen] = useState(false);
   const fileTypeRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [contentHeight, setContentHeight] = useState<number>(0);
+  const MAX_EXPANDED_HEIGHT = 360;
+  const expandedHeight = Math.min(contentHeight, MAX_EXPANDED_HEIGHT);
+  const shouldScroll = contentHeight > MAX_EXPANDED_HEIGHT;
 
   useEffect(() => {
     if (!isFileTypeOpen) return;
@@ -77,6 +89,45 @@ export default function TreeViewGroupItem({
 
   return (
     <div className="">
+      <Modal isOpen={isPatRequiredModalOpen} onClose={() => setIsPatRequiredModalOpen(false)} size="sm">
+        <div className="space-y-4">
+          <h3
+            className={`text-lg font-semibold pr-8 ${
+              theme === "light" ? "text-gray-900" : "text-gray-100"
+            }`}
+          >
+            Azure DevOps PAT required
+          </h3>
+          <p className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-300"}`}>
+            To import from Azure DevOps, add a Personal Access Token (PAT) first. Open{" "}
+            <span className="font-medium">Settings → Azure API Key</span>, save your PAT, then try again.
+          </p>
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setIsPatRequiredModalOpen(false)}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                theme === "light"
+                  ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
+                  : "text-gray-300 bg-gray-700 hover:bg-gray-600"
+              }`}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsPatRequiredModalOpen(false);
+                router.push("/ui/settings/azure-api-key");
+              }}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+            >
+              Open settings
+            </button>
+          </div>
+        </div>
+      </Modal>
+
       <div
         className={`flex items-center justify-between px-2 py-2 text-xs font-semibold text-gray-500 ${theme === 'light' ? "text-gray-500" : "text-gray-400"} uppercase tracking-wide hover:bg-gray-100 ${theme === 'light' ? "hover:bg-gray-100" : "hover:bg-gray-800"} rounded cursor-pointer transition-colors`}
         onClick={() => setIsExpanded(!isExpanded)}
@@ -129,6 +180,30 @@ export default function TreeViewGroupItem({
                     <span>{label}</span>
                   </button>
                 ))}
+                <div
+                  className={`my-1 border-t ${
+                    theme === "light" ? "border-gray-200" : "border-gray-700"
+                  }`}
+                />
+                <button
+                  className={`flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left transition-colors ${
+                    theme === "light"
+                      ? "text-gray-700 hover:bg-gray-100"
+                      : "text-gray-300 hover:bg-gray-700"
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsFileTypeOpen(false);
+                    if (azurePatConfigured === false) {
+                      setIsPatRequiredModalOpen(true);
+                      return;
+                    }
+                    onImportAzureMarkdown?.(selectedNode, selectedNodePath, groupIndex);
+                  }}
+                >
+                  <CloudDownload className="w-3.5 h-3.5" />
+                  <span>Import from Azure</span>
+                </button>
               </div>
             )}
           </div>
@@ -160,15 +235,17 @@ export default function TreeViewGroupItem({
         </div>
       </div>
       <div
-        className="overflow-hidden transition-[height,opacity,transform] duration-300 ease-in-out will-change-[height,opacity,transform]"
+        className="transition-[height,opacity,transform] duration-300 ease-in-out will-change-[height,opacity,transform]"
         style={{
-          height: isExpanded ? contentHeight : 0,
+          height: isExpanded ? expandedHeight : 0,
           opacity: isExpanded ? 1 : 0,
           transform: isExpanded ? "translateY(0px)" : "translateY(-8px)",
+          overflowY: isExpanded && shouldScroll ? "auto" : "hidden",
+          overflowX: "hidden",
         }}
       >
         <div ref={contentRef} className="pt-1 pl-4">
-          {group.directories.map((node, index) => (
+          {group.directories.map((node) => (
             <TreeNodeItem
               key={node.id}
               node={node}
