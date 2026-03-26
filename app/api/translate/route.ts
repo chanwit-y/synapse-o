@@ -1,30 +1,26 @@
 import { NextResponse } from "next/server";
 import { translateMarkdownEnglishToThai } from "@/app/lib/services/translate";
+import { FileRepository } from "@/app/lib/db/repository/file";
 
 /**
  * POST /api/translate
  *
- * Body (choose one):
- * 1) Raw Markdown — Content-Type: text/plain or text/markdown (or omit; body = full .md file as-is)
- * 2) JSON — Content-Type: application/json with { "md": "..." } or { "markdown": "..." }
+ * Body (JSON):
+ *   { "fileId": "...", "md": "..." }
  *
- * Response (success):
- * - Default: raw Markdown body, Content-Type: text/markdown; charset=utf-8
- * - JSON wrapper only if Accept includes application/json OR ?format=json
+ * Translates the Markdown from English to Thai, persists the result as
+ * `contentTH` on the file row, and returns the translated text.
  */
 export async function POST(request: Request) {
   try {
-    const url = new URL(request.url);
-    const wantJson =
-      (request.headers.get("accept") ?? "").toLowerCase().includes("application/json") ||
-      url.searchParams.get("format") === "json";
-
     const contentType = (request.headers.get("content-type") ?? "").toLowerCase();
     let md: string;
+    let fileId: string | null = null;
 
     if (contentType.includes("application/json")) {
       const body = await request.json();
-      const b = body as { md?: unknown; markdown?: unknown };
+      const b = body as { md?: unknown; markdown?: unknown; fileId?: unknown };
+      fileId = typeof b.fileId === "string" ? b.fileId : null;
       md =
         typeof b.md === "string"
           ? b.md
@@ -48,7 +44,7 @@ export async function POST(request: Request) {
           {
             success: false,
             error:
-              "Empty body. Send raw Markdown (text/plain or text/markdown) or JSON with { \"md\": \"...\" } and Content-Type: application/json.",
+              'Empty body. Send JSON with { "fileId": "...", "md": "..." }.',
           },
           { status: 400 },
         );
@@ -57,24 +53,15 @@ export async function POST(request: Request) {
 
     const translated = await translateMarkdownEnglishToThai(md);
 
-    if (wantJson) {
-      return NextResponse.json({
-        success: true,
-        md: translated,
-        markdown: translated,
-      });
+    if (fileId) {
+      const fileRepo = new FileRepository();
+      await fileRepo.updateContentTH(fileId, translated);
     }
 
-    const accept = (request.headers.get("accept") ?? "").toLowerCase();
-    const outType = accept.includes("text/plain")
-      ? "text/plain; charset=utf-8"
-      : "text/markdown; charset=utf-8";
-
-    return new NextResponse(translated, {
-      status: 200,
-      headers: {
-        "Content-Type": outType,
-      },
+    return NextResponse.json({
+      success: true,
+      md: translated,
+      markdown: translated,
     });
   } catch (error) {
     console.error("Error translating markdown:", error);

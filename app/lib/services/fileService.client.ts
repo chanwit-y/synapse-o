@@ -17,6 +17,7 @@ import type {
   UpdateIconResult,
   UploadImageResult,
   AnalyzeImageResult,
+  TranslateResult,
 } from "@/app/lib/services/@types/fileService.client";
 
 export class FileService {
@@ -106,6 +107,22 @@ export class FileService {
     }
 
     return result.result;
+  }
+
+  /**
+   * Translate file content (EN → TH) and persist the result as contentTH.
+   */
+  async translateFile(fileId: string, markdown: string): Promise<string> {
+    const result = await this.httpClient.post<TranslateResult>("/api/translate", {
+      fileId,
+      md: markdown,
+    });
+
+    if (!result.success || !result.md) {
+      throw new Error(result.error || "Failed to translate file");
+    }
+
+    return result.md;
   }
 
   private fileToBase64(file: File): Promise<string> {
@@ -241,6 +258,16 @@ export function useAnalyzeImageMutation() {
   return useMutation({
     mutationFn: (vars: { file: File; question?: string }) =>
       fileService.analyzeImage(vars.file, vars.question),
+  });
+}
+
+/**
+ * React Query hook: translate file content (EN → TH) and persist as contentTH.
+ */
+export function useTranslateFileMutation() {
+  return useMutation({
+    mutationFn: (vars: { fileId: string; markdown: string }) =>
+      fileService.translateFile(vars.fileId, vars.markdown),
   });
 }
 

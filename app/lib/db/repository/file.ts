@@ -35,5 +35,9 @@ export class FileRepository extends BaseRepository<typeof fileTable, string> {
 	public async updateTags(id: string, tags: Tag[]) {
 		return await this.update(id, { tags });
 	}
+
+	public async updateContentTH(id: string, contentTH: string, updatedAt: number = Date.now()) {
+		return await this.update(id, { contentTH, updatedAt });
+	}
 }
 
