@@ -62,7 +62,7 @@ export default function CodebaseDetailModal({ item, isDark, onClose }: CodebaseD
               {item.description || <span className={`italic ${mutedText}`}>None</span>}
             </DetailRow>
 
-            <DetailRow label="Import Path" isDark={isDark}>
+            <DetailRow label="Code Mapping" isDark={isDark}>
               <code
                 className={`text-xs font-mono break-all ${
                   isDark ? "text-emerald-400" : "text-emerald-700"

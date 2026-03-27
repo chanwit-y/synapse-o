@@ -12,7 +12,7 @@ import { ThemeProvider } from "../lib/components/ThemeProvider";
 import { ReactQueryProvider } from "../lib/react-query/ReactQueryProvider";
 import LayoutShell from "../lib/components/LayoutShell";
 import SidebarMenu from "../lib/components/SidebarMenu";
-import { Workflow, Settings, Key, FolderInput, Code, Cloud } from "lucide-react";
+import { Settings, Key, Code, Cloud } from "lucide-react";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -55,23 +55,6 @@ const docsIcon = (
   </svg>
 );
 
-const databaseIcon = (
-  <svg
-    className={iconClassName}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <ellipse cx="12" cy="5" rx="8" ry="3" />
-    <path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5" />
-    <path d="M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7" />
-  </svg>
-);
-
-export const workflowIcon = <Workflow className="h-4 w-4" />;
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -96,24 +79,6 @@ const menuItems = [
     href: "/ui/codebase",
     description: "Code management",
     icon: <Code className="h-4 w-4" />,
-  },
-  {
-    label: "Database",
-    href: "/ui/db",
-    description: "Data tools and setup",
-    icon: databaseIcon,
-  },
-  {
-    label: "Workflow",
-    href: "/ui/flow",
-    description: "Flow tools and setup",
-    icon: workflowIcon,
-  },
-  {
-    label: "Import Path",
-    href: "/ui/import-path",
-    description: "Import path configuration",
-    icon: <FolderInput className="h-4 w-4" />,
   },
   {
     label: "Settings",

@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, ChevronDown, Folder, File, Star, FileText, Table, CloudDownload } from "lucide-react";
+import { ChevronRight, ChevronDown, Folder, Star, FileText, Table, CloudDownload } from "lucide-react";
 import type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
 import TreeNodeItem from "./TreeNodeItem";
 import { useTheme } from "./ThemeProvider";
@@ -52,24 +52,11 @@ export default function TreeViewGroupItem({
   const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(true);
   const [isPatRequiredModalOpen, setIsPatRequiredModalOpen] = useState(false);
-  const [isFileTypeOpen, setIsFileTypeOpen] = useState(false);
-  const fileTypeRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [contentHeight, setContentHeight] = useState<number>(0);
   const MAX_EXPANDED_HEIGHT = 360;
   const expandedHeight = Math.min(contentHeight, MAX_EXPANDED_HEIGHT);
   const shouldScroll = contentHeight > MAX_EXPANDED_HEIGHT;
-
-  useEffect(() => {
-    if (!isFileTypeOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (fileTypeRef.current && !fileTypeRef.current.contains(e.target as Node)) {
-        setIsFileTypeOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isFileTypeOpen]);
 
   useEffect(() => {
     const el = contentRef.current;
@@ -133,79 +120,50 @@ export default function TreeViewGroupItem({
         onClick={() => setIsExpanded(!isExpanded)}
         data-tree-interactive="true"
       >
-        <div className="flex items-center gap-1">
-          <span className="flex items-center justify-center w-4 h-4 transition-transform duration-200">
+        <div className="flex items-center gap-1 min-w-0 flex-1 mr-1">
+          <span className="shrink-0 flex items-center justify-center w-4 h-4 transition-transform duration-200">
             {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
           </span>
-          <span title={group.name}>{group.name}</span>
+          <span className="truncate" title={group.name}>{group.name}</span>
         </div>
-        <div className="flex items-center gap-1">
-          <div ref={fileTypeRef} className="relative">
+        <div className="shrink-0 flex items-center gap-0.5">
+          <div className={`flex items-center gap-0.5 rounded-md px-0.5 ${
+            theme === "light" ? "bg-gray-100" : "bg-gray-800"
+          }`}>
             <button
               className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
-                setIsFileTypeOpen((prev) => !prev);
+                onAddFile?.(selectedNode, selectedNodePath, groupIndex, "md");
               }}
-              title="Add File"
+              title="Add Markdown File"
             >
-              <File className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              <FileText className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
             </button>
-            {isFileTypeOpen && (
-              <div
-                className={`absolute right-0 top-full mt-1 z-50 min-w-[160px] rounded-md border shadow-lg py-1 ${
-                  theme === "light"
-                    ? "bg-white border-gray-200"
-                    : "bg-gray-800 border-gray-700"
-                }`}
-              >
-                {([
-                  { value: "md" as FileType, label: "Markdown", icon: FileText },
-                  { value: "datatable" as FileType, label: "Data Table", icon: Table },
-                ]).map(({ value, label, icon: Icon }) => (
-                  <button
-                    key={value}
-                    className={`flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left transition-colors ${
-                      theme === "light"
-                        ? "text-gray-700 hover:bg-gray-100"
-                        : "text-gray-300 hover:bg-gray-700"
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsFileTypeOpen(false);
-                      onAddFile?.(selectedNode, selectedNodePath, groupIndex, value);
-                    }}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                    <span>{label}</span>
-                  </button>
-                ))}
-                <div
-                  className={`my-1 border-t ${
-                    theme === "light" ? "border-gray-200" : "border-gray-700"
-                  }`}
-                />
-                <button
-                  className={`flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left transition-colors ${
-                    theme === "light"
-                      ? "text-gray-700 hover:bg-gray-100"
-                      : "text-gray-300 hover:bg-gray-700"
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsFileTypeOpen(false);
-                    if (azurePatConfigured === false) {
-                      setIsPatRequiredModalOpen(true);
-                      return;
-                    }
-                    onImportAzureMarkdown?.(selectedNode, selectedNodePath, groupIndex);
-                  }}
-                >
-                  <CloudDownload className="w-3.5 h-3.5" />
-                  <span>Import from Azure</span>
-                </button>
-              </div>
-            )}
+            <button
+              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddFile?.(selectedNode, selectedNodePath, groupIndex, "datatable");
+              }}
+              title="Add Data Table"
+            >
+              <Table className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+            </button>
+            <button
+              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (azurePatConfigured === false) {
+                  setIsPatRequiredModalOpen(true);
+                  return;
+                }
+                onImportAzureMarkdown?.(selectedNode, selectedNodePath, groupIndex);
+              }}
+              title="Import from Azure"
+            >
+              <CloudDownload className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+            </button>
           </div>
           <button
             className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
