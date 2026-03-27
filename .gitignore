@@ -48,3 +48,5 @@ public/upload
 import_path.json
 code_bases_mybp.json
 /store/
+synapse.db-shm
+synapse.db-wal
