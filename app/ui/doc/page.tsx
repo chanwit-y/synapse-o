@@ -27,6 +27,8 @@ export default function Home() {
 
   const isSidebarCollapsed = useDocWorkspaceStore((s) => s.isSidebarCollapsed);
   const toggleSidebarCollapsed = useDocWorkspaceStore((s) => s.toggleSidebarCollapsed);
+  const sidebarWidth = useDocWorkspaceStore((s) => s.sidebarWidth);
+  const setSidebarWidth = useDocWorkspaceStore((s) => s.setSidebarWidth);
   const selectedFile = useDocWorkspaceStore((s) => s.selectedFile) as TreeNode | null;
   const selectedFilePath = useDocWorkspaceStore((s) => s.selectedFilePath);
   const selectedIconId = useDocWorkspaceStore((s) => s.selectedIconId);
@@ -98,6 +100,8 @@ export default function Home() {
       <FileSidebar
         collapsed={isSidebarCollapsed}
         onToggleCollapsed={toggleSidebarCollapsed}
+        width={sidebarWidth}
+        onWidthChange={setSidebarWidth}
         iconOverrides={iconOverrides}
         onSelectFile={selectFile}
         onClearSelection={clearSelection}

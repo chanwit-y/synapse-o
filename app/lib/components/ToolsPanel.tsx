@@ -5,7 +5,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, Copy, FlaskConical, FolderInput, Search } from "lucide-react";
+import { Braces, Check, ChevronDown, Copy, FlaskConical, Search } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import Modal from "./Modal";
 import { useLoading } from "./LoadingProvider";
@@ -76,7 +76,7 @@ function getExtension(name: string) {
 }
 
 function pickUniqueName(baseName: string, existing: Set<string>) {
-  const normalizedBase = (baseName ?? "").trim() || "untitled.datatable";
+  const normalizedBase = (baseName ?? "").trim() || "untitled.md";
   if (!existing.has(normalizedBase)) return normalizedBase;
 
   const stem = getStem(normalizedBase);
@@ -86,59 +86,13 @@ function pickUniqueName(baseName: string, existing: Set<string>) {
     if (!existing.has(candidate)) return candidate;
   }
   // Worst case fallback
-  return `${stem}-${Date.now()}.${ext ?? "datatable"}`;
+  return `${stem}-${Date.now()}.${ext ?? "md"}`;
 }
 
 function createId() {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function extractDataTableJson(raw: string): string {
-  const trimmed = raw.trim();
-  // Strip markdown code fences if present
-  const fenceMatch = trimmed.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
-  const jsonStr = fenceMatch ? fenceMatch[1].trim() : trimmed;
-
-  try {
-    const parsed = JSON.parse(jsonStr) as unknown;
-
-    // Already in DataTable format
-    if (
-      parsed &&
-      typeof parsed === "object" &&
-      "columns" in parsed &&
-      "rows" in parsed &&
-      Array.isArray((parsed as { columns: unknown }).columns) &&
-      Array.isArray((parsed as { rows: unknown }).rows)
-    ) {
-      return JSON.stringify(parsed, null, 2);
-    }
-
-    // Array of objects – convert to DataTable format
-    if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === "object") {
-      const allKeys = new Set<string>();
-      for (const item of parsed) {
-        if (item && typeof item === "object") {
-          Object.keys(item as Record<string, unknown>).forEach((k) => allKeys.add(k));
-        }
-      }
-      const columns = Array.from(allKeys);
-      const rows = parsed.map((item) =>
-        columns.map((col) => String((item as Record<string, unknown>)[col] ?? ""))
-      );
-      return JSON.stringify({ columns, rows }, null, 2);
-    }
-  } catch {
-    /* not valid JSON – return as-is wrapped in a single-cell table */
-  }
-
-  return JSON.stringify(
-    { columns: ["Content"], rows: [[raw.trim()]] },
-    null,
-    2,
-  );
 }
 
 function insertNextToSelectedFile(opts: {
@@ -556,6 +510,7 @@ export default function ToolsPanel({
   const [aiError, setAiError] = useState<string>("");
   const [isCopying, setIsCopying] = useState(false);
   const [isImportPathModalOpen, setIsImportPathModalOpen] = useState(false);
+  const [isCodeMappingFullScreen, setIsCodeMappingFullScreen] = useState(false);
   const [importPathData, setImportPathData] = useState<ImportPathEntry[] | null>(null);
   const [isImportPathLoading, setIsImportPathLoading] = useState(false);
   const [importPathError, setImportPathError] = useState<string>("");
@@ -566,38 +521,31 @@ export default function ToolsPanel({
   const [checkedFiles, setCheckedFiles] = useState<Set<string>>(new Set());
   const MAX_CONTEXT_CHARS = 12000;
   const defaultUnitTestPrompt = useMemo(() => {
-    return `Role:
-Act as a Senior Quality Assurance Engineer with 10+ years of experience in software testing. You are detail-oriented, critical of vague requirements, and expert at finding edge cases.
+    return `You are a senior QA Engineer specializing in E2E testing.
 
 Objective:
 Create a comprehensive test suite for the following feature/requirement:
 
-> **Generate test cases for the behavior of \`${fileName}\` (File ID: ${fileId}).**
+For each scenario, provide:
+1. Scenario ID and descriptive name
+2. Preconditions (initial state required before the test)
+3. Steps (user actions in exact order)
+4. Expected Results (what should be visible/happen after each key step)
+5. Required Test Data
+6. Category: Happy Path / Edge Case / Error Case / Boundary
 
-Instructions:
+Ensure full coverage across:
+- Every happy path flow
+- All validation errors
+- Edge cases (empty input, max length, special characters, duplicates)
+- Permission/authorization cases (if applicable)
+- All possible state transitions
 
-1. Analyze the Requirement: briefly identify any logical gaps or ambiguity in the feature description before writing the cases.
-2. Coverage: You must include:
-* Positive Test Cases (Happy Path)
-* Negative Test Cases (Error handling, invalid inputs)
-* Boundary/Edge Cases (Min/max limits, empty states, special characters)
-* Security/Performance (If applicable to the context)
-
-3. Format: Output ONLY a valid JSON object (no markdown fences, no extra text) with this exact structure:
-{
-  "columns": ["TC_ID", "Type", "Scenario Description", "Pre-conditions", "Test Steps", "Test Data", "Expected Result", "Priority"],
-  "rows": [
-    ["TC001", "Positive", "...", "...", "1. Step one\\n2. Step two", "...", "...", "P1-Critical"],
-    ["TC002", "Negative", "...", "...", "1. Step one", "...", "...", "P2-High"]
-  ]
-}
-
-Constraints:
-
-* Ensure steps are atomic and reproducible.
-* Do not assume knowledge that isn't in the requirement; if you must assume, note it.
-* Keep the tone professional and technical.
-* Return ONLY the JSON object. No explanation, no markdown code fences.`;
+User Story:
+"""
+[paste user story here]
+"""
+`;
   }, [fileId, fileName]);
 
   const buildUnitTestPromptWithContext = (content: string) => {
@@ -607,48 +555,37 @@ Constraints:
         ? `${normalized.slice(0, MAX_CONTEXT_CHARS)}\n\n/* ... truncated: file content exceeded ${MAX_CONTEXT_CHARS} characters ... */\n`
         : normalized;
 
-    return `Role: Act as a Senior Quality Assurance Engineer with over 10 years of experience in software testing. You specialize in translating Business Requirements, Functional Requirements, and User Stories into clear, structured, and comprehensive test cases.
+    return `You are a senior QA Engineer specializing in E2E testing.
 
-You understand:
-- Web applications
-- Positive, negative, and edge case scenarios
-- Functional, validation, and permission-based testing
-- Business logic and real-world user behavior
+From the User Story below, extract all possible Test Scenarios.
 
-Objective:
-Create a comprehensive test suite for the following feature/requirement:
+For each scenario, provide:
+1. Scenario ID and descriptive name
+2. Preconditions (initial state required before the test)
+3. Steps (user actions in exact order)
+4. Expected Results (what should be visible/happen after each key step)
+5. Required Test Data
+6. Category: Happy Path / Edge Case / Error Case / Boundary
 
-> **Generate test cases for the behavior of \`${fileName}\` (File ID: ${fileId}).**
+Ensure full coverage across:
+- Every happy path flow
+- All validation errors
+- Edge cases (empty input, max length, special characters, duplicates)
+- Permission/authorization cases (if applicable)
+- All possible state transitions
+
+User Story:
+"""
+[paste user story here]
+"""
+
+> **Generate test scenarios for \`${fileName}\` (File ID: ${fileId}).**
 
 Requirement context (source code):
 \`\`\`
 ${truncated}
 \`\`\`
-
-Instructions:
-
-1. Coverage: You must include:
-* Use App ID in the test case steps.
-* Positive Test Cases (Happy Path)
-* Negative Test Cases (Error handling, invalid inputs)
-* Boundary/Edge Cases (Min/max limits, empty states, special characters)
-* Security/Performance (If applicable to the context)
-
-2. Format: Output ONLY a valid JSON object (no markdown fences, no extra text) with this exact structure:
-{
-  "columns": ["TC_ID", "Type", "Scenario Description", "Pre-conditions", "Test Steps", "Test Data", "Expected Result", "Priority"],
-  "rows": [
-    ["TC001", "Positive", "...", "...", "1. Step one\\n2. Step two", "...", "...", "P1-Critical"],
-    ["TC002", "Negative", "...", "...", "1. Step one", "...", "...", "P2-High"]
-  ]
-}
-
-Constraints:
-
-* Ensure steps are atomic and reproducible.
-* Do not assume knowledge that isn't in the requirement; if you must assume, note it.
-* Keep the tone professional and technical.
-* Return ONLY the JSON object. No explanation, no markdown code fences.`;
+`;
   };
 
   const [unitTestPrompt, setUnitTestPrompt] = useState(defaultUnitTestPrompt);
@@ -741,16 +678,14 @@ Constraints:
         const existingNames = new Set<string>();
         collectFileNames(directories, existingNames);
 
-        const base = `${getStem(fileName)}.test-cases.datatable`;
+        const base = `${getStem(fileName)}.test-cases.md`;
         const name = pickUniqueName(base, existingNames);
-
-        const dataTableContent = extractDataTableJson(content);
 
         const saved = await saveFileMutation.mutateAsync({
           id: null,
           name,
           collectionId,
-          content: dataTableContent,
+          content: content.trim(),
           icon: "flask-conical",
           tags: [{ id: createId(), label: "Test Case", color: "#60a5fa" }],
         });
@@ -957,10 +892,10 @@ Constraints:
               ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
               : "bg-gray-100 text-gray-700 hover:bg-gray-200",
           ].join(" ")}
-          title="Open Import Path"
+          title="Open Code Mapping"
           aria-label="Open import path"
         >
-          <FolderInput className="h-4 w-4" />
+          <Braces className="h-4 w-4" />
         </button>
       </div>
 
@@ -1083,7 +1018,7 @@ Constraints:
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300",
                 isBusy || !aiResult.trim() ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
               ].join(" ")}
-              title={aiResult.trim() ? "Create a new datatable file from the AI result" : "Generate a result first"}
+              title={aiResult.trim() ? "Create a new markdown file from the AI result" : "Generate a result first"}
               aria-label="Create test case file"
             >
               {isCreatingFile ? "Creating..." : "Create test case file"}
@@ -1106,12 +1041,17 @@ Constraints:
 
       <Modal
         isOpen={isImportPathModalOpen}
-        onClose={() => setIsImportPathModalOpen(false)}
+        onClose={() => {
+          setIsImportPathModalOpen(false);
+          setIsCodeMappingFullScreen(false);
+        }}
         size="xl"
+        fullScreen={isCodeMappingFullScreen}
+        onToggleFullScreen={() => setIsCodeMappingFullScreen((v) => !v)}
       >
-        <div className="flex h-[75vh] flex-col">
+        <div className={`flex flex-col ${isCodeMappingFullScreen ? "h-full" : "h-[75vh]"}`}>
           <div className="shrink-0 border-b border-gray-200 pb-3 dark:border-gray-700">
-            <h2 className="text-lg font-semibold">Import Path</h2>
+            <h2 className="text-lg font-semibold">Code Mapping</h2>
             <p className="mt-0.5 text-sm text-gray-500">
               Select a codebase to browse file import relationships.
             </p>

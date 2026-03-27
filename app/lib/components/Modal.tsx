@@ -6,7 +6,7 @@
 
 import { ReactNode, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { Maximize2, Minimize2, X } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 
 type ModalSize = "sm" | "md" | "lg" | "xl";
@@ -16,6 +16,8 @@ interface ModalProps {
   onClose: () => void;
   children: ReactNode;
   size?: ModalSize;
+  fullScreen?: boolean;
+  onToggleFullScreen?: () => void;
 }
 
 const sizeClasses: Record<ModalSize, string> = {
@@ -25,7 +27,7 @@ const sizeClasses: Record<ModalSize, string> = {
   xl: "max-w-6xl",
 };
 
-export default function Modal({ isOpen, onClose, children, size = "sm" }: ModalProps) {
+export default function Modal({ isOpen, onClose, children, size = "sm", fullScreen = false, onToggleFullScreen }: ModalProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const [mounted, setMounted] = useState(false);
@@ -63,8 +65,11 @@ export default function Modal({ isOpen, onClose, children, size = "sm" }: ModalP
 
       {/* Modal content */}
       <div
-        className={`relative rounded-lg shadow-xl border p-6 w-full ${sizeClasses[size]} mx-4 
-          transition-all duration-300 ${
+        className={`relative shadow-xl border p-6 w-full transition-all duration-300 ${
+          fullScreen
+            ? "h-full mx-0 rounded-none"
+            : `${sizeClasses[size]} mx-4 rounded-lg`
+        } ${
           isAnimating 
             ? "opacity-100 scale-100" 
             : "opacity-0 scale-95"
@@ -75,16 +80,31 @@ export default function Modal({ isOpen, onClose, children, size = "sm" }: ModalP
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={onClose}
-          className={`absolute top-4 right-4 p-1 rounded-md transition-colors ${
-            isDark
-              ? "hover:bg-gray-700 text-gray-400 hover:text-gray-200"
-              : "hover:bg-gray-100 text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          <X className="w-5 h-5" />
-        </button>
+        <div className="absolute top-4 right-4 flex items-center gap-1">
+          {onToggleFullScreen && (
+            <button
+              onClick={onToggleFullScreen}
+              className={`p-1 rounded-md transition-colors ${
+                isDark
+                  ? "hover:bg-gray-700 text-gray-400 hover:text-gray-200"
+                  : "hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+              }`}
+              aria-label={fullScreen ? "Exit full screen" : "Full screen"}
+            >
+              {fullScreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className={`p-1 rounded-md transition-colors ${
+              isDark
+                ? "hover:bg-gray-700 text-gray-400 hover:text-gray-200"
+                : "hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
         {children}
       </div>
     </div>,

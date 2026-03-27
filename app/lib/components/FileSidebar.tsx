@@ -4,7 +4,7 @@
  * @description Main file/collection sidebar managing collections, file/folder CRUD operations, and selection state with skeleton loading.
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PanelLeftClose, PanelLeftOpen, PlusIcon } from "lucide-react";
 import TreeView from "./TreeView";
 import type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
@@ -276,9 +276,15 @@ function applyIconOverrides(nodes: TreeNode[], overrides: Record<string, string 
 //   },
 // ];
 
+const SIDEBAR_MIN_WIDTH = 200;
+const SIDEBAR_MAX_WIDTH = 600;
+const SIDEBAR_COLLAPSED_WIDTH = 48;
+
 export default function FileSidebar({
   collapsed = false,
   onToggleCollapsed,
+  width = 256,
+  onWidthChange,
   iconOverrides,
   onSelectFile,
   onClearSelection,
@@ -287,6 +293,8 @@ export default function FileSidebar({
 }: {
   collapsed?: boolean;
   onToggleCollapsed: () => void;
+  width?: number;
+  onWidthChange?: (width: number) => void;
   iconOverrides?: Record<string, string | null>;
   onSelectFile?: (file: TreeNode, nodePath: string) => void;
   onClearSelection?: () => void;
@@ -326,6 +334,41 @@ export default function FileSidebar({
   const [azureCheckedUserStoryIds, setAzureCheckedUserStoryIds] = useState<number[]>([]);
   const [isImportingUserStoriesMd, setIsImportingUserStoriesMd] = useState(false);
   const [azurePatConfigured, setAzurePatConfigured] = useState<boolean | null>(null);
+
+  const isResizingRef = useRef(false);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(width);
+
+  const handleResizeStart = useCallback(
+    (e: React.MouseEvent) => {
+      if (collapsed) return;
+      e.preventDefault();
+      isResizingRef.current = true;
+      startXRef.current = e.clientX;
+      startWidthRef.current = width;
+
+      const handleMouseMove = (moveEvent: MouseEvent) => {
+        if (!isResizingRef.current) return;
+        const delta = moveEvent.clientX - startXRef.current;
+        const newWidth = Math.max(SIDEBAR_MIN_WIDTH, Math.min(SIDEBAR_MAX_WIDTH, startWidthRef.current + delta));
+        onWidthChange?.(newWidth);
+      };
+
+      const handleMouseUp = () => {
+        isResizingRef.current = false;
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      };
+
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    },
+    [collapsed, width, onWidthChange],
+  );
 
   const resolvedCollections = useMemo(() => {
     if (!iconOverrides || Object.keys(iconOverrides).length === 0) {
@@ -1115,11 +1158,11 @@ export default function FileSidebar({
     <>
       <aside
         className={[
-          "flex flex-col h-[calc(100vh-4rem)] transition-[width] duration-200 overflow-hidden",
-          collapsed ? "w-12" : "w-64",
+          "relative flex flex-col h-[calc(100vh-4rem)] overflow-hidden",
           "border-r",
           theme === "light" ? "bg-white border-gray-200" : "bg-gray-900 border-gray-800",
         ].join(" ")}
+        style={{ width: collapsed ? SIDEBAR_COLLAPSED_WIDTH : width, transition: isResizingRef.current ? "none" : "width 200ms" }}
       >
         <div
           className={`flex items-center justify-between border-b ${
@@ -1197,6 +1240,18 @@ export default function FileSidebar({
             )}
           </div>
         </div>
+
+        {!collapsed && (
+          <div
+            onMouseDown={handleResizeStart}
+            className={[
+              "absolute top-0 right-0 w-1 h-full cursor-col-resize z-10 transition-colors",
+              theme === "light"
+                ? "hover:bg-blue-400/60 active:bg-blue-500/80"
+                : "hover:bg-blue-500/60 active:bg-blue-400/80",
+            ].join(" ")}
+          />
+        )}
       </aside>
 
       <FileSidebarModals

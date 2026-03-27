@@ -16,6 +16,8 @@ type DocWorkspaceState = {
   isSidebarCollapsed: boolean;
   setSidebarCollapsed: (collapsed: boolean) => void;
   toggleSidebarCollapsed: () => void;
+  sidebarWidth: number;
+  setSidebarWidth: (width: number) => void;
 
   // Selected file state
   selectedFile: TreeNode | null;
@@ -60,6 +62,8 @@ export const useDocWorkspaceStore = create<DocWorkspaceState>()(
         setSidebarCollapsed: (collapsed) => set({ isSidebarCollapsed: collapsed }),
         toggleSidebarCollapsed: () =>
           set((s) => ({ isSidebarCollapsed: !s.isSidebarCollapsed })),
+        sidebarWidth: 256,
+        setSidebarWidth: (width) => set({ sidebarWidth: Math.max(200, Math.min(600, width)) }),
 
         selectedFile: null,
         selectedFilePath: null,
@@ -158,6 +162,7 @@ export const useDocWorkspaceStore = create<DocWorkspaceState>()(
       // Only persist user-preferences; do not persist current selection/content.
       partialize: (s) => ({
         isSidebarCollapsed: s.isSidebarCollapsed,
+        sidebarWidth: s.sidebarWidth,
         iconOverrides: s.iconOverrides,
       }),
     },
