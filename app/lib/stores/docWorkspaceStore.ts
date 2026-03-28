@@ -24,6 +24,13 @@ type DocWorkspaceState = {
   selectedFilePath: string | null;
   isLoadingFile: boolean;
 
+  // Parent file (set when navigating into a sub file)
+  parentFile: TreeNode | null;
+  parentFilePath: string | null;
+  setParentFile: (file: TreeNode | null, path: string | null) => void;
+  selectSubFile: (node: TreeNode, nodePath: string) => Promise<void>;
+  goBackToParent: () => Promise<void>;
+
   // Drawer UI
   isDrawerOpen: boolean;
   setDrawerOpen: (open: boolean) => void;
@@ -69,6 +76,10 @@ export const useDocWorkspaceStore = create<DocWorkspaceState>()(
         selectedFilePath: null,
         isLoadingFile: false,
 
+        parentFile: null,
+        parentFilePath: null,
+        setParentFile: (file, path) => set({ parentFile: file, parentFilePath: path }),
+
         isDrawerOpen: false,
         setDrawerOpen: (open) => set({ isDrawerOpen: open }),
 
@@ -103,6 +114,8 @@ export const useDocWorkspaceStore = create<DocWorkspaceState>()(
             selectedIconId: "file",
             isLoadingFile: false,
             isDrawerOpen: false,
+            parentFile: null,
+            parentFilePath: null,
           }),
 
         setSelectedFileTags: (tags) =>
@@ -124,6 +137,8 @@ export const useDocWorkspaceStore = create<DocWorkspaceState>()(
             selectedFilePath: nodePath,
             selectedIconId: iconId,
             isLoadingFile: true,
+            parentFile: null,
+            parentFilePath: null,
           });
 
           try {
@@ -153,6 +168,19 @@ export const useDocWorkspaceStore = create<DocWorkspaceState>()(
             if (requestId !== activeSelectionRequestId) return;
             set({ isLoadingFile: false });
           }
+        },
+
+        selectSubFile: async (node, nodePath) => {
+          const { selectedFile, selectedFilePath } = get();
+          set({ parentFile: selectedFile, parentFilePath: selectedFilePath });
+          await get().selectFile(node, nodePath);
+        },
+
+        goBackToParent: async () => {
+          const { parentFile, parentFilePath } = get();
+          if (!parentFile) return;
+          set({ parentFile: null, parentFilePath: null });
+          await get().selectFile(parentFile, parentFilePath ?? "");
         },
       };
     },

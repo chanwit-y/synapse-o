@@ -24,6 +24,10 @@ interface TreeViewProps {
    * sync its internal selection highlight to this value.
    */
   selectedNodePath?: string | null;
+  /** Fallback: when the path doesn't resolve to a node, search by ID instead. */
+  selectedNodeId?: string | null;
+  /** IDs of files that are already shown as sub-files (hidden from the main tree). */
+  subFileContentIds?: Set<string>;
 }
 
 export default function TreeView({
@@ -35,6 +39,8 @@ export default function TreeView({
   azurePatConfigured,
   onRequestDeleteNode,
   selectedNodePath: externalSelectedNodePath,
+  selectedNodeId: externalSelectedNodeId,
+  subFileContentIds,
 }: TreeViewProps) {
   const [selectedNodePath, setSelectedNodePath] = useState<string | null>(externalSelectedNodePath ?? null);
   const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
@@ -48,6 +54,18 @@ export default function TreeView({
     if (rest.length === 0) return current;
     if (current.type !== "folder") return null;
     return findNodeByPath(current.children ?? [], rest);
+  };
+
+  const findNodeById = (nodes: TreeNode[], id: string, prefix: string[] = []): { node: TreeNode; path: string } | null => {
+    for (const node of nodes) {
+      const currentPath = [...prefix, node.name];
+      if (node.id === id) return { node, path: currentPath.join("/") };
+      if (node.type === "folder" && node.children?.length) {
+        const found = findNodeById(node.children, id, currentPath);
+        if (found) return found;
+      }
+    }
+    return null;
   };
 
   useEffect(() => {
@@ -65,7 +83,19 @@ export default function TreeView({
         return;
       }
     }
-  }, [externalSelectedNodePath, data]);
+
+    // Fallback: path didn't match any node — search by ID instead
+    if (externalSelectedNodeId) {
+      for (const group of data) {
+        const match = findNodeById(group.directories, externalSelectedNodeId);
+        if (match) {
+          setSelectedNodePath(match.path);
+          setSelectedNode(match.node);
+          return;
+        }
+      }
+    }
+  }, [externalSelectedNodePath, externalSelectedNodeId, data]);
 
   const handleBackgroundClick = (event: MouseEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
@@ -106,6 +136,7 @@ export default function TreeView({
             onRequestDeleteNode={onRequestDeleteNode}
             isFavorited={favoritedGroups.has(groupIndex)}
             onToggleFavorite={handleToggleFavorite}
+            subFileContentIds={subFileContentIds}
           />
         ))}
       </div>

@@ -5,12 +5,12 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Braces, Check, ChevronDown, Copy, FlaskConical, Search } from "lucide-react";
+import { ArrowRight, Braces, Check, ChevronDown, Copy, FlaskConical, Search } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import Modal from "./Modal";
 import { useLoading } from "./LoadingProvider";
 import { useSnackbar } from "./Snackbar";
-import { findCollectionById, testAI, updateCollectionDirectories } from "@/app/ui/doc/action";
+import { createSubFile, findCollectionById, testAI, updateCollectionDirectories } from "@/app/ui/doc/action";
 import { getAllCodebases, getImportPathData } from "@/app/ui/codebase/action";
 import type { CodebaseRow } from "@/app/lib/db/repository/codebase";
 import { useFileContentQuery, useSaveFileMutation } from "@/app/lib/services/fileService.client";
@@ -655,21 +655,22 @@ ${truncated}
     }
   };
 
-  const handleCreateTestCaseFile = async () => {
+  const doCreateTestCaseFile = async (): Promise<string | null> => {
     const content = aiResult ?? "";
-    if (!content.trim()) return;
+    if (!content.trim()) return null;
     if (!collectionId?.trim()) {
       showSnackbar({
         variant: "error",
         title: "Create test case file",
         message: "Missing collectionId for the selected file.",
       });
-      return;
+      return null;
     }
 
     try {
       let createdNode: TreeNode | null = null;
       let createdNodePath: string | null = null;
+      let createdFileId: string | null = null;
 
       await withLoading(async () => {
         const collection = await findCollectionById(collectionId);
@@ -697,6 +698,8 @@ ${truncated}
             ? crypto.randomUUID()
             : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
 
+        createdFileId = newNodeId;
+
         const newNode: TreeNode = {
           id: newNodeId,
           collectionId,
@@ -710,7 +713,6 @@ ${truncated}
           updatedAt: now,
         };
 
-        // Insert next to the selected file (same folder)
         const updatedDirectories: TreeNode[] = JSON.parse(JSON.stringify(directories));
         insertNextToSelectedFile({
           directories: updatedDirectories,
@@ -733,7 +735,6 @@ ${truncated}
           })();
       }, createTestCaseFileLoaderId);
 
-      // Close the modal immediately on success.
       setIsUnitTestModalOpen(false);
 
       if (createdNode && createdNodePath) {
@@ -745,6 +746,7 @@ ${truncated}
         title: "Create test case file",
         message: "Created a new file from the AI result.",
       });
+      return createdFileId;
     } catch (error) {
       console.error("Failed to create test case file:", error);
       const message =
@@ -754,7 +756,30 @@ ${truncated}
         title: "Create test case file",
         message,
       });
+      return null;
     }
+  };
+
+  const handleCreateTestCaseFile = async () => {
+    await doCreateTestCaseFile();
+  };
+
+  const handleNextStep = async () => {
+    const contentFileId = await doCreateTestCaseFile();
+    if (!contentFileId) return;
+
+    try {
+      await createSubFile(fileId, contentFileId);
+    } catch (error) {
+      console.error("Failed to create sub-file relation:", error);
+      showSnackbar({
+        variant: "error",
+        title: "Sub-file relation",
+        message: "File was created but failed to link it as a sub-file.",
+      });
+    }
+
+    await handleOpenImportPath();
   };
 
   const copyToClipboard = async (text: string) => {
@@ -1022,6 +1047,23 @@ ${truncated}
               aria-label="Create test case file"
             >
               {isCreatingFile ? "Creating..." : "Create test case file"}
+            </button>
+            <button
+              type="button"
+              onClick={handleNextStep}
+              disabled={isBusy || !aiResult.trim()}
+              className={[
+                "inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                theme === "dark"
+                  ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                  : "bg-emerald-600 text-white hover:bg-emerald-700",
+                isBusy || !aiResult.trim() ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
+              ].join(" ")}
+              title={aiResult.trim() ? "Create test case file and open Code Mapping" : "Generate a result first"}
+              aria-label="Create test case file and proceed to Code Mapping"
+            >
+              {isCreatingFile ? "Creating..." : "Next"}
+              <ArrowRight className="h-4 w-4" />
             </button>
             <button
               type="button"
