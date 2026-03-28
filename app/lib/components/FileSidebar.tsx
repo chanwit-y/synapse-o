@@ -12,7 +12,7 @@ import type { FileType } from "./TreeViewGroupItem";
 import FileSidebarModals from "./FileSidebarModals";
 import { useSnackbar } from "./Snackbar";
 import { useTheme } from "./ThemeProvider";
-import { createCollection, findAllCollections, findFileIconsByIds, updateCollectionDirectories } from "@/app/ui/doc/action";
+import { createCollection, findAllCollections, findFileIconsByIds, updateCollectionDirectories, getAllSubFileContentIds } from "@/app/ui/doc/action";
 import { hasAzurePatConfigured } from "@/app/ui/settings/azure-api-key/action";
 import { fileService } from "@/app/lib/services/fileService.client";
 
@@ -290,6 +290,7 @@ export default function FileSidebar({
   onClearSelection,
   reloadKey,
   selectedNodePath,
+  selectedNodeId,
 }: {
   collapsed?: boolean;
   onToggleCollapsed: () => void;
@@ -300,10 +301,12 @@ export default function FileSidebar({
   onClearSelection?: () => void;
   reloadKey?: unknown;
   selectedNodePath?: string | null;
+  selectedNodeId?: string | null;
 }) {
   const { theme } = useTheme();
   const { showSnackbar } = useSnackbar();
   const [collections, setCollections] = useState<TreeViewGroup[]>([]);
+  const [subFileContentIds, setSubFileContentIds] = useState<Set<string>>(new Set());
   const [isLoadingCollections, setIsLoadingCollections] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [collectionName, setCollectionName] = useState("");
@@ -381,7 +384,12 @@ export default function FileSidebar({
   }, [collections, iconOverrides]);
 
   const reloadCollections = useCallback(async () => {
-    const collections = await findAllCollections();
+    const [collections, sfContentIds] = await Promise.all([
+      findAllCollections(),
+      getAllSubFileContentIds(),
+    ]);
+
+    setSubFileContentIds(new Set(sfContentIds));
 
     const hydratedCollections = collections.map((collection) => {
       const directories = assignCollectionId(
@@ -1236,6 +1244,8 @@ export default function FileSidebar({
                 azurePatConfigured={azurePatConfigured}
                 onRequestDeleteNode={handleRequestDeleteNode}
                 selectedNodePath={selectedNodePath}
+                selectedNodeId={selectedNodeId}
+                subFileContentIds={subFileContentIds}
               />
             )}
           </div>

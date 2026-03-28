@@ -6,6 +6,7 @@ import "server-only";
 
 import { CollectionRepository } from "@/app/lib/db/repository/collection";
 import { FileRepository } from "@/app/lib/db/repository/file";
+import { SubFileRepository } from "@/app/lib/db/repository/sub-file";
 import { deletePublicUploadAssetsReferencedInContent } from "@/app/lib/server/uploadCleanup.server";
 import type { SaveFileBody } from "@/app/lib/services/@types/fileService";
 export type { SaveFileBody } from "@/app/lib/services/@types/fileService";
@@ -107,6 +108,11 @@ export async function deleteFileRecord(id: string): Promise<{ ok: boolean }> {
   }
   const content = typeof row.content === "string" ? row.content : "";
   await deletePublicUploadAssetsReferencedInContent(content);
+
+  const subFileRepo = new SubFileRepository();
+  await subFileRepo.deleteByFileId(id);
+  await subFileRepo.deleteByContentFileId(id);
+
   await fileRepo.delete(id);
   return { ok: true };
 }

@@ -30,6 +30,7 @@ export interface TreeViewGroupItemProps {
   onRequestDeleteNode?: (node: TreeNode, nodePath: string, groupIndex: number) => void;
   isFavorited: boolean;
   onToggleFavorite: (groupIndex: number) => void;
+  subFileContentIds?: Set<string>;
 }
 
 export default function TreeViewGroupItem({
@@ -47,6 +48,7 @@ export default function TreeViewGroupItem({
   onRequestDeleteNode,
   isFavorited,
   onToggleFavorite,
+  subFileContentIds,
 }: TreeViewGroupItemProps) {
   const { theme } = useTheme();
   const router = useRouter();
@@ -216,6 +218,7 @@ export default function TreeViewGroupItem({
               setSelectedNode={setSelectedNode}
               groupIndex={groupIndex}
               onRequestDeleteNode={onRequestDeleteNode}
+              subFileContentIds={subFileContentIds}
             />
           ))}
         </div>

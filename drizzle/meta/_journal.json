@@ -64,6 +64,13 @@
       "when": 1774521398872,
       "tag": "0007_safe_tempest",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1774702119358,
+      "tag": "0008_closed_anita_blake",
+      "breakpoints": true
     }
   ]
 }

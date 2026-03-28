@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeftRight, Languages, Loader2, PanelRightOpen } from "lucide-react";
+import { ArrowLeft, ArrowLeftRight, Languages, Loader2, PanelRightOpen } from "lucide-react";
 import Image from "next/image";
 import MarkdownEditor from "../../lib/components/MarkdownEditor";
 import DataTable from "../../lib/components/DataTable";
@@ -16,6 +16,8 @@ import { iconOptions } from "../../lib/components/iconOptions";
 import Drawer from "../../lib/components/Drawer";
 import TagEditor from "../../lib/components/TagEditor";
 import ToolsPanel from "../../lib/components/ToolsPanel";
+import SubFileList from "../../lib/components/SubFileList";
+import { getParentFile, type SubFileEntry } from "@/app/ui/doc/action";
 import { useTheme } from "../../lib/components/ThemeProvider";
 import { useSnackbar } from "../../lib/components/Snackbar";
 import emptyBox from "../../asset/empty-box.svg";
@@ -39,6 +41,10 @@ export default function Home() {
   const bumpSidebarReloadKey = useDocWorkspaceStore((s) => s.bumpSidebarReloadKey);
   const clearSelection = useDocWorkspaceStore((s) => s.clearSelection);
   const selectFile = useDocWorkspaceStore((s) => s.selectFile);
+  const selectSubFile = useDocWorkspaceStore((s) => s.selectSubFile);
+  const parentFile = useDocWorkspaceStore((s) => s.parentFile);
+  const setParentFile = useDocWorkspaceStore((s) => s.setParentFile);
+  const goBackToParent = useDocWorkspaceStore((s) => s.goBackToParent);
   const setFileIcon = useDocWorkspaceStore((s) => s.setFileIcon);
   const setSelectedFileTags = useDocWorkspaceStore((s) => s.setSelectedFileTags);
 
@@ -52,6 +58,25 @@ export default function Home() {
   useEffect(() => {
     setActiveLang("en");
   }, [selectedFile?.id]);
+
+  useEffect(() => {
+    if (!selectedFile?.id || parentFile) return;
+    let cancelled = false;
+    getParentFile(selectedFile.id).then((info) => {
+      if (cancelled || !info) return;
+      const parentNode: TreeNode = {
+        id: info.parentFileId,
+        collectionId: info.parentCollectionId,
+        name: info.parentFileName,
+        type: "file",
+        icon: info.parentIcon,
+        extension: info.parentExtension,
+        tags: info.parentTags,
+      };
+      setParentFile(parentNode, info.parentFileName);
+    });
+    return () => { cancelled = true; };
+  }, [selectedFile?.id, parentFile, setParentFile]);
 
   const handleTranslate = async () => {
     if (!selectedFile) return;
@@ -94,6 +119,19 @@ export default function Home() {
     setFileIcon(selectedFile.id, iconId);
   };
 
+  const handleSelectSubFile = (entry: SubFileEntry) => {
+    const node: TreeNode = {
+      id: entry.contentFileId,
+      collectionId: entry.collectionId ?? "",
+      name: entry.fileName ?? "Untitled",
+      type: "file",
+      icon: entry.icon,
+      extension: entry.extension,
+      tags: entry.tags,
+    };
+    void selectSubFile(node, entry.fileName ?? "");
+  };
+
   return (
     // <LayoutShell>
     <>
@@ -107,12 +145,29 @@ export default function Home() {
         onClearSelection={clearSelection}
         reloadKey={sidebarReloadKey}
         selectedNodePath={selectedFilePath}
+        selectedNodeId={selectedFile?.id ?? null}
       />
       <main className="flex-1 w-dvw overflow-auto animate-fade-in">
         {selectedFile ? (
           <>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-1 pt-6 pl-6 text-2xl font-bold text-gray-300">
+                {parentFile && (
+                  <button
+                    type="button"
+                    onClick={() => void goBackToParent()}
+                    className={[
+                      "flex h-8 w-8 items-center justify-center rounded-md transition-colors cursor-pointer mr-1",
+                      theme === "dark"
+                        ? "text-gray-300 hover:bg-gray-700"
+                        : "text-gray-600 hover:bg-gray-100",
+                    ].join(" ")}
+                    aria-label={`Back to ${parentFile.name}`}
+                    title={`Back to ${parentFile.name}`}
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </button>
+                )}
                 <IconPopover
                   value={selectedIconId}
                   options={iconOptions}
@@ -198,6 +253,14 @@ export default function Home() {
                     bumpSidebarReloadKey();
                     void selectFile(node, nodePath);
                   }}
+                />
+              </div>
+
+              <div className="mt-6">
+                <SubFileList
+                  fileId={selectedFile.id}
+                  reloadKey={sidebarReloadKey}
+                  onSelectSubFile={handleSelectSubFile}
                 />
               </div>
             </Drawer>
