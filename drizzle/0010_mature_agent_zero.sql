@@ -1,0 +1,1 @@
+ALTER TABLE `codebase` ADD `base_path` text;
