@@ -1,0 +1,1 @@
+ALTER TABLE `sub_file` ADD `type` text;

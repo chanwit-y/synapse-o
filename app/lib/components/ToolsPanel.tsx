@@ -5,7 +5,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Braces, Check, ChevronDown, Copy, FlaskConical, Search } from "lucide-react";
+import { ArrowRight, Braces, Check, ChevronDown, Clapperboard, Code, Copy, FlaskConical, Search } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import Modal from "./Modal";
 import { useLoading } from "./LoadingProvider";
@@ -679,7 +679,7 @@ ${truncated}
         const existingNames = new Set<string>();
         collectFileNames(directories, existingNames);
 
-        const base = `${getStem(fileName)}.test-cases.md`;
+        const base = `${getStem(fileName)}.scenario.md`;
         const name = pickUniqueName(base, existingNames);
 
         const saved = await saveFileMutation.mutateAsync({
@@ -891,37 +891,79 @@ ${truncated}
   return (
     <div className="space-y-2">
       <div className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-        Tools
+        E2E Tools
       </div>
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={handleCreateUnitTest}
-          className={[
-            "flex items-center justify-center rounded-md p-2 text-sm font-medium transition-colors",
-            theme === "dark"
-              ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200",
-          ].join(" ")}
-          title="Create Unit Test"
-          aria-label="Create unit test"
-        >
-          <FlaskConical className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          onClick={handleOpenImportPath}
-          className={[
-            "flex items-center justify-center rounded-md p-2 text-sm font-medium transition-colors",
-            theme === "dark"
-              ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200",
-          ].join(" ")}
-          title="Open Code Mapping"
-          aria-label="Open import path"
-        >
-          <Braces className="h-4 w-4" />
-        </button>
+        <div className="group relative">
+          <button
+            type="button"
+            onClick={handleCreateUnitTest}
+            className={[
+              "flex items-center justify-center rounded-md p-2 text-sm font-medium transition-colors",
+              theme === "dark"
+                ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+            ].join(" ")}
+            aria-label="Scenario"
+          >
+            <Clapperboard className="h-4 w-4" />
+          </button>
+          <span className="pointer-events-none absolute left-1/2 top-full z-50 mt-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+            Scenario
+          </span>
+        </div>
+        <div className="group relative">
+          <button
+            type="button"
+            onClick={handleOpenImportPath}
+            className={[
+              "flex items-center justify-center rounded-md p-2 text-sm font-medium transition-colors",
+              theme === "dark"
+                ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+            ].join(" ")}
+            aria-label="Code base indexing"
+          >
+            <Braces className="h-4 w-4" />
+          </button>
+          <span className="pointer-events-none absolute left-1/2 top-full z-50 mt-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+            Code base indexing
+          </span>
+        </div>
+        <div className="group relative">
+          <button
+            type="button"
+            className={[
+              "flex items-center justify-center rounded-md p-2 text-sm font-medium transition-colors",
+              theme === "dark"
+                ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+            ].join(" ")}
+            aria-label="Test case"
+          >
+            <FlaskConical className="h-4 w-4" />
+          </button>
+          <span className="pointer-events-none absolute left-1/2 top-full z-50 mt-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+            Test case
+          </span>
+        </div>
+        <div className="group relative">
+          <button
+            type="button"
+            className={[
+              "flex items-center justify-center rounded-md p-2 text-sm font-medium transition-colors",
+              theme === "dark"
+                ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+            ].join(" ")}
+            aria-label="Create e2e"
+          >
+            <Code className="h-4 w-4" />
+          </button>
+          <span className="pointer-events-none absolute left-1/2 top-full z-50 mt-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+            Create e2e
+          </span>
+        </div>
       </div>
 
       <Modal
