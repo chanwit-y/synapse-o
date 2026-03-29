@@ -8,6 +8,7 @@ import Modal from "./Modal";
 import type { TreeNode } from "./@types/treeViewTypes";
 import { ChevronDown, ChevronRight, Crown, Trophy, BookOpen, ClipboardCheck, Loader2 } from "lucide-react";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import CustomSelect from "./CustomSelect";
 
 type SelectedNodeForAdd =
   | { node: TreeNode | null; path: string | null; groupIndex: number }
@@ -698,30 +699,15 @@ export default function FileSidebarModals({
               Project
             </label>
 
-            {isLoadingAzureProjects ? (
-              <p className={theme === "light" ? "text-sm text-gray-600" : "text-sm text-gray-400"}>
-                Loading projects…
-              </p>
-            ) : (
-              <select
-                id="azure-project"
-                value={selectedAzureProject}
-                onChange={(e) => onChangeSelectedAzureProject(e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${theme === "light"
-                    ? "border-gray-300 bg-white text-gray-900"
-                    : "border-gray-600 bg-gray-700 text-gray-100"
-                  }`}
-              >
-                <option value="" disabled>
-                  Select a project…
-                </option>
-                {azureProjects.map((p) => (
-                  <option key={p.id} value={p.name}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            )}
+            <CustomSelect
+              value={selectedAzureProject}
+              onChange={onChangeSelectedAzureProject}
+              options={azureProjects.map((p) => ({ value: p.name, label: p.name }))}
+              placeholder={isLoadingAzureProjects ? "Loading projects…" : "Select a project…"}
+              disabled={isLoadingAzureProjects}
+              theme={theme}
+              ariaLabel="Select Azure project"
+            />
           </div>
 
           {selectedAzureProject ? (
@@ -733,33 +719,15 @@ export default function FileSidebarModals({
               >
                 Team
               </label>
-              {isLoadingAzureTeams ? (
-                <p className={theme === "light" ? "text-sm text-gray-600" : "text-sm text-gray-400"}>
-                  Loading teams…
-                </p>
-              ) : (
-                <select
-                  id="azure-team"
-                  value={selectedAzureTeam}
-                  onChange={(e) => onChangeSelectedAzureTeam(e.target.value)}
-                  disabled={azureTeams.length === 0}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${theme === "light"
-                      ? "border-gray-300 bg-white text-gray-900 disabled:bg-gray-100"
-                      : "border-gray-600 bg-gray-700 text-gray-100 disabled:bg-gray-800"
-                    }`}
-                >
-                  {azureTeams.length === 0 ? (
-                    <option value="">
-                      No teams found
-                    </option>
-                  ) : null}
-                  {azureTeams.map((t) => (
-                    <option key={t.id} value={t.name}>
-                      {t.name}
-                    </option>
-                  ))}
-                </select>
-              )}
+              <CustomSelect
+                value={selectedAzureTeam}
+                onChange={onChangeSelectedAzureTeam}
+                options={azureTeams.map((t) => ({ value: t.name, label: t.name }))}
+                placeholder={isLoadingAzureTeams ? "Loading teams…" : azureTeams.length === 0 ? "No teams found" : "Select a team…"}
+                disabled={isLoadingAzureTeams || azureTeams.length === 0}
+                theme={theme}
+                ariaLabel="Select Azure team"
+              />
             </div>
           ) : null}
 

@@ -8,6 +8,7 @@ import { getAllCodebases, getImportPathData } from "@/app/ui/codebase/action";
 import type { CodebaseRow } from "@/app/lib/db/repository/codebase";
 import ImportPathTreeView, { type ImportPathEntry } from "./ImportPathTreeView";
 import CustomSelect from "./CustomSelect";
+import { invoke } from "@tauri-apps/api/core";
 
 export interface CodeMappingModalProps {
   isOpen: boolean;
@@ -98,7 +99,7 @@ export default function CodeMappingModal({
     setCheckedFiles(new Set(paths));
   }, []);
 
-  const handleInitAutomateTest = () => {
+  const handleInitAutomateTest = async () => {
     const targetPath = initAutomateTestPath.trim();
     const selected = codebases.find((c) => c.id === selectedCodebaseId);
     const srcPrefix = selected?.importSrcPath?.replace(/\/+$/, "") ?? "";
@@ -106,7 +107,18 @@ export default function CodeMappingModal({
       const cleaned = p.replace(/^src\//, "");
       return srcPrefix ? `${srcPrefix}/${cleaned}` : cleaned;
     });
+
+
     console.log("[Extract Code Base] selected files:", selectedFilesList);
+
+    for(const path of selectedFilesList) {
+      const result = await invoke('read_file', { path });
+      console.log(result);
+    }
+
+    // const result = await invoke('read_files', { paths: selectedFilesList });
+    // console.log(result);
+
 
     showSnackbar({
       variant: targetPath ? "info" : "warning",

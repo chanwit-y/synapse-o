@@ -99,7 +99,7 @@ export default function CodebasePage() {
   };
 
   const handleRun = useCallback(async (codebase: CodebaseRow) => {
-    const result = await invoke('import', {src_path: codebase.importFilePath});
+    const result = await invoke('extract_import', {src_path: codebase.importFilePath});
     console.log(result);
 
   }, [])
