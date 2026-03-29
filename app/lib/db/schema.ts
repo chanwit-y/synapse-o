@@ -29,6 +29,7 @@ export const subFileTable = sqliteTable("sub_file", {
 	id: text("id").primaryKey(),
 	fileId: text("file_id").references(() => fileTable.id),
 	contentFileId: text("content_file_id").references(() => fileTable.id),
+	type: text("type"),
 	createdAt: integer("created_at").default(sql`CURRENT_TIMESTAMP`),
 	updatedAt: integer("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });

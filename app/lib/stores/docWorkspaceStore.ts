@@ -137,6 +137,7 @@ export const useDocWorkspaceStore = create<DocWorkspaceState>()(
             selectedFilePath: nodePath,
             selectedIconId: iconId,
             isLoadingFile: true,
+            isDrawerOpen: false,
             parentFile: null,
             parentFilePath: null,
           });
