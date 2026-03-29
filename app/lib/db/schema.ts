@@ -48,6 +48,7 @@ export const codebases = sqliteTable("codebase", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	description: text("description"),
+	basePath: text("base_path"),
 	importSrcPath: text("import_src_path").notNull(),
 	importFilePath: text("import_path").notNull(),
 	createdAt: integer("created_at").default(sql`CURRENT_TIMESTAMP`),

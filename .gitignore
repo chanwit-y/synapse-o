@@ -50,3 +50,4 @@ code_bases_mybp.json
 /store/
 synapse.db-shm
 synapse.db-wal
+tmp
