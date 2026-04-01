@@ -9,6 +9,7 @@ import { ArrowLeft, ArrowLeftRight, Languages, Loader2, PanelRightOpen } from "l
 import Image from "next/image";
 import MarkdownEditor from "../../lib/components/MarkdownEditor";
 import DataTable from "../../lib/components/DataTable";
+import FlowCanvas from "../../lib/components/FlowCanvas";
 import FileSidebar from "../../lib/components/FileSidebar";
 import type { TreeNode } from "../../lib/components/@types/treeViewTypes";
 import IconPopover from "../../lib/components/IconPopover";
@@ -268,7 +269,9 @@ export default function Home() {
               key={`${selectedFile.id}-${activeLang}`}
               className="flex justify-center font-sans px-4 py-2 markdown-fade-in"
             >
-              {selectedFile.extension === "datatable" || selectedFile.name.endsWith(".datatable") ? (
+              {selectedFile.extension === "flow" || selectedFile.name.endsWith(".flow") ? (
+                <FlowCanvas selectedFile={selectedFile} />
+              ) : selectedFile.extension === "datatable" || selectedFile.name.endsWith(".datatable") ? (
                 <DataTable selectedFile={selectedFile} />
               ) : (
                 <MarkdownEditor selectedFile={editorFile} disableContentQuery={activeLang === "th"} />

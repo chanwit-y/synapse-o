@@ -1,18 +1,18 @@
 "use client";
 /**
  * @file TreeViewGroupItem.tsx
- * @description A collection group component with expand/collapse, add file/folder buttons, and favorite toggle functionality.
+ * @description A collection group component with expand/collapse and add file/folder buttons.
  */
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, ChevronDown, Folder, Star, FileText, Table, CloudDownload } from "lucide-react";
+import { ChevronRight, ChevronDown, Folder, FileText, Workflow, Table, CloudDownload } from "lucide-react";
 import type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
 import TreeNodeItem from "./TreeNodeItem";
 import { useTheme } from "./ThemeProvider";
 import Modal from "./Modal";
 import { useRouter } from "next/navigation";
 
-export type FileType = "md" | "datatable";
+export type FileType = "md" | "datatable" | "flow";
 
 export interface TreeViewGroupItemProps {
   group: TreeViewGroup;
@@ -28,8 +28,7 @@ export interface TreeViewGroupItemProps {
   /** When `false`, Azure import is blocked until PAT is saved in Settings. `null` = check not finished yet. */
   azurePatConfigured?: boolean | null;
   onRequestDeleteNode?: (node: TreeNode, nodePath: string, groupIndex: number) => void;
-  isFavorited: boolean;
-  onToggleFavorite: (groupIndex: number) => void;
+  onAddFlow?: (flowName: string, selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
   subFileContentIds?: Set<string>;
 }
 
@@ -46,14 +45,15 @@ export default function TreeViewGroupItem({
   onImportAzureMarkdown,
   azurePatConfigured,
   onRequestDeleteNode,
-  isFavorited,
-  onToggleFavorite,
+  onAddFlow,
   subFileContentIds,
 }: TreeViewGroupItemProps) {
   const { theme } = useTheme();
   const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(true);
   const [isPatRequiredModalOpen, setIsPatRequiredModalOpen] = useState(false);
+  const [isFlowModalOpen, setIsFlowModalOpen] = useState(false);
+  const [flowName, setFlowName] = useState("");
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [contentHeight, setContentHeight] = useState<number>(0);
   const MAX_EXPANDED_HEIGHT = 360;
@@ -117,6 +117,73 @@ export default function TreeViewGroupItem({
         </div>
       </Modal>
 
+      <Modal isOpen={isFlowModalOpen} onClose={() => { setIsFlowModalOpen(false); setFlowName(""); }} size="sm">
+        <div className="space-y-4">
+          <h3
+            className={`text-lg font-semibold pr-8 ${
+              theme === "light" ? "text-gray-900" : "text-gray-100"
+            }`}
+          >
+            New Flow
+          </h3>
+          <div>
+            <label
+              htmlFor="flow-name-input"
+              className={`block text-sm font-medium mb-1.5 ${
+                theme === "light" ? "text-gray-700" : "text-gray-300"
+              }`}
+            >
+              Flow name
+            </label>
+            <input
+              id="flow-name-input"
+              type="text"
+              value={flowName}
+              onChange={(e) => setFlowName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && flowName.trim()) {
+                  onAddFlow?.(flowName.trim(), selectedNode, selectedNodePath, groupIndex);
+                  setIsFlowModalOpen(false);
+                  setFlowName("");
+                }
+              }}
+              placeholder="Enter flow name"
+              autoFocus
+              className={`w-full px-3 py-2 text-sm rounded-md border outline-none transition-colors ${
+                theme === "light"
+                  ? "border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  : "border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              }`}
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => { setIsFlowModalOpen(false); setFlowName(""); }}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                theme === "light"
+                  ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
+                  : "text-gray-300 bg-gray-700 hover:bg-gray-600"
+              }`}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={!flowName.trim()}
+              onClick={() => {
+                onAddFlow?.(flowName.trim(), selectedNode, selectedNodePath, groupIndex);
+                setIsFlowModalOpen(false);
+                setFlowName("");
+              }}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md transition-colors"
+            >
+              Create
+            </button>
+          </div>
+        </div>
+      </Modal>
+
       <div
         className={`flex items-center justify-between px-2 py-2 text-xs font-semibold text-gray-500 ${theme === 'light' ? "text-gray-500" : "text-gray-400"} uppercase tracking-wide hover:bg-gray-100 ${theme === 'light' ? "hover:bg-gray-100" : "hover:bg-gray-800"} rounded cursor-pointer transition-colors`}
         onClick={() => setIsExpanded(!isExpanded)}
@@ -141,6 +208,16 @@ export default function TreeViewGroupItem({
               title="Add Markdown File"
             >
               <FileText className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+            </button>
+            <button
+              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsFlowModalOpen(true);
+              }}
+              title="Add Flow"
+            >
+              <Workflow className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
             </button>
             <button
               className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
@@ -176,21 +253,6 @@ export default function TreeViewGroupItem({
             title="Add Folder"
           >
             <Folder className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-          </button>
-          <button
-            className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleFavorite(groupIndex);
-            }}
-            title="Favorite"
-          >
-            <Star
-              className={`w-3.5 h-3.5 transition-colors ${isFavorited
-                  ? "text-yellow-500 dark:text-yellow-400 fill-yellow-500 dark:fill-yellow-400"
-                  : "text-gray-500 dark:text-gray-400"
-                }`}
-            />
           </button>
         </div>
       </div>

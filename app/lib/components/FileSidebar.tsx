@@ -540,6 +540,78 @@ export default function FileSidebar({
     setIsAddItemModalOpen(true);
   };
 
+  const handleAddFlow = async (flowName: string, selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => {
+    const name = flowName.trim();
+    if (!name) return;
+
+    const resolvedName = name.includes(".") ? name : `${name}.flow`;
+
+    const newItem: TreeNode = {
+      id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : mockUuid(),
+      name: resolvedName,
+      tags: [],
+      type: "file",
+      collectionId: "",
+      extension: "flow",
+      content: null,
+      createdAt: 0,
+      updatedAt: 0,
+    };
+
+    const existingGroup = collections[groupIndex];
+    if (!existingGroup) return;
+
+    const updatedCollections: TreeViewGroup[] = JSON.parse(JSON.stringify(collections));
+    const group = updatedCollections[groupIndex];
+    newItem.collectionId = group.id;
+
+    const findNodeByPath = (nodes: TreeNode[], path: string[]): TreeNode | null => {
+      if (path.length === 0) return null;
+      const [head, ...rest] = path;
+      const current = nodes.find((n) => n.name === head) ?? null;
+      if (!current) return null;
+      if (rest.length === 0) return current;
+      if (current.type !== "folder") return null;
+      return findNodeByPath(current.children ?? [], rest);
+    };
+
+    if (!selectedNode || !selectedNodePath) {
+      group.directories.push(newItem);
+    } else if (selectedNode.type === "folder") {
+      const folder = findNodeByPath(group.directories, selectedNodePath.split("/"));
+      if (folder && folder.type === "folder") {
+        folder.children = folder.children ?? [];
+        folder.children.push(newItem);
+      } else {
+        group.directories.push(newItem);
+      }
+    } else {
+      const pathSegments = selectedNodePath.split("/");
+      if (pathSegments.length > 1) {
+        const parent = findNodeByPath(group.directories, pathSegments.slice(0, -1));
+        if (parent && parent.type === "folder") {
+          parent.children = parent.children ?? [];
+          parent.children.push(newItem);
+        } else {
+          group.directories.push(newItem);
+        }
+      } else {
+        group.directories.push(newItem);
+      }
+    }
+
+    setCollections(updatedCollections);
+
+    try {
+      await updateCollectionDirectories(group.id, group.directories);
+      showSnackbar({ variant: "success", message: `Flow "${name}" added.` });
+    } catch (err) {
+      console.error("Failed to add flow:", err);
+      setCollections(collections);
+      showSnackbar({ variant: "error", message: "Failed to add flow. Please try again." });
+    }
+  };
+
   const toggleAzureUserStoryCheck = useCallback((id: number) => {
     setAzureCheckedUserStoryIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
@@ -1240,6 +1312,7 @@ export default function FileSidebar({
                 onNodeClick={handleNodeClick}
                 onAddFile={handleAddFile}
                 onAddFolder={handleAddFolder}
+                onAddFlow={handleAddFlow}
                 onImportAzureMarkdown={handleImportAzureMarkdown}
                 azurePatConfigured={azurePatConfigured}
                 onRequestDeleteNode={handleRequestDeleteNode}

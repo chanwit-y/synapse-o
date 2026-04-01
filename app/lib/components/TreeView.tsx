@@ -1,7 +1,7 @@
 "use client";
 /**
  * @file TreeView.tsx
- * @description Main tree view component that renders collection groups and manages node selection and favoriting state.
+ * @description Main tree view component that renders collection groups and manages node selection.
  */
 
 import { useEffect, useState } from "react";
@@ -19,6 +19,7 @@ interface TreeViewProps {
   /** `false` = no PAT saved; `null` = not loaded yet (import allowed to avoid blocking). */
   azurePatConfigured?: boolean | null;
   onRequestDeleteNode?: (node: TreeNode, nodePath: string, groupIndex: number) => void;
+  onAddFlow?: (flowName: string, selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
   /**
    * Optional external selection control (by path). When provided, TreeView will
    * sync its internal selection highlight to this value.
@@ -38,14 +39,13 @@ export default function TreeView({
   onImportAzureMarkdown,
   azurePatConfigured,
   onRequestDeleteNode,
+  onAddFlow,
   selectedNodePath: externalSelectedNodePath,
   selectedNodeId: externalSelectedNodeId,
   subFileContentIds,
 }: TreeViewProps) {
   const [selectedNodePath, setSelectedNodePath] = useState<string | null>(externalSelectedNodePath ?? null);
   const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
-  const [favoritedGroups, setFavoritedGroups] = useState<Set<number>>(new Set());
-
   const findNodeByPath = (nodes: TreeNode[], segments: string[]): TreeNode | null => {
     if (segments.length === 0) return null;
     const [head, ...rest] = segments;
@@ -104,18 +104,6 @@ export default function TreeView({
     setSelectedNodePath(null);
   };
 
-  const handleToggleFavorite = (groupIndex: number) => {
-    setFavoritedGroups((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(groupIndex)) {
-        newSet.delete(groupIndex);
-      } else {
-        newSet.add(groupIndex);
-      }
-      return newSet;
-    });
-  };
-
   return (
     <div className="h-full overflow-y-auto" onClick={handleBackgroundClick}>
       <div className="py-2">
@@ -134,8 +122,7 @@ export default function TreeView({
             onImportAzureMarkdown={onImportAzureMarkdown}
             azurePatConfigured={azurePatConfigured}
             onRequestDeleteNode={onRequestDeleteNode}
-            isFavorited={favoritedGroups.has(groupIndex)}
-            onToggleFavorite={handleToggleFavorite}
+            onAddFlow={onAddFlow}
             subFileContentIds={subFileContentIds}
           />
         ))}
