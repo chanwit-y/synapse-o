@@ -1,108 +1,10 @@
-import {
-  Handle,
-  Position,
-  useReactFlow,
-  type NodeProps,
-} from "@xyflow/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Handle, Position, useReactFlow, type NodeProps } from "@xyflow/react";
+import { useCallback, useRef, useState } from "react";
 import { useTheme } from "../ThemeProvider";
-
-const NODE_TYPES = ["input", "condition", "process", "output"] as const;
-type NodeType = (typeof NODE_TYPES)[number];
-
-const typeIcons: Record<NodeType, React.ReactNode> = {
-  input: (
-    <svg viewBox="0 0 16 16" fill="none" className="size-3.5 shrink-0">
-      <path d="M2 8h10M9 5l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  ),
-  condition: (
-    <svg viewBox="0 0 16 16" fill="none" className="size-3.5 shrink-0">
-      <path d="M8 2L14 8L8 14L2 8Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-    </svg>
-  ),
-  process: (
-    <svg viewBox="0 0 16 16" fill="none" className="size-3.5 shrink-0">
-      <rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M5 7h6M5 10h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  ),
-  output: (
-    <svg viewBox="0 0 16 16" fill="none" className="size-3.5 shrink-0">
-      <path d="M4 8h10M11 5l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  ),
-};
-
-function TypeDropdown({
-  value,
-  onChange,
-  isDark,
-}: {
-  value: NodeType;
-  onChange: (t: NodeType) => void;
-  isDark: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  const toggle = useCallback(() => setOpen((o) => !o), []);
-
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
-
-  return (
-    <div ref={ref} className="nodrag nowheel relative">
-      <button
-        type="button"
-        onClick={toggle}
-        className={[
-          "flex items-center gap-1 rounded p-0.5 transition-colors",
-          isDark ? "hover:bg-gray-600/60" : "hover:bg-gray-200/60",
-        ].join(" ")}
-      >
-        {typeIcons[value]}
-      </button>
-      {open && (
-        <div
-          className={[
-            "absolute left-0 top-full z-50 mt-1 min-w-[120px] rounded-md border py-1 shadow-lg",
-            isDark
-              ? "border-gray-600 bg-gray-800"
-              : "border-gray-200 bg-white",
-          ].join(" ")}
-        >
-          {NODE_TYPES.map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => {
-                onChange(t);
-                setOpen(false);
-              }}
-              className={[
-                "flex w-full items-center gap-2 px-2.5 py-1.5 text-[11px] font-medium capitalize",
-                t === value ? "opacity-100" : "opacity-60",
-                isDark
-                  ? "text-gray-300 hover:bg-gray-700"
-                  : "text-gray-700 hover:bg-gray-100",
-              ].join(" ")}
-            >
-              {typeIcons[t]}
-              {t}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+import { NODE_TYPES, DEFAULT_ROOT_GROUP, type NodeType, type Variable, type ConditionGroup } from "./types";
+import { TypeDropdown } from "./TypeDropdown";
+import { InputBody } from "./InputBody";
+import { ConditionBody } from "./ConditionBody";
 
 export function CustomNode({ id, data }: NodeProps) {
   const { theme } = useTheme();
@@ -195,8 +97,24 @@ export function CustomNode({ id, data }: NodeProps) {
           </span>
         )}
       </div>
-      <div className="px-3 py-2 text-sm font-medium">
-        {data.label as string}
+      <div className="px-2 py-2">
+        {currentType === "input" ? (
+          <InputBody
+            nodeId={id}
+            variables={(data.variables as Variable[]) || []}
+            isDark={isDark}
+          />
+        ) : currentType === "condition" ? (
+          <ConditionBody
+            nodeId={id}
+            conditions={
+              (data.conditions as ConditionGroup) || { ...DEFAULT_ROOT_GROUP }
+            }
+            isDark={isDark}
+          />
+        ) : (
+          <div className="text-sm font-medium px-1">{data.label as string}</div>
+        )}
       </div>
       <Handle
         type="source"
