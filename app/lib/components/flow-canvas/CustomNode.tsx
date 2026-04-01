@@ -98,7 +98,7 @@ export function CustomNode({ id, data }: NodeProps) {
         )}
       </div>
       <div className="px-2 py-2">
-        {currentType === "input" ? (
+        {currentType === "input" || currentType === "variable" ? (
           <InputBody
             nodeId={id}
             variables={(data.variables as Variable[]) || []}

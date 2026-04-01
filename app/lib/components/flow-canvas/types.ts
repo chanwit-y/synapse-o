@@ -1,4 +1,4 @@
-export const NODE_TYPES = ["input", "condition", "process", "output"] as const;
+export const NODE_TYPES = ["input", "variable", "condition", "process", "output"] as const;
 export type NodeType = (typeof NODE_TYPES)[number];
 
 export const DATA_TYPES = ["string", "number", "boolean", "array", "object", "date"] as const;

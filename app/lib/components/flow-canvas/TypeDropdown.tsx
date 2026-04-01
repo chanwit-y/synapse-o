@@ -7,6 +7,13 @@ export const typeIcons: Record<NodeType, React.ReactNode> = {
       <path d="M2 8h10M9 5l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
+  variable: (
+    <svg viewBox="0 0 16 16" fill="none" className="size-3.5 shrink-0">
+      <path d="M4 3C5.5 3 6.5 4.5 7 6s1 4 3 4M12 3C10.5 3 9.5 4.5 9 6s-1 4-3 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="3" cy="8" r="1" fill="currentColor" />
+      <circle cx="13" cy="8" r="1" fill="currentColor" />
+    </svg>
+  ),
   condition: (
     <svg viewBox="0 0 16 16" fill="none" className="size-3.5 shrink-0">
       <path d="M8 2L14 8L8 14L2 8Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
