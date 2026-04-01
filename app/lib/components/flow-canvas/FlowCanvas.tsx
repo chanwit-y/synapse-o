@@ -63,7 +63,7 @@ function FlowCanvasInner({ selectedFile }: FlowCanvasProps) {
     const newNode: Node = {
       id,
       type: "custom",
-      data: { label: `Node ${id}`, type: "Step" },
+      data: { label: `Node ${id}`, type: "process" },
       position,
     };
     setNodes((nds) => [...nds, newNode]);
