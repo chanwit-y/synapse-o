@@ -1,10 +1,19 @@
 import { Handle, Position, NodeResizer, useReactFlow, type NodeProps } from "@xyflow/react";
 import { useCallback, useRef, useState } from "react";
 import { useTheme } from "../ThemeProvider";
-import { NODE_TYPES, DEFAULT_ROOT_GROUP, type NodeType, type Variable, type ConditionGroup } from "./types";
+import {
+  NODE_TYPES,
+  DEFAULT_ROOT_GROUP,
+  DEFAULT_API_CONFIG,
+  type NodeType,
+  type Variable,
+  type ConditionGroup,
+  type ApiConfig,
+} from "./types";
 import { TypeDropdown } from "./TypeDropdown";
 import { InputBody } from "./InputBody";
 import { ConditionBody } from "./ConditionBody";
+import { ApiBody } from "./ApiBody";
 
 export function CustomNode({ id, data, selected }: NodeProps) {
   const { theme } = useTheme();
@@ -21,7 +30,20 @@ export function CustomNode({ id, data, selected }: NodeProps) {
   const handleTypeChange = useCallback(
     (newType: NodeType) => {
       setNodes((nds) =>
-        nds.map((n) => (n.id === id ? { ...n, data: { ...n.data, type: newType } } : n)),
+        nds.map((n) => {
+          if (n.id !== id) return n;
+          const existingApi = (n.data as { apiConfig?: ApiConfig }).apiConfig;
+          return {
+            ...n,
+            data: {
+              ...n.data,
+              type: newType,
+              ...(newType === "api" && existingApi == null
+                ? { apiConfig: { ...DEFAULT_API_CONFIG } }
+                : {}),
+            },
+          };
+        }),
       );
     },
     [id, setNodes],
@@ -56,7 +78,8 @@ export function CustomNode({ id, data, selected }: NodeProps) {
   return (
     <div
       className={[
-        "rounded-md border shadow-sm h-full min-w-[180px] min-h-[80px] overflow-visible",
+        "rounded-md border shadow-sm h-full min-h-[80px] overflow-visible",
+        currentType === "api" ? "min-w-[240px]" : "min-w-[180px]",
         isDark
           ? "border-gray-600 bg-gray-800 text-gray-100"
           : "border-gray-200 bg-white text-gray-800",
@@ -64,8 +87,8 @@ export function CustomNode({ id, data, selected }: NodeProps) {
     >
       <NodeResizer
         isVisible={!!selected}
-        minWidth={180}
-        minHeight={80}
+        minWidth={currentType === "api" ? 240 : 180}
+        minHeight={currentType === "api" ? 280 : 80}
         lineClassName={isDark ? "!border-blue-400" : "!border-blue-500"}
         handleClassName={[
           "!w-2.5 !h-2.5 !rounded-sm !border-2",
@@ -119,6 +142,16 @@ export function CustomNode({ id, data, selected }: NodeProps) {
             nodeId={id}
             conditions={
               (data.conditions as ConditionGroup) || { ...DEFAULT_ROOT_GROUP }
+            }
+            isDark={isDark}
+          />
+        ) : currentType === "api" ? (
+          <ApiBody
+            nodeId={id}
+            config={
+              (data.apiConfig as ApiConfig | undefined)
+                ? { ...DEFAULT_API_CONFIG, ...(data.apiConfig as ApiConfig) }
+                : { ...DEFAULT_API_CONFIG }
             }
             isDark={isDark}
           />

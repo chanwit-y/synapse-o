@@ -30,6 +30,12 @@ export const typeIcons: Record<NodeType, React.ReactNode> = {
       <path d="M4 8h10M11 5l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
+  api: (
+    <svg viewBox="0 0 16 16" fill="none" className="size-3.5 shrink-0">
+      <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M2 8h12M8 2c-2 2.2-2 9.8 0 12M8 2c2 2.2 2 9.8 0 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  ),
 };
 
 export function TypeDropdown({
