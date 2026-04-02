@@ -5,15 +5,18 @@ import {
   NODE_TYPES,
   DEFAULT_ROOT_GROUP,
   DEFAULT_API_CONFIG,
+  DEFAULT_EXPRESSION_CONFIG,
   type NodeType,
   type Variable,
   type ConditionGroup,
   type ApiConfig,
+  type ExpressionConfig,
 } from "./types";
 import { TypeDropdown } from "./TypeDropdown";
 import { InputBody } from "./InputBody";
 import { ConditionBody } from "./ConditionBody";
 import { ApiBody } from "./ApiBody";
+import { ExpressionBody } from "./ExpressionBody";
 
 export function CustomNode({ id, data, selected }: NodeProps) {
   const { theme } = useTheme();
@@ -33,6 +36,8 @@ export function CustomNode({ id, data, selected }: NodeProps) {
         nds.map((n) => {
           if (n.id !== id) return n;
           const existingApi = (n.data as { apiConfig?: ApiConfig }).apiConfig;
+          const existingExpr = (n.data as { expressionConfig?: ExpressionConfig })
+            .expressionConfig;
           return {
             ...n,
             data: {
@@ -40,6 +45,9 @@ export function CustomNode({ id, data, selected }: NodeProps) {
               type: newType,
               ...(newType === "api" && existingApi == null
                 ? { apiConfig: { ...DEFAULT_API_CONFIG } }
+                : {}),
+              ...(newType === "expression" && existingExpr == null
+                ? { expressionConfig: { ...DEFAULT_EXPRESSION_CONFIG } }
                 : {}),
             },
           };
@@ -79,7 +87,9 @@ export function CustomNode({ id, data, selected }: NodeProps) {
     <div
       className={[
         "rounded-md border shadow-sm h-full min-h-[80px] overflow-visible",
-        currentType === "api" ? "min-w-[240px]" : "min-w-[180px]",
+        currentType === "api" || currentType === "expression"
+          ? "min-w-[240px]"
+          : "min-w-[180px]",
         isDark
           ? "border-gray-600 bg-gray-800 text-gray-100"
           : "border-gray-200 bg-white text-gray-800",
@@ -87,8 +97,10 @@ export function CustomNode({ id, data, selected }: NodeProps) {
     >
       <NodeResizer
         isVisible={!!selected}
-        minWidth={currentType === "api" ? 240 : 180}
-        minHeight={currentType === "api" ? 280 : 80}
+        minWidth={currentType === "api" || currentType === "expression" ? 240 : 180}
+        minHeight={
+          currentType === "api" ? 280 : currentType === "expression" ? 220 : 80
+        }
         lineClassName={isDark ? "!border-blue-400" : "!border-blue-500"}
         handleClassName={[
           "!w-2.5 !h-2.5 !rounded-sm !border-2",
@@ -152,6 +164,19 @@ export function CustomNode({ id, data, selected }: NodeProps) {
               (data.apiConfig as ApiConfig | undefined)
                 ? { ...DEFAULT_API_CONFIG, ...(data.apiConfig as ApiConfig) }
                 : { ...DEFAULT_API_CONFIG }
+            }
+            isDark={isDark}
+          />
+        ) : currentType === "expression" ? (
+          <ExpressionBody
+            nodeId={id}
+            config={
+              (data.expressionConfig as ExpressionConfig | undefined)
+                ? {
+                    ...DEFAULT_EXPRESSION_CONFIG,
+                    ...(data.expressionConfig as ExpressionConfig),
+                  }
+                : { ...DEFAULT_EXPRESSION_CONFIG }
             }
             isDark={isDark}
           />
