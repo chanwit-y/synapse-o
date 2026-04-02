@@ -1,5 +1,22 @@
-export const NODE_TYPES = ["input", "variable", "condition", "process", "output"] as const;
+export const NODE_TYPES = ["input", "variable", "condition", "process", "output", "api"] as const;
 export type NodeType = (typeof NODE_TYPES)[number];
+
+export const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"] as const;
+export type HttpMethod = (typeof HTTP_METHODS)[number];
+
+export interface ApiConfig {
+  method: HttpMethod;
+  url: string;
+  headers: string;
+  body: string;
+}
+
+export const DEFAULT_API_CONFIG: ApiConfig = {
+  method: "GET",
+  url: "",
+  headers: "{}",
+  body: "",
+};
 
 export const DATA_TYPES = ["string", "number", "boolean", "array", "object", "date"] as const;
 export type DataType = (typeof DATA_TYPES)[number];
