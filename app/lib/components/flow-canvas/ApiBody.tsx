@@ -5,11 +5,12 @@ import {
   DEFAULT_API_CONFIG,
   HTTP_METHODS,
   type ApiConfig,
+  type ExpressionConfig,
   type HttpMethod,
   type Variable,
 } from "./types";
 
-/** Collect variables from nodes connected above (input or variable types). */
+/** Collect variables from nodes connected above (input, variable, or expression result). */
 export function getUpstreamVariablesForNode(
   nodeId: string,
   getNodes: () => FlowNode[],
@@ -25,11 +26,22 @@ export function getUpstreamVariablesForNode(
     if ((t === "input" || t === "variable") && Array.isArray(src?.data?.variables)) {
       vars.push(...(src.data.variables as Variable[]));
     }
+    if (t === "expression" && src) {
+      const cfg = src.data?.expressionConfig as ExpressionConfig | undefined;
+      const name = cfg?.targetVariableName?.trim();
+      if (name) {
+        vars.push({
+          id: `${src.id}-expr-out`,
+          name,
+          dataType: "number",
+        });
+      }
+    }
   }
   return vars;
 }
 
-function VariableInsertDropdown({
+export function VariableInsertDropdown({
   nodeId,
   isDark,
   onPick,

@@ -1,4 +1,12 @@
-export const NODE_TYPES = ["input", "variable", "condition", "process", "output", "api"] as const;
+export const NODE_TYPES = [
+  "input",
+  "variable",
+  "condition",
+  "process",
+  "output",
+  "api",
+  "expression",
+] as const;
 export type NodeType = (typeof NODE_TYPES)[number];
 
 export const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"] as const;
@@ -16,6 +24,17 @@ export const DEFAULT_API_CONFIG: ApiConfig = {
   url: "",
   headers: "{}",
   body: "",
+};
+
+export interface ExpressionConfig {
+  /** Name of the variable that receives the evaluated expression result. */
+  targetVariableName: string;
+  expression: string;
+}
+
+export const DEFAULT_EXPRESSION_CONFIG: ExpressionConfig = {
+  targetVariableName: "",
+  expression: "",
 };
 
 export const DATA_TYPES = ["string", "number", "boolean", "array", "object", "date"] as const;
