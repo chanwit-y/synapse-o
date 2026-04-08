@@ -254,6 +254,8 @@ export interface CreateTestCaseModalProps {
   onAfterCreateTestCaseFile?: (opts: { node: TreeNode; nodePath: string }) => void;
   /** Called after the "Next" button successfully creates the file + sub-file link. */
   onNextStep?: () => void;
+  /** Called after a sub-file is created so the sidebar can reload. */
+  onAfterCreateSubFile?: () => void;
 }
 
 const MAX_CONTEXT_CHARS = 12000;
@@ -267,6 +269,7 @@ export default function CreateTestCaseModal({
   selectedFilePath,
   onAfterCreateTestCaseFile,
   onNextStep,
+  onAfterCreateSubFile,
 }: CreateTestCaseModalProps) {
   const { theme } = useTheme();
   const { withLoading, activeLoaderIds } = useLoading();
@@ -510,21 +513,62 @@ ${truncated}
   };
 
   const handleNext = async () => {
-    const contentFileId = await doCreateFile();
-    if (!contentFileId) return;
-
-    try {
-      await createSubFile(fileId, contentFileId);
-    } catch (error) {
-      console.error("Failed to create sub-file relation:", error);
+    const content = aiResult ?? "";
+    if (!content.trim()) return;
+    if (!collectionId?.trim()) {
       showSnackbar({
         variant: "error",
-        title: "Sub-file relation",
-        message: "File was created but failed to link it as a sub-file.",
+        title: "Create sub-file",
+        message: "Missing collectionId for the selected file.",
       });
+      return;
     }
 
-    onNextStep?.();
+    try {
+      await withLoading(async () => {
+        const collection = await findCollectionById(collectionId);
+        const directories = parseDirectories(collection?.directories);
+
+        const existingNames = new Set<string>();
+        collectFileNames(directories, existingNames);
+
+        const base = `${getStem(fileName)}.scenario.md`;
+        const name = pickUniqueName(base, existingNames);
+
+        const saved = await saveFileMutation.mutateAsync({
+          id: null,
+          name,
+          collectionId,
+          content: content.trim(),
+          icon: "flask-conical",
+          tags: [{ id: createId(), label: "Test Case", color: "#60a5fa" }],
+        });
+
+        const contentFileId =
+          saved.id ??
+          (typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
+
+        await createSubFile(fileId, contentFileId);
+      }, createTestCaseFileLoaderId);
+
+      onClose();
+      onAfterCreateSubFile?.();
+
+      showSnackbar({
+        variant: "success",
+        title: "Create sub-file",
+        message: "Created a new sub-file from the AI result.",
+      });
+
+      onNextStep?.();
+    } catch (error) {
+      console.error("Failed to create sub-file:", error);
+      const message =
+        error instanceof Error ? error.message : "Failed to create sub-file.";
+      showSnackbar({ variant: "error", title: "Create sub-file", message });
+    }
   };
 
   const copyToClipboard = async (text: string) => {
@@ -561,7 +605,7 @@ ${truncated}
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <div className="flex max-h-[75vh] flex-col">
         <div className="space-y-4 overflow-auto pr-1 pb-4">
-          <h2 className="text-lg font-semibold">Create Test Case</h2>
+          <h2 className="text-lg font-semibold">Create Scenarios</h2>
           <p className="text-sm text-gray-500">
             Generate tests case for: <span className="font-medium">{fileName}</span>
           </p>
@@ -654,19 +698,15 @@ ${truncated}
           </button>
           <button
             type="button"
-            onClick={handleCreateFile}
-            disabled={isBusy || !aiResult.trim()}
+            onClick={handleGenerate}
+            disabled={isBusy}
             className={[
               "px-4 py-2 rounded-md text-sm font-medium transition-colors",
-              theme === "dark"
-                ? "bg-gray-700 text-gray-200 hover:bg-gray-600"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300",
-              isBusy || !aiResult.trim() ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
+              "bg-blue-600 text-white hover:bg-blue-700",
+              isBusy ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
             ].join(" ")}
-            title={aiResult.trim() ? "Create a new markdown file from the AI result" : "Generate a result first"}
-            aria-label="Create test case file"
           >
-            {isCreatingFile ? "Creating..." : "Create test case file"}
+            {isPreparingContext ? "Preparing..." : isGenerating ? "Generating..." : "Generate"}
           </button>
           <button
             type="button"
@@ -684,18 +724,6 @@ ${truncated}
           >
             {isCreatingFile ? "Creating..." : "Next"}
             <ArrowRight className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={handleGenerate}
-            disabled={isBusy}
-            className={[
-              "px-4 py-2 rounded-md text-sm font-medium transition-colors",
-              "bg-blue-600 text-white hover:bg-blue-700",
-              isBusy ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
-            ].join(" ")}
-          >
-            {isPreparingContext ? "Preparing..." : isGenerating ? "Generating..." : "Generate"}
           </button>
         </div>
       </div>

@@ -67,3 +67,9 @@ export type TranslateResult = {
   markdown?: string;
   error?: string;
 };
+
+export type ExtractCodeContextResult = {
+  success: boolean;
+  result?: string;
+  error?: string;
+};

@@ -12,14 +12,14 @@ import "./Drawer.css";
 type DrawerPosition = "left" | "right" | "top" | "bottom";
 
 interface DrawerProps {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
   children: ReactNode;
   position?: DrawerPosition;
   size?: number | string;
   title?: string;
-  showCloseButton?: boolean;
-  allowBackdropClose?: boolean;
+  closable?: boolean;
+  dismissible?: boolean;
   className?: string;
 }
 
@@ -31,32 +31,32 @@ const positionClasses: Record<DrawerPosition, string> = {
 };
 
 export default function Drawer({
-  isOpen,
+  open,
   onClose,
   children,
   position = "right",
   size,
   title,
-  showCloseButton = true,
-  allowBackdropClose = true,
+  closable = true,
+  dismissible = true,
   className,
 }: DrawerProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const [isRendered, setIsRendered] = useState(isOpen);
+  const [isRendered, setIsRendered] = useState(open);
   const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!open) return;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [open, onClose]);
 
   useEffect(() => {
-    if (isOpen) {
+    if (open) {
       setIsRendered(true);
       setIsClosing(false);
       return;
@@ -65,7 +65,7 @@ export default function Drawer({
     if (isRendered) {
       setIsClosing(true);
     }
-  }, [isOpen, isRendered]);
+  }, [open, isRendered]);
 
   if (!isRendered) return null;
 
@@ -77,7 +77,7 @@ export default function Drawer({
   return (
     <div
       className="fixed inset-0 z-50"
-      onClick={allowBackdropClose ? onClose : undefined}
+      onClick={dismissible ? onClose : undefined}
       role="presentation"
     >
       <div
@@ -101,7 +101,7 @@ export default function Drawer({
         style={panelStyle}
         onClick={(event) => event.stopPropagation()}
         onAnimationEnd={() => {
-          if (!isOpen && isClosing) {
+          if (!open && isClosing) {
             setIsRendered(false);
             setIsClosing(false);
           }
@@ -109,7 +109,7 @@ export default function Drawer({
         role="dialog"
         aria-modal="true"
       >
-        {(title || showCloseButton) && (
+        {(title || closable) && (
           <div
             className={[
               "flex items-center justify-between border-b px-4 py-3",
@@ -117,7 +117,7 @@ export default function Drawer({
             ].join(" ")}
           >
             <div className="text-sm font-semibold">{title}</div>
-            {showCloseButton ? (
+            {closable ? (
               <button
                 type="button"
                 onClick={onClose}
