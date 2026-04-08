@@ -175,7 +175,7 @@ export default function CodebaseDetailPage() {
       </Modal>
 
       <Drawer
-        isOpen={isDrawerOpen}
+        open={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         position="right"
         title="Codebase Details"

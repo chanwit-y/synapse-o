@@ -16,7 +16,10 @@ interface ToolsPanelProps {
   fileName: string;
   collectionId: string;
   selectedFilePath: string | null;
+  disableScenario?: boolean;
+  disableCodebase?: boolean;
   onAfterCreateTestCaseFile?: (opts: { node: TreeNode; nodePath: string }) => void;
+  onAfterCreateSubFile?: () => void;
 }
 
 export default function ToolsPanel({
@@ -24,7 +27,10 @@ export default function ToolsPanel({
   fileName,
   collectionId,
   selectedFilePath,
+  disableScenario,
+  disableCodebase,
   onAfterCreateTestCaseFile,
+  onAfterCreateSubFile,
 }: ToolsPanelProps) {
   const { theme } = useTheme();
   const [isTestCaseModalOpen, setIsTestCaseModalOpen] = useState(false);
@@ -44,11 +50,14 @@ export default function ToolsPanel({
           <button
             type="button"
             onClick={() => setIsTestCaseModalOpen(true)}
+            disabled={disableScenario}
             className={[
               "flex items-center justify-center rounded-md p-2 text-sm font-medium transition-colors",
-              theme === "dark"
-                ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+              disableScenario
+                ? "opacity-40 cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-600"
+                : theme === "dark"
+                  ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200",
             ].join(" ")}
             aria-label="Scenario"
           >
@@ -62,11 +71,14 @@ export default function ToolsPanel({
           <button
             type="button"
             onClick={handleOpenCodeMapping}
+            disabled={disableCodebase}
             className={[
               "flex items-center justify-center rounded-md p-2 text-sm font-medium transition-colors",
-              theme === "dark"
-                ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+              disableCodebase
+                ? "opacity-40 cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-600"
+                : theme === "dark"
+                  ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200",
             ].join(" ")}
             aria-label="Code base indexing"
           >
@@ -120,13 +132,18 @@ export default function ToolsPanel({
         collectionId={collectionId}
         selectedFilePath={selectedFilePath}
         onAfterCreateTestCaseFile={onAfterCreateTestCaseFile}
+        onAfterCreateSubFile={onAfterCreateSubFile}
         onNextStep={handleOpenCodeMapping}
       />
 
       <CodeMappingModal
         isOpen={isCodeMappingModalOpen}
         onClose={() => setIsCodeMappingModalOpen(false)}
+        fileId={fileId}
+        fileName={fileName}
+        collectionId={collectionId}
         selectedFilePath={selectedFilePath}
+        onAfterCreateSubFile={onAfterCreateSubFile}
       />
     </div>
   );

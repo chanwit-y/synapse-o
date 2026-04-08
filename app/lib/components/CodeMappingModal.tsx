@@ -9,20 +9,97 @@ import type { CodebaseRow } from "@/app/lib/db/repository/codebase";
 import ImportPathTreeView, { type ImportPathEntry } from "./ImportPathTreeView";
 import CustomSelect from "./CustomSelect";
 import { invoke } from "@tauri-apps/api/core";
+import { useLoading } from "./LoadingProvider";
+import {
+  useExtractCodeContextMutation,
+  useSaveFileMutation,
+} from "@/app/lib/services/fileService.client";
+import { createSubFile, findCollectionById } from "@/app/ui/doc/action";
+import type { TreeNode } from "./@types/treeViewTypes";
+
+function parseDirectories(raw: unknown): TreeNode[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw as TreeNode[];
+  if (typeof raw === "string") {
+    try {
+      const once = JSON.parse(raw) as unknown;
+      if (Array.isArray(once)) return once as TreeNode[];
+      if (typeof once === "string") {
+        try {
+          const twice = JSON.parse(once) as unknown;
+          return Array.isArray(twice) ? (twice as TreeNode[]) : [];
+        } catch {
+          return [];
+        }
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function collectFileNames(nodes: TreeNode[], acc: Set<string>) {
+  nodes.forEach((node) => {
+    if (node.type === "file") acc.add(node.name);
+    if (node.type === "folder" && node.children?.length) {
+      collectFileNames(node.children, acc);
+    }
+  });
+}
+
+function getStem(name: string) {
+  const trimmed = (name ?? "").trim();
+  if (!trimmed) return "untitled";
+  const lastDot = trimmed.lastIndexOf(".");
+  if (lastDot <= 0) return trimmed;
+  return trimmed.slice(0, lastDot);
+}
+
+function getExtension(name: string) {
+  const trimmed = (name ?? "").trim();
+  const lastDot = trimmed.lastIndexOf(".");
+  if (lastDot === -1 || lastDot === trimmed.length - 1) return null;
+  return trimmed.slice(lastDot + 1);
+}
+
+function pickUniqueName(baseName: string, existing: Set<string>) {
+  const normalizedBase = (baseName ?? "").trim() || "untitled.md";
+  if (!existing.has(normalizedBase)) return normalizedBase;
+  const stem = getStem(normalizedBase);
+  const ext = getExtension(normalizedBase);
+  for (let i = 2; i < 1000; i++) {
+    const candidate = ext ? `${stem} (${i}).${ext}` : `${stem} (${i})`;
+    if (!existing.has(candidate)) return candidate;
+  }
+  return `${stem}-${Date.now()}.${ext ?? "md"}`;
+}
 
 export interface CodeMappingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  fileId: string;
+  fileName: string;
+  collectionId: string;
   selectedFilePath: string | null;
+  onAfterCreateSubFile?: () => void;
 }
 
 export default function CodeMappingModal({
   isOpen,
   onClose,
+  fileId,
+  fileName,
+  collectionId,
   selectedFilePath,
+  onAfterCreateSubFile,
 }: CodeMappingModalProps) {
   const { theme } = useTheme();
   const { showSnackbar } = useSnackbar();
+  const { startLoading, stopLoading } = useLoading();
+  const extractCodeContextMutation = useExtractCodeContextMutation();
+  const saveFileMutation = useSaveFileMutation();
 
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [importPathData, setImportPathData] = useState<ImportPathEntry[] | null>(null);
@@ -108,25 +185,84 @@ export default function CodeMappingModal({
       return srcPrefix ? `${srcPrefix}/${cleaned}` : cleaned;
     });
 
-
     console.log("[Extract Code Base] selected files:", selectedFilesList);
 
-    for(const path of selectedFilesList) {
-      const result = await invoke('read_file', { path });
-      console.log(result);
+    const loaderId = startLoading("extract-code-base");
+
+    try {
+      const codes: string[] = [];
+      for (const path of selectedFilesList) {
+        const code = await invoke<string>("read_file", { path });
+        codes.push(code);
+      }
+
+      if (codes.length === 0) {
+        showSnackbar({
+          variant: "warning",
+          title: "Extract code base",
+          message: "No files selected to extract.",
+        });
+        return;
+      }
+
+      const result = await extractCodeContextMutation.mutateAsync(codes);
+
+      console.log("[AI Extract Code Context] result:", result);
+
+      if (!result.trim()) {
+        showSnackbar({
+          variant: "warning",
+          title: "Extract code base",
+          message: "AI returned empty result.",
+        });
+        return;
+      }
+
+      const collection = await findCollectionById(collectionId);
+      const directories = parseDirectories(collection?.directories);
+      const existingNames = new Set<string>();
+      collectFileNames(directories, existingNames);
+
+      const base = `${getStem(fileName)}.codebase.md`;
+      const name = pickUniqueName(base, existingNames);
+
+      const saved = await saveFileMutation.mutateAsync({
+        id: null,
+        name,
+        collectionId,
+        content: result.trim(),
+        icon: "braces",
+        tags: [{ id: crypto.randomUUID(), label: "Codebase", color: "#34d399" }],
+      });
+
+      const contentFileId =
+        saved.id ??
+        (typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
+
+      await createSubFile(fileId, contentFileId);
+
+      onClose();
+      onAfterCreateSubFile?.();
+
+      showSnackbar({
+        variant: "success",
+        title: "Extract code base",
+        message: targetPath
+          ? `Code context saved as "${name}" for path: ${targetPath}`
+          : `Code context saved as "${name}".`,
+      });
+    } catch (error) {
+      console.error("AI extract code context error:", error);
+      showSnackbar({
+        variant: "error",
+        title: "AI extraction failed",
+        message: error instanceof Error ? error.message : "Unexpected error.",
+      });
+    } finally {
+      stopLoading(loaderId);
     }
-
-    // const result = await invoke('read_files', { paths: selectedFilesList });
-    // console.log(result);
-
-
-    showSnackbar({
-      variant: targetPath ? "info" : "warning",
-      title: "Extract code base",
-      message: targetPath
-        ? `Code base extraction is ready for path: ${targetPath}`
-        : "Please provide a path before extracting code base.",
-    });
   };
 
   return (

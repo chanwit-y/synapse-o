@@ -18,7 +18,7 @@ import Drawer from "../../lib/components/Drawer";
 import TagEditor from "../../lib/components/TagEditor";
 import ToolsPanel from "../../lib/components/ToolsPanel";
 import SubFileList from "../../lib/components/SubFileList";
-import { getParentFile, type SubFileEntry } from "@/app/ui/doc/action";
+import { getParentFile, getSubFilesByFileId, type SubFileEntry } from "@/app/ui/doc/action";
 import { useTheme } from "../../lib/components/ThemeProvider";
 import { useSnackbar } from "../../lib/components/Snackbar";
 import emptyBox from "../../asset/empty-box.svg";
@@ -55,10 +55,31 @@ export default function Home() {
   const [activeLang, setActiveLang] = useState<"en" | "th">("en");
 
   const hasThaiContent = Boolean(selectedFile?.contentTH?.trim());
+  const [hasScenarioSubFile, setHasScenarioSubFile] = useState(false);
+  const [hasCodebaseSubFile, setHasCodebaseSubFile] = useState(false);
 
   useEffect(() => {
     setActiveLang("en");
   }, [selectedFile?.id]);
+
+  useEffect(() => {
+    if (!selectedFile?.id) {
+      setHasScenarioSubFile(false);
+      setHasCodebaseSubFile(false);
+      return;
+    }
+    let cancelled = false;
+    getSubFilesByFileId(selectedFile.id).then((entries) => {
+      if (cancelled) return;
+      setHasScenarioSubFile(
+        entries.some((e) => e.extension === "scenario" || (e.fileName?.includes(".scenario") ?? false))
+      );
+      setHasCodebaseSubFile(
+        entries.some((e) => e.extension === "codebase" || (e.fileName?.includes(".codebase") ?? false))
+      );
+    });
+    return () => { cancelled = true; };
+  }, [selectedFile?.id, sidebarReloadKey]);
 
   useEffect(() => {
     if (!selectedFile?.id || parentFile) return;
@@ -231,7 +252,7 @@ export default function Home() {
 
             </div>
             <Drawer
-              isOpen={isDrawerOpen}
+              open={isDrawerOpen}
               onClose={() => setDrawerOpen(false)}
               position="right"
               title="Properties"
@@ -250,10 +271,13 @@ export default function Home() {
                   fileName={selectedFile.name}
                   collectionId={selectedFile.collectionId}
                   selectedFilePath={selectedFilePath}
+                  disableScenario={hasScenarioSubFile}
+                  disableCodebase={hasCodebaseSubFile}
                   onAfterCreateTestCaseFile={({ node, nodePath }) => {
                     bumpSidebarReloadKey();
                     void selectFile(node, nodePath);
                   }}
+                  onAfterCreateSubFile={bumpSidebarReloadKey}
                 />
               </div>
 

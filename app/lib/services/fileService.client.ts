@@ -18,6 +18,7 @@ import type {
   UploadImageResult,
   AnalyzeImageResult,
   TranslateResult,
+  ExtractCodeContextResult,
 } from "@/app/lib/services/@types/fileService.client";
 
 export class FileService {
@@ -123,6 +124,19 @@ export class FileService {
     }
 
     return result.md;
+  }
+
+  async extractCodeContext(codes: string[]): Promise<string> {
+    const result = await this.httpClient.post<ExtractCodeContextResult>(
+      "/api/ai/extract-code-context",
+      { codes },
+    );
+
+    if (!result.success || !result.result) {
+      throw new Error(result.error || "Failed to extract code context");
+    }
+
+    return result.result;
   }
 
   private fileToBase64(file: File): Promise<string> {
@@ -268,6 +282,15 @@ export function useTranslateFileMutation() {
   return useMutation({
     mutationFn: (vars: { fileId: string; markdown: string }) =>
       fileService.translateFile(vars.fileId, vars.markdown),
+  });
+}
+
+/**
+ * React Query hook: extract code context via AI for E2E test preparation.
+ */
+export function useExtractCodeContextMutation() {
+  return useMutation({
+    mutationFn: (codes: string[]) => fileService.extractCodeContext(codes),
   });
 }
 

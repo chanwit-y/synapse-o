@@ -47,7 +47,8 @@ export default function TreeNodeItem({
   const isFolder = node.type === "folder";
   const isFile = node.type === "file";
 
-  if (isFile && subFileContentIds?.has(node.id)) return null;
+  const isScenarioFile = isFile && node.name.includes('.scenario.');
+  if (isFile && (subFileContentIds?.has(node.id) || isScenarioFile)) return null;
   const indentLevel = level > 0 ? level * 20 + 8 : 8;
 
   const isSelected = selectedNodePath === nodePath;
