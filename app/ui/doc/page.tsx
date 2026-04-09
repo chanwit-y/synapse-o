@@ -4,7 +4,7 @@
  * @description Markdown workspace component featuring a file sidebar for navigation, markdown editor, icon and tag editors, and a properties drawer for file metadata management.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowLeftRight, Languages, Loader2, PanelRightOpen } from "lucide-react";
 import Image from "next/image";
 import MarkdownEditor from "../../lib/components/MarkdownEditor";
@@ -48,6 +48,8 @@ export default function Home() {
   const goBackToParent = useDocWorkspaceStore((s) => s.goBackToParent);
   const setFileIcon = useDocWorkspaceStore((s) => s.setFileIcon);
   const setSelectedFileTags = useDocWorkspaceStore((s) => s.setSelectedFileTags);
+
+  const skipDrawerCloseRef = useRef(false);
 
   const { showSnackbar } = useSnackbar();
   const translateMutation = useTranslateFileMutation();
@@ -130,9 +132,11 @@ export default function Home() {
   }, [selectedFile, activeLang]);
 
   useEffect(() => {
-    // Close the Properties drawer after collection data is reloaded.
-    // Skip initial mount (sidebarReloadKey starts at 0).
     if (sidebarReloadKey <= 0) return;
+    if (skipDrawerCloseRef.current) {
+      skipDrawerCloseRef.current = false;
+      return;
+    }
     setDrawerOpen(false);
   }, [sidebarReloadKey, setDrawerOpen]);
 
@@ -286,6 +290,10 @@ export default function Home() {
                   fileId={selectedFile.id}
                   reloadKey={sidebarReloadKey}
                   onSelectSubFile={handleSelectSubFile}
+                  onRemoveSubFile={() => {
+                    skipDrawerCloseRef.current = true;
+                    bumpSidebarReloadKey();
+                  }}
                 />
               </div>
             </Drawer>
