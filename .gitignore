@@ -51,3 +51,4 @@ code_bases_mybp.json
 synapse.db-shm
 synapse.db-wal
 tmp
+synapse.db-wal
