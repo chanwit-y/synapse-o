@@ -12,7 +12,7 @@ import { ThemeProvider } from "../lib/components/ThemeProvider";
 import { ReactQueryProvider } from "../lib/react-query/ReactQueryProvider";
 import LayoutShell from "../lib/components/LayoutShell";
 import SidebarMenu from "../lib/components/SidebarMenu";
-import { Settings, Key, Code, Cloud } from "lucide-react";
+import { Settings, Key, Code, Cloud, Library } from "lucide-react";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -79,6 +79,12 @@ const menuItems = [
     href: "/ui/codebase",
     description: "Code management",
     icon: <Code className="h-4 w-4" />,
+  },
+  {
+    label: "RAG",
+    href: "/ui/rag",
+    description: "RAG transactions",
+    icon: <Library className="h-4 w-4" />,
   },
   {
     label: "Settings",

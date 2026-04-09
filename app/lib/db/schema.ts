@@ -54,3 +54,11 @@ export const codebases = sqliteTable("codebase", {
 	createdAt: integer("created_at").default(sql`CURRENT_TIMESTAMP`),
 	updatedAt: integer("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const ragTransactionTable = sqliteTable("rag_transaction", {
+	id: text("id").primaryKey(),
+	ragName: text("rag_name").notNull(),
+	collection: text("collection").notNull(),
+	updatedAt: integer("updated_at").default(sql`CURRENT_TIMESTAMP`),
+	updatedBy: text("updated_by").notNull(),
+});

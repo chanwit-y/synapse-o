@@ -9,6 +9,7 @@ import type { MouseEvent } from "react";
 import TreeViewGroupItem from "./TreeViewGroupItem";
 import type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
 import type { FileType } from "./TreeViewGroupItem";
+import type { MarkdownPickerMultiProps } from "./TreeNodeItem";
 
 interface TreeViewProps {
   data: TreeViewGroup[];
@@ -29,6 +30,12 @@ interface TreeViewProps {
   selectedNodeId?: string | null;
   /** IDs of files that are already shown as sub-files (hidden from the main tree). */
   subFileContentIds?: Set<string>;
+  /**
+   * When true (e.g. RAG “Select Markdown file” step), hides add-file / add-folder / Azure toolbar
+   * and per-node delete. Normal Docs sidebar omits this prop.
+   */
+  readOnlyTree?: boolean;
+  markdownPickerMulti?: MarkdownPickerMultiProps | null;
 }
 
 export default function TreeView({
@@ -43,6 +50,8 @@ export default function TreeView({
   selectedNodePath: externalSelectedNodePath,
   selectedNodeId: externalSelectedNodeId,
   subFileContentIds,
+  readOnlyTree,
+  markdownPickerMulti,
 }: TreeViewProps) {
   const [selectedNodePath, setSelectedNodePath] = useState<string | null>(externalSelectedNodePath ?? null);
   const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
@@ -124,6 +133,8 @@ export default function TreeView({
             onRequestDeleteNode={onRequestDeleteNode}
             onAddFlow={onAddFlow}
             subFileContentIds={subFileContentIds}
+            readOnlyTree={readOnlyTree}
+            markdownPickerMulti={markdownPickerMulti}
           />
         ))}
       </div>
