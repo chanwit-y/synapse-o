@@ -288,6 +288,10 @@ export default function Home() {
                     void selectFile(node, nodePath);
                   }}
                   onAfterCreateSubFile={bumpSidebarReloadKey}
+                  onModalClose={() => {
+                    skipDrawerCloseRef.current = true;
+                    bumpSidebarReloadKey();
+                  }}
                 />
               </div>
 
