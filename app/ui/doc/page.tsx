@@ -59,6 +59,7 @@ export default function Home() {
   const hasThaiContent = Boolean(selectedFile?.contentTH?.trim());
   const [hasScenarioSubFile, setHasScenarioSubFile] = useState(false);
   const [hasCodebaseSubFile, setHasCodebaseSubFile] = useState(false);
+  const [hasTestcaseSubFile, setHasTestcaseSubFile] = useState(false);
 
   useEffect(() => {
     setActiveLang("en");
@@ -68,6 +69,7 @@ export default function Home() {
     if (!selectedFile?.id) {
       setHasScenarioSubFile(false);
       setHasCodebaseSubFile(false);
+      setHasTestcaseSubFile(false);
       return;
     }
     let cancelled = false;
@@ -78,6 +80,9 @@ export default function Home() {
       );
       setHasCodebaseSubFile(
         entries.some((e) => e.extension === "codebase" || (e.fileName?.includes(".codebase") ?? false))
+      );
+      setHasTestcaseSubFile(
+        entries.some((e) => e.extension === "testcase" || (e.fileName?.includes(".testcase") ?? false))
       );
     });
     return () => { cancelled = true; };
@@ -277,6 +282,7 @@ export default function Home() {
                   selectedFilePath={selectedFilePath}
                   disableScenario={hasScenarioSubFile}
                   disableCodebase={hasCodebaseSubFile}
+                  disableTestCase={hasTestcaseSubFile}
                   onAfterCreateTestCaseFile={({ node, nodePath }) => {
                     bumpSidebarReloadKey();
                     void selectFile(node, nodePath);

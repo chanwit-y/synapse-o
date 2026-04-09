@@ -10,6 +10,7 @@ import { useTheme } from "./ThemeProvider";
 import type { TreeNode } from "./@types/treeViewTypes";
 import CreateTestCaseModal from "./CreateTestCaseModal";
 import CodeMappingModal from "./CodeMappingModal";
+import TestCaseToolModal from "./TestCaseToolModal";
 
 interface ToolsPanelProps {
   fileId: string;
@@ -18,6 +19,7 @@ interface ToolsPanelProps {
   selectedFilePath: string | null;
   disableScenario?: boolean;
   disableCodebase?: boolean;
+  disableTestCase?: boolean;
   onAfterCreateTestCaseFile?: (opts: { node: TreeNode; nodePath: string }) => void;
   onAfterCreateSubFile?: () => void;
 }
@@ -29,12 +31,14 @@ export default function ToolsPanel({
   selectedFilePath,
   disableScenario,
   disableCodebase,
+  disableTestCase,
   onAfterCreateTestCaseFile,
   onAfterCreateSubFile,
 }: ToolsPanelProps) {
   const { theme } = useTheme();
   const [isTestCaseModalOpen, setIsTestCaseModalOpen] = useState(false);
   const [isCodeMappingModalOpen, setIsCodeMappingModalOpen] = useState(false);
+  const [isTestCaseToolModalOpen, setIsTestCaseToolModalOpen] = useState(false);
 
   const handleOpenCodeMapping = () => {
     setIsCodeMappingModalOpen(true);
@@ -91,11 +95,15 @@ export default function ToolsPanel({
         <div className="group relative">
           <button
             type="button"
+            onClick={() => setIsTestCaseToolModalOpen(true)}
+            disabled={disableTestCase}
             className={[
               "flex items-center justify-center rounded-md p-2 text-sm font-medium transition-colors",
-              theme === "dark"
-                ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+              disableTestCase
+                ? "opacity-40 cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-600"
+                : theme === "dark"
+                  ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200",
             ].join(" ")}
             aria-label="Test case"
           >
@@ -139,6 +147,16 @@ export default function ToolsPanel({
       <CodeMappingModal
         isOpen={isCodeMappingModalOpen}
         onClose={() => setIsCodeMappingModalOpen(false)}
+        fileId={fileId}
+        fileName={fileName}
+        collectionId={collectionId}
+        selectedFilePath={selectedFilePath}
+        onAfterCreateSubFile={onAfterCreateSubFile}
+      />
+
+      <TestCaseToolModal
+        isOpen={isTestCaseToolModalOpen}
+        onClose={() => setIsTestCaseToolModalOpen(false)}
         fileId={fileId}
         fileName={fileName}
         collectionId={collectionId}
