@@ -60,6 +60,7 @@ export default function Home() {
   const [hasScenarioSubFile, setHasScenarioSubFile] = useState(false);
   const [hasCodebaseSubFile, setHasCodebaseSubFile] = useState(false);
   const [hasTestcaseSubFile, setHasTestcaseSubFile] = useState(false);
+  const [hasE2eSubFile, setHasE2eSubFile] = useState(false);
 
   useEffect(() => {
     setActiveLang("en");
@@ -70,6 +71,7 @@ export default function Home() {
       setHasScenarioSubFile(false);
       setHasCodebaseSubFile(false);
       setHasTestcaseSubFile(false);
+      setHasE2eSubFile(false);
       return;
     }
     let cancelled = false;
@@ -83,6 +85,9 @@ export default function Home() {
       );
       setHasTestcaseSubFile(
         entries.some((e) => e.extension === "testcase" || (e.fileName?.includes(".testcase") ?? false))
+      );
+      setHasE2eSubFile(
+        entries.some((e) => e.extension === "e2e" || (e.fileName?.includes(".e2e") ?? false))
       );
     });
     return () => { cancelled = true; };
@@ -283,6 +288,7 @@ export default function Home() {
                   disableScenario={hasScenarioSubFile}
                   disableCodebase={hasCodebaseSubFile}
                   disableTestCase={hasTestcaseSubFile}
+                  disableE2e={hasE2eSubFile || selectedFile.name.includes(".e2e")}
                   onAfterCreateTestCaseFile={({ node, nodePath }) => {
                     bumpSidebarReloadKey();
                     void selectFile(node, nodePath);

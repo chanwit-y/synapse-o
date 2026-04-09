@@ -9,7 +9,7 @@ import type { TreeNode } from "@/app/lib/components/@types/treeViewTypes";
 import { CollectionRepository, type CollectionRow } from "@/app/lib/db/repository/collection";
 import { FileRepository, type FileRow } from "@/app/lib/db/repository/file";
 import { SubFileRepository, type SubFileRow } from "@/app/lib/db/repository/sub-file";
-import { aiUnitTest } from "@/app/lib/services/ai";
+import { aiUnitTest, aiE2e } from "@/app/lib/services/ai";
 
 
 // class Action {
@@ -80,8 +80,12 @@ export async function updateFileTags(fileId: string, tags: Tag[]): Promise<FileR
 	return await fileRepo.updateTags(fileId, tags);
 }
 
-export async function testAI(prompt: string) {
-	return await aiUnitTest(prompt);
+export async function testAI(prompt: string, model?: string) {
+	return await aiUnitTest(prompt, model);
+}
+
+export async function generateE2e(prompt: string, model?: string) {
+	return await aiE2e(prompt, model);
 }
 
 export async function createSubFile(fileId: string, contentFileId: string): Promise<SubFileRow> {
