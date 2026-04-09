@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import Modal from "./Modal";
 import { useSnackbar } from "./Snackbar";
@@ -8,6 +9,7 @@ import { getAllCodebases, getImportPathData } from "@/app/ui/codebase/action";
 import type { CodebaseRow } from "@/app/lib/db/repository/codebase";
 import ImportPathTreeView, { type ImportPathEntry } from "./ImportPathTreeView";
 import CustomSelect from "./CustomSelect";
+import MarkdownDisplay from "./MarkdownDisplay";
 import { invoke } from "@tauri-apps/api/core";
 import { useLoading } from "./LoadingProvider";
 import {
@@ -84,6 +86,7 @@ export interface CodeMappingModalProps {
   collectionId: string;
   selectedFilePath: string | null;
   onAfterCreateSubFile?: () => void;
+  onNextStep?: () => void;
 }
 
 export default function CodeMappingModal({
@@ -94,6 +97,7 @@ export default function CodeMappingModal({
   collectionId,
   selectedFilePath,
   onAfterCreateSubFile,
+  onNextStep,
 }: CodeMappingModalProps) {
   const { theme } = useTheme();
   const { showSnackbar } = useSnackbar();
@@ -110,6 +114,9 @@ export default function CodeMappingModal({
   const [selectedCodebaseId, setSelectedCodebaseId] = useState("");
   const [initAutomateTestPath, setInitAutomateTestPath] = useState(selectedFilePath ?? "");
   const [checkedFiles, setCheckedFiles] = useState<Set<string>>(new Set());
+  const [isExtractComplete, setIsExtractComplete] = useState(false);
+  const [extractedMarkdown, setExtractedMarkdown] = useState("");
+  const [savedContentFileId, setSavedContentFileId] = useState<string | null>(null);
 
   useEffect(() => {
     setInitAutomateTestPath(selectedFilePath ?? "");
@@ -119,6 +126,9 @@ export default function CodeMappingModal({
     if (!isOpen) return;
     setImportPathError("");
     setInitAutomateTestPath(selectedFilePath ?? "");
+    setIsExtractComplete(false);
+    setExtractedMarkdown("");
+    setSavedContentFileId(null);
 
     if (codebases.length > 0) return;
 
@@ -241,10 +251,9 @@ export default function CodeMappingModal({
           ? crypto.randomUUID()
           : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
 
-      await createSubFile(fileId, contentFileId);
-
-      onClose();
-      onAfterCreateSubFile?.();
+      setSavedContentFileId(contentFileId);
+      setIsExtractComplete(true);
+      setExtractedMarkdown(result.trim());
 
       showSnackbar({
         variant: "success",
@@ -303,7 +312,29 @@ export default function CodeMappingModal({
         </div>
 
         <div className="min-h-0 flex-1 overflow-hidden pt-3">
-          {!selectedCodebaseId ? (
+          {extractedMarkdown ? (
+            <div className="h-full overflow-y-auto rounded-md border border-gray-200 p-4 dark:border-gray-700">
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  Extraction Result
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => { setExtractedMarkdown(""); setIsExtractComplete(false); }}
+                  className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline dark:text-blue-400"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  Back to file tree
+                </button>
+              </div>
+              <MarkdownDisplay
+                content={extractedMarkdown}
+                theme={theme}
+                animate={{ enabled: true, intervalMs: 8, chunkSize: 12 }}
+                autoScroll={{ enabled: true }}
+              />
+            </div>
+          ) : !selectedCodebaseId ? (
             <div className="flex h-full items-center justify-center text-sm text-gray-400">
               Please select a codebase above to view import paths.
             </div>
@@ -346,16 +377,37 @@ export default function CodeMappingModal({
           <button
             type="button"
             onClick={handleInitAutomateTest}
-            disabled={isImportPathLoading || !!importPathError || !importPathData}
+            disabled={isImportPathLoading || !!importPathError || !importPathData || isExtractComplete}
             className={[
               "px-4 py-2 rounded-md text-sm font-medium transition-colors",
               "bg-blue-600 text-white hover:bg-blue-700",
-              isImportPathLoading || !!importPathError || !importPathData
+              isImportPathLoading || !!importPathError || !importPathData || isExtractComplete
                 ? "opacity-60 cursor-not-allowed"
                 : "cursor-pointer",
             ].join(" ")}
           >
             Extract Code Base
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              if (savedContentFileId) {
+                await createSubFile(fileId, savedContentFileId);
+                onAfterCreateSubFile?.();
+              }
+              onClose();
+              setIsFullScreen(false);
+              onNextStep?.();
+            }}
+            disabled={!isExtractComplete}
+            className={[
+              "inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors",
+              "bg-emerald-600 text-white hover:bg-emerald-700",
+              !isExtractComplete ? "opacity-60 cursor-not-allowed" : "cursor-pointer",
+            ].join(" ")}
+          >
+            Next
+            <ArrowRight className="h-4 w-4" />
           </button>
         </div>
       </div>

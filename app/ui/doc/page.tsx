@@ -4,7 +4,7 @@
  * @description Markdown workspace component featuring a file sidebar for navigation, markdown editor, icon and tag editors, and a properties drawer for file metadata management.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowLeftRight, Languages, Loader2, PanelRightOpen } from "lucide-react";
 import Image from "next/image";
 import MarkdownEditor from "../../lib/components/MarkdownEditor";
@@ -49,6 +49,8 @@ export default function Home() {
   const setFileIcon = useDocWorkspaceStore((s) => s.setFileIcon);
   const setSelectedFileTags = useDocWorkspaceStore((s) => s.setSelectedFileTags);
 
+  const skipDrawerCloseRef = useRef(false);
+
   const { showSnackbar } = useSnackbar();
   const translateMutation = useTranslateFileMutation();
   const { data: fileContent } = useFileContentQuery(selectedFile?.id);
@@ -57,6 +59,8 @@ export default function Home() {
   const hasThaiContent = Boolean(selectedFile?.contentTH?.trim());
   const [hasScenarioSubFile, setHasScenarioSubFile] = useState(false);
   const [hasCodebaseSubFile, setHasCodebaseSubFile] = useState(false);
+  const [hasTestcaseSubFile, setHasTestcaseSubFile] = useState(false);
+  const [hasE2eSubFile, setHasE2eSubFile] = useState(false);
 
   useEffect(() => {
     setActiveLang("en");
@@ -66,6 +70,8 @@ export default function Home() {
     if (!selectedFile?.id) {
       setHasScenarioSubFile(false);
       setHasCodebaseSubFile(false);
+      setHasTestcaseSubFile(false);
+      setHasE2eSubFile(false);
       return;
     }
     let cancelled = false;
@@ -76,6 +82,12 @@ export default function Home() {
       );
       setHasCodebaseSubFile(
         entries.some((e) => e.extension === "codebase" || (e.fileName?.includes(".codebase") ?? false))
+      );
+      setHasTestcaseSubFile(
+        entries.some((e) => e.extension === "testcase" || (e.fileName?.includes(".testcase") ?? false))
+      );
+      setHasE2eSubFile(
+        entries.some((e) => e.extension === "e2e" || (e.fileName?.includes(".e2e") ?? false))
       );
     });
     return () => { cancelled = true; };
@@ -130,9 +142,11 @@ export default function Home() {
   }, [selectedFile, activeLang]);
 
   useEffect(() => {
-    // Close the Properties drawer after collection data is reloaded.
-    // Skip initial mount (sidebarReloadKey starts at 0).
     if (sidebarReloadKey <= 0) return;
+    if (skipDrawerCloseRef.current) {
+      skipDrawerCloseRef.current = false;
+      return;
+    }
     setDrawerOpen(false);
   }, [sidebarReloadKey, setDrawerOpen]);
 
@@ -273,11 +287,17 @@ export default function Home() {
                   selectedFilePath={selectedFilePath}
                   disableScenario={hasScenarioSubFile}
                   disableCodebase={hasCodebaseSubFile}
+                  disableTestCase={hasTestcaseSubFile}
+                  disableE2e={hasE2eSubFile || selectedFile.name.includes(".e2e")}
                   onAfterCreateTestCaseFile={({ node, nodePath }) => {
                     bumpSidebarReloadKey();
                     void selectFile(node, nodePath);
                   }}
                   onAfterCreateSubFile={bumpSidebarReloadKey}
+                  onModalClose={() => {
+                    skipDrawerCloseRef.current = true;
+                    bumpSidebarReloadKey();
+                  }}
                 />
               </div>
 
@@ -286,6 +306,10 @@ export default function Home() {
                   fileId={selectedFile.id}
                   reloadKey={sidebarReloadKey}
                   onSelectSubFile={handleSelectSubFile}
+                  onRemoveSubFile={() => {
+                    skipDrawerCloseRef.current = true;
+                    bumpSidebarReloadKey();
+                  }}
                 />
               </div>
             </Drawer>
