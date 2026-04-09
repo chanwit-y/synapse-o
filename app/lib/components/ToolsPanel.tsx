@@ -22,6 +22,7 @@ interface ToolsPanelProps {
   disableTestCase?: boolean;
   onAfterCreateTestCaseFile?: (opts: { node: TreeNode; nodePath: string }) => void;
   onAfterCreateSubFile?: () => void;
+  onModalClose?: () => void;
 }
 
 export default function ToolsPanel({
@@ -34,6 +35,7 @@ export default function ToolsPanel({
   disableTestCase,
   onAfterCreateTestCaseFile,
   onAfterCreateSubFile,
+  onModalClose,
 }: ToolsPanelProps) {
   const { theme } = useTheme();
   const [isTestCaseModalOpen, setIsTestCaseModalOpen] = useState(false);
@@ -134,7 +136,10 @@ export default function ToolsPanel({
 
       <CreateTestCaseModal
         isOpen={isTestCaseModalOpen}
-        onClose={() => setIsTestCaseModalOpen(false)}
+        onClose={() => {
+          setIsTestCaseModalOpen(false);
+          onModalClose?.();
+        }}
         fileId={fileId}
         fileName={fileName}
         collectionId={collectionId}
@@ -146,17 +151,27 @@ export default function ToolsPanel({
 
       <CodeMappingModal
         isOpen={isCodeMappingModalOpen}
-        onClose={() => setIsCodeMappingModalOpen(false)}
+        onClose={() => {
+          setIsCodeMappingModalOpen(false);
+          onModalClose?.();
+        }}
         fileId={fileId}
         fileName={fileName}
         collectionId={collectionId}
         selectedFilePath={selectedFilePath}
         onAfterCreateSubFile={onAfterCreateSubFile}
+        onNextStep={() => {
+          setIsCodeMappingModalOpen(false);
+          setIsTestCaseToolModalOpen(true);
+        }}
       />
 
       <TestCaseToolModal
         isOpen={isTestCaseToolModalOpen}
-        onClose={() => setIsTestCaseToolModalOpen(false)}
+        onClose={() => {
+          setIsTestCaseToolModalOpen(false);
+          onModalClose?.();
+        }}
         fileId={fileId}
         fileName={fileName}
         collectionId={collectionId}

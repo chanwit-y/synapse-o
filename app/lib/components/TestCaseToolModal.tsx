@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Modal from "@/app/lib/components/Modal";
 import { useTheme } from "./ThemeProvider";
-import { FlaskConical, Loader2, Copy, Check } from "lucide-react";
+import { FlaskConical, Loader2, Copy, Check, ArrowRight } from "lucide-react";
 import {
   getSubFilesByFileId,
   testAI,
@@ -459,19 +459,18 @@ ${codebase || "(no .codebase file available)"}
             {isGenerating && <Loader2 className="h-4 w-4 animate-spin" />}
             {isGenerating ? "Generating…" : "Create Test Case"}
           </button>
-          {aiResult.trim() && (
-            <button
-              type="button"
-              onClick={() => void handleSaveAsSubFile()}
-              disabled={isBusy}
-              className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors ${
-                "bg-emerald-600 hover:bg-emerald-700"
-              } ${isBusy ? "opacity-60 cursor-not-allowed" : ""}`}
-            >
-              {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isSaving ? "Saving…" : "Save as Sub-file"}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => void handleSaveAsSubFile()}
+            disabled={isBusy || !aiResult.trim()}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors ${
+              "bg-emerald-600 hover:bg-emerald-700"
+            } ${isBusy || !aiResult.trim() ? "opacity-60 cursor-not-allowed" : ""}`}
+          >
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            {isSaving ? "Saving…" : "Next"}
+            {!isSaving && <ArrowRight className="h-4 w-4" />}
+          </button>
         </div>
       </div>
     </Modal>
