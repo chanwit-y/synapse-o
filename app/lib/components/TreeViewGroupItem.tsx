@@ -1,13 +1,13 @@
 "use client";
 /**
  * @file TreeViewGroupItem.tsx
- * @description A collection group component with expand/collapse and add file/folder buttons.
+ * @description A collection group component with expand/collapse and add file/folder / Azure import controls.
  */
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronRight, ChevronDown, Folder, FileText, Workflow, Table, CloudDownload } from "lucide-react";
 import type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
-import TreeNodeItem from "./TreeNodeItem";
+import TreeNodeItem, { type MarkdownPickerMultiProps } from "./TreeNodeItem";
 import { useTheme } from "./ThemeProvider";
 import Modal from "./Modal";
 import { useRouter } from "next/navigation";
@@ -30,6 +30,8 @@ export interface TreeViewGroupItemProps {
   onRequestDeleteNode?: (node: TreeNode, nodePath: string, groupIndex: number) => void;
   onAddFlow?: (flowName: string, selectedNode: TreeNode | null, selectedNodePath: string | null, groupIndex: number) => void;
   subFileContentIds?: Set<string>;
+  readOnlyTree?: boolean;
+  markdownPickerMulti?: MarkdownPickerMultiProps | null;
 }
 
 export default function TreeViewGroupItem({
@@ -47,6 +49,8 @@ export default function TreeViewGroupItem({
   onRequestDeleteNode,
   onAddFlow,
   subFileContentIds,
+  readOnlyTree,
+  markdownPickerMulti,
 }: TreeViewGroupItemProps) {
   const { theme } = useTheme();
   const router = useRouter();
@@ -56,19 +60,14 @@ export default function TreeViewGroupItem({
   const [flowName, setFlowName] = useState("");
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [contentHeight, setContentHeight] = useState<number>(0);
-  const MAX_EXPANDED_HEIGHT = 360;
-  const expandedHeight = Math.min(contentHeight, MAX_EXPANDED_HEIGHT);
-  const shouldScroll = contentHeight > MAX_EXPANDED_HEIGHT;
 
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
 
-    // Measure on mount + when toggling.
     const measure = () => setContentHeight(el.scrollHeight);
     measure();
 
-    // Keep height in sync when content changes (e.g., nodes added/removed).
     const ro = new ResizeObserver(() => {
       if (isExpanded) measure();
     });
@@ -117,75 +116,77 @@ export default function TreeViewGroupItem({
         </div>
       </Modal>
 
-      <Modal isOpen={isFlowModalOpen} onClose={() => { setIsFlowModalOpen(false); setFlowName(""); }} size="sm">
-        <div className="space-y-4">
-          <h3
-            className={`text-lg font-semibold pr-8 ${
-              theme === "light" ? "text-gray-900" : "text-gray-100"
-            }`}
-          >
-            New Flow
-          </h3>
-          <div>
-            <label
-              htmlFor="flow-name-input"
-              className={`block text-sm font-medium mb-1.5 ${
-                theme === "light" ? "text-gray-700" : "text-gray-300"
+      {!readOnlyTree && (
+        <Modal isOpen={isFlowModalOpen} onClose={() => { setIsFlowModalOpen(false); setFlowName(""); }} size="sm">
+          <div className="space-y-4">
+            <h3
+              className={`text-lg font-semibold pr-8 ${
+                theme === "light" ? "text-gray-900" : "text-gray-100"
               }`}
             >
-              Flow name
-            </label>
-            <input
-              id="flow-name-input"
-              type="text"
-              value={flowName}
-              onChange={(e) => setFlowName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && flowName.trim()) {
+              New Flow
+            </h3>
+            <div>
+              <label
+                htmlFor="flow-name-input"
+                className={`block text-sm font-medium mb-1.5 ${
+                  theme === "light" ? "text-gray-700" : "text-gray-300"
+                }`}
+              >
+                Flow name
+              </label>
+              <input
+                id="flow-name-input"
+                type="text"
+                value={flowName}
+                onChange={(e) => setFlowName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && flowName.trim()) {
+                    onAddFlow?.(flowName.trim(), selectedNode, selectedNodePath, groupIndex);
+                    setIsFlowModalOpen(false);
+                    setFlowName("");
+                  }
+                }}
+                placeholder="Enter flow name"
+                autoFocus
+                className={`w-full px-3 py-2 text-sm rounded-md border outline-none transition-colors ${
+                  theme === "light"
+                    ? "border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    : "border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                }`}
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => { setIsFlowModalOpen(false); setFlowName(""); }}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                  theme === "light"
+                    ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
+                    : "text-gray-300 bg-gray-700 hover:bg-gray-600"
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!flowName.trim()}
+                onClick={() => {
                   onAddFlow?.(flowName.trim(), selectedNode, selectedNodePath, groupIndex);
                   setIsFlowModalOpen(false);
                   setFlowName("");
-                }
-              }}
-              placeholder="Enter flow name"
-              autoFocus
-              className={`w-full px-3 py-2 text-sm rounded-md border outline-none transition-colors ${
-                theme === "light"
-                  ? "border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  : "border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              }`}
-            />
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md transition-colors"
+              >
+                Create
+              </button>
+            </div>
           </div>
-          <div className="flex justify-end gap-2 pt-1">
-            <button
-              type="button"
-              onClick={() => { setIsFlowModalOpen(false); setFlowName(""); }}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                theme === "light"
-                  ? "text-gray-700 bg-gray-100 hover:bg-gray-200"
-                  : "text-gray-300 bg-gray-700 hover:bg-gray-600"
-              }`}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              disabled={!flowName.trim()}
-              onClick={() => {
-                onAddFlow?.(flowName.trim(), selectedNode, selectedNodePath, groupIndex);
-                setIsFlowModalOpen(false);
-                setFlowName("");
-              }}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md transition-colors"
-            >
-              Create
-            </button>
-          </div>
-        </div>
-      </Modal>
+        </Modal>
+      )}
 
       <div
-        className={`flex items-center justify-between px-2 py-2 text-xs font-semibold text-gray-500 ${theme === 'light' ? "text-gray-500" : "text-gray-400"} uppercase tracking-wide hover:bg-gray-100 ${theme === 'light' ? "hover:bg-gray-100" : "hover:bg-gray-800"} rounded cursor-pointer transition-colors`}
+        className={`flex items-center justify-between px-2 py-2 text-xs font-semibold text-gray-500 ${theme === "light" ? "text-gray-500" : "text-gray-400"} uppercase tracking-wide hover:bg-gray-100 ${theme === "light" ? "hover:bg-gray-100" : "hover:bg-gray-800"} rounded cursor-pointer transition-colors`}
         onClick={() => setIsExpanded(!isExpanded)}
         data-tree-interactive="true"
       >
@@ -195,75 +196,83 @@ export default function TreeViewGroupItem({
           </span>
           <span className="truncate" title={group.name}>{group.name}</span>
         </div>
-        <div className="shrink-0 flex items-center gap-0.5">
-          <div className={`flex items-center gap-0.5 rounded-md px-0.5 ${
-            theme === "light" ? "bg-gray-100" : "bg-gray-800"
-          }`}>
+        {!readOnlyTree && (
+          <div className="shrink-0 flex items-center gap-0.5">
+            <div
+              className={`flex items-center gap-0.5 rounded-md px-0.5 ${
+                theme === "light" ? "bg-gray-100" : "bg-gray-800"
+              }`}
+            >
+              <button
+                type="button"
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddFile?.(selectedNode, selectedNodePath, groupIndex, "md");
+                }}
+                title="Add Markdown File"
+              >
+                <FileText className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              </button>
+              <button
+                type="button"
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsFlowModalOpen(true);
+                }}
+                title="Add Flow"
+              >
+                <Workflow className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              </button>
+              <button
+                type="button"
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddFile?.(selectedNode, selectedNodePath, groupIndex, "datatable");
+                }}
+                title="Add Data Table"
+              >
+                <Table className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              </button>
+              <button
+                type="button"
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (azurePatConfigured === false) {
+                    setIsPatRequiredModalOpen(true);
+                    return;
+                  }
+                  onImportAzureMarkdown?.(selectedNode, selectedNodePath, groupIndex);
+                }}
+                title="Import from Azure"
+              >
+                <CloudDownload className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
             <button
+              type="button"
               className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
-                onAddFile?.(selectedNode, selectedNodePath, groupIndex, "md");
+                onAddFolder?.(selectedNode, selectedNodePath, groupIndex);
               }}
-              title="Add Markdown File"
+              title="Add Folder"
             >
-              <FileText className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-            </button>
-            <button
-              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsFlowModalOpen(true);
-              }}
-              title="Add Flow"
-            >
-              <Workflow className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-            </button>
-            <button
-              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddFile?.(selectedNode, selectedNodePath, groupIndex, "datatable");
-              }}
-              title="Add Data Table"
-            >
-              <Table className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-            </button>
-            <button
-              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (azurePatConfigured === false) {
-                  setIsPatRequiredModalOpen(true);
-                  return;
-                }
-                onImportAzureMarkdown?.(selectedNode, selectedNodePath, groupIndex);
-              }}
-              title="Import from Azure"
-            >
-              <CloudDownload className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              <Folder className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
             </button>
           </div>
-          <button
-            className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddFolder?.(selectedNode, selectedNodePath, groupIndex);
-            }}
-            title="Add Folder"
-          >
-            <Folder className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-          </button>
-        </div>
+        )}
       </div>
       <div
         className="transition-[height,opacity,transform] duration-300 ease-in-out will-change-[height,opacity,transform]"
         style={{
-          height: isExpanded ? expandedHeight : 0,
+          height: isExpanded ? contentHeight : 0,
           opacity: isExpanded ? 1 : 0,
           transform: isExpanded ? "translateY(0px)" : "translateY(-8px)",
-          overflowY: isExpanded && shouldScroll ? "auto" : "hidden",
-          overflowX: "hidden",
+          overflow: "hidden",
         }}
       >
         <div ref={contentRef} className="pt-1 pl-4">
@@ -281,6 +290,8 @@ export default function TreeViewGroupItem({
               groupIndex={groupIndex}
               onRequestDeleteNode={onRequestDeleteNode}
               subFileContentIds={subFileContentIds}
+              readOnlyTree={readOnlyTree}
+              markdownPickerMulti={markdownPickerMulti}
             />
           ))}
         </div>
@@ -288,5 +299,3 @@ export default function TreeViewGroupItem({
     </div>
   );
 }
-
-

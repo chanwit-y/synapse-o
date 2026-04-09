@@ -7,11 +7,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PanelLeftClose, PanelLeftOpen, PlusIcon } from "lucide-react";
 import TreeView from "./TreeView";
-import type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
 import type { FileType } from "./TreeViewGroupItem";
+import type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
 import FileSidebarModals from "./FileSidebarModals";
 import { useSnackbar } from "./Snackbar";
 import { useTheme } from "./ThemeProvider";
+import {
+  assignCollectionId,
+  applyIconsToNodes,
+  collectFileIds,
+  parseDirectories,
+} from "@/app/lib/collection/treeHydrate";
 import { createCollection, findAllCollections, findFileIconsByIds, updateCollectionDirectories, getAllSubFileContentIds } from "@/app/ui/doc/action";
 import { hasAzurePatConfigured } from "@/app/ui/settings/azure-api-key/action";
 import { fileService } from "@/app/lib/services/fileService.client";
@@ -67,67 +73,6 @@ function getSiblingContainerList(
   if (!parent || parent.type !== "folder") return directories;
   parent.children = parent.children ?? [];
   return parent.children;
-}
-
-function parseDirectories(raw: unknown): TreeNode[] {
-  if (!raw) return [];
-  if (Array.isArray(raw)) return raw as TreeNode[];
-
-  if (typeof raw === "string") {
-    // Tolerate historical double-encoding (JSON string inside JSON string).
-    try {
-      const once = JSON.parse(raw) as unknown;
-      if (Array.isArray(once)) return once as TreeNode[];
-      if (typeof once === "string") {
-        try {
-          const twice = JSON.parse(once) as unknown;
-          return Array.isArray(twice) ? (twice as TreeNode[]) : [];
-        } catch {
-          return [];
-        }
-      }
-      return [];
-    } catch {
-      return [];
-    }
-  }
-
-  return [];
-}
-
-function assignCollectionId(nodes: TreeNode[], collectionId: string): TreeNode[] {
-  return nodes.map((node) => {
-    const next: TreeNode = {
-      ...node,
-      collectionId: node.collectionId || collectionId,
-    };
-    if (next.type === "folder" && next.children?.length) {
-      next.children = assignCollectionId(next.children, collectionId);
-    }
-    return next;
-  });
-}
-
-function collectFileIds(nodes: TreeNode[], acc: Set<string>) {
-  nodes.forEach((node) => {
-    if (node.type === "file") acc.add(node.id);
-    if (node.type === "folder" && node.children?.length) {
-      collectFileIds(node.children, acc);
-    }
-  });
-}
-
-function applyIconsToNodes(nodes: TreeNode[], iconsById: Record<string, string | null>): TreeNode[] {
-  return nodes.map((node) => {
-    const next: TreeNode = {
-      ...node,
-      icon: node.type === "file" ? iconsById[node.id] ?? node.icon ?? null : node.icon ?? null,
-    };
-    if (next.type === "folder" && next.children?.length) {
-      next.children = applyIconsToNodes(next.children, iconsById);
-    }
-    return next;
-  });
 }
 
 function applyIconOverrides(nodes: TreeNode[], overrides: Record<string, string | null>): TreeNode[] {

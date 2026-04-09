@@ -4,7 +4,7 @@
  * @description A recursive tree node component that renders individual files/folders with expand/collapse, deletion, and custom icon support.
  */
 
-import { cloneElement, isValidElement, useEffect, useState } from "react";
+import { cloneElement, isValidElement, useEffect, useState, type MouseEvent } from "react";
 import { ChevronRight, ChevronDown, Folder, FolderOpen, File, Trash2 } from "lucide-react";
 import type { TreeNode } from "./@types/treeViewTypes";
 import { useTheme } from "./ThemeProvider";
@@ -12,6 +12,18 @@ import { iconOptions } from "./iconOptions";
 import { getSubFilesByFileId, deleteSubFile, type SubFileEntry } from "@/app/ui/doc/action";
 
 const iconMap = new Map(iconOptions.map((option) => [option.id, option.icon]));
+
+export function isMarkdownTreeFile(node: TreeNode): boolean {
+  if (node.type !== "file") return false;
+  const lower = node.name.toLowerCase();
+  return lower.endsWith(".md") || node.extension === "md";
+}
+
+export type MarkdownPickerMultiProps = {
+  /** Keys are file IDs that are checked. Values are ignored; presence matters for `.has()`. */
+  selectedByFileId: ReadonlyMap<string, unknown>;
+  onToggle: (fileId: string, node: TreeNode, nodePath: string, checked: boolean) => void;
+};
 
 export interface TreeNodeItemProps {
   node: TreeNode;
@@ -25,6 +37,9 @@ export interface TreeNodeItemProps {
   groupIndex: number;
   onRequestDeleteNode?: (node: TreeNode, nodePath: string, groupIndex: number) => void;
   subFileContentIds?: Set<string>;
+  readOnlyTree?: boolean;
+  /** When set with readOnlyTree, `.md` files show a checkbox for multi-select (e.g. RAG picker). */
+  markdownPickerMulti?: MarkdownPickerMultiProps | null;
 }
 
 export default function TreeNodeItem({
@@ -39,6 +54,8 @@ export default function TreeNodeItem({
   groupIndex,
   onRequestDeleteNode,
   subFileContentIds,
+  readOnlyTree,
+  markdownPickerMulti,
 }: TreeNodeItemProps) {
   const { theme } = useTheme()
   const [isExpanded, setIsExpanded] = useState(false);
@@ -81,9 +98,14 @@ export default function TreeNodeItem({
       })
     : resolvedIcon ?? null;
 
-  const handleClick = () => {
+  const handleClick = (e: MouseEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest("input[type='checkbox']")) return;
     if (isFolder && hasChildren) {
       setIsExpanded(!isExpanded);
+    }
+    if (markdownPickerMulti && isFile && isMarkdownTreeFile(node)) {
+      const next = !markdownPickerMulti.selectedByFileId.has(node.id);
+      markdownPickerMulti.onToggle(node.id, node, nodePath, next);
     }
     setSelectedNodePath(nodePath);
     setSelectedNode(node);
@@ -101,6 +123,21 @@ export default function TreeNodeItem({
         onClick={handleClick}
         data-tree-interactive="true"
       >
+        {markdownPickerMulti && isFile && isMarkdownTreeFile(node) && (
+          <input
+            type="checkbox"
+            checked={markdownPickerMulti.selectedByFileId.has(node.id)}
+            onChange={(ev) => {
+              ev.stopPropagation();
+              markdownPickerMulti.onToggle(node.id, node, nodePath, ev.target.checked);
+            }}
+            onClick={(ev) => ev.stopPropagation()}
+            className={`h-4 w-4 shrink-0 rounded border cursor-pointer accent-blue-600 ${
+              theme === "light" ? "border-gray-400" : "border-gray-500"
+            }`}
+            aria-label={`Select ${node.name}`}
+          />
+        )}
         {isFolder && hasChildren && (
           <span className="flex items-center justify-center w-4 h-4">
             {isExpanded ? (
@@ -125,21 +162,23 @@ export default function TreeNodeItem({
         <span className="text-sm truncate flex-1 min-w-0" title={node.name}>
           {node.name}
         </span>
-        <button
-          type="button"
-          className={`ml-2 p-1 rounded transition-colors opacity-0 group-hover:opacity-100 ${theme === "light"
-              ? "text-gray-500 hover:text-red-600 hover:bg-red-50"
-              : "text-gray-400 hover:text-red-400 hover:bg-red-900/20"
-            }`}
-          onClick={(event) => {
-            event.stopPropagation();
-            onRequestDeleteNode?.(node, nodePath, groupIndex);
-          }}
-          aria-label={`Delete ${node.type}`}
-          title={`Delete ${node.type}`}
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
+        {!readOnlyTree && (
+          <button
+            type="button"
+            className={`ml-2 p-1 rounded transition-colors opacity-0 group-hover:opacity-100 ${theme === "light"
+                ? "text-gray-500 hover:text-red-600 hover:bg-red-50"
+                : "text-gray-400 hover:text-red-400 hover:bg-red-900/20"
+              }`}
+            onClick={(event) => {
+              event.stopPropagation();
+              onRequestDeleteNode?.(node, nodePath, groupIndex);
+            }}
+            aria-label={`Delete ${node.type}`}
+            title={`Delete ${node.type}`}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
       {hasChildren && (
         <div
@@ -167,6 +206,8 @@ export default function TreeNodeItem({
                 groupIndex={groupIndex}
                 onRequestDeleteNode={onRequestDeleteNode}
                 subFileContentIds={subFileContentIds}
+                readOnlyTree={readOnlyTree}
+                markdownPickerMulti={markdownPickerMulti}
               />
             ))}
           </div>
@@ -184,6 +225,16 @@ export default function TreeNodeItem({
                   className: iconClassName,
                 })
               : null;
+            const subNode: TreeNode = {
+              id: sf.contentFileId,
+              collectionId: sf.collectionId ?? "",
+              name: sf.fileName ?? "Untitled",
+              type: "file",
+              icon: sf.icon,
+              extension: sf.extension,
+              tags: sf.tags,
+            };
+            const subIsMd = isMarkdownTreeFile(subNode);
             return (
               <div
                 key={sf.subFileId}
@@ -194,43 +245,56 @@ export default function TreeNodeItem({
                 }`}
                 style={{ paddingLeft: `${sfIndent}px` }}
                 onClick={(e) => {
+                  if ((e.target as HTMLElement).closest("input[type='checkbox']")) return;
                   e.stopPropagation();
-                  const subNode: TreeNode = {
-                    id: sf.contentFileId,
-                    collectionId: sf.collectionId ?? "",
-                    name: sf.fileName ?? "Untitled",
-                    type: "file",
-                    icon: sf.icon,
-                    extension: sf.extension,
-                    tags: sf.tags,
-                  };
+                  if (markdownPickerMulti && subIsMd) {
+                    const next = !markdownPickerMulti.selectedByFileId.has(subNode.id);
+                    markdownPickerMulti.onToggle(subNode.id, subNode, sfPath, next);
+                  }
                   setSelectedNodePath(sfPath);
                   setSelectedNode(subNode);
                   onNodeClick?.(subNode, sfPath);
                 }}
                 data-tree-interactive="true"
               >
+                {markdownPickerMulti && subIsMd && (
+                  <input
+                    type="checkbox"
+                    checked={markdownPickerMulti.selectedByFileId.has(subNode.id)}
+                    onChange={(ev) => {
+                      ev.stopPropagation();
+                      markdownPickerMulti.onToggle(subNode.id, subNode, sfPath, ev.target.checked);
+                    }}
+                    onClick={(ev) => ev.stopPropagation()}
+                    className={`h-4 w-4 shrink-0 rounded border cursor-pointer accent-blue-600 ${
+                      theme === "light" ? "border-gray-400" : "border-gray-500"
+                    }`}
+                    aria-label={`Select ${sf.fileName ?? "file"}`}
+                  />
+                )}
                 {sfIconEl ?? <File className={iconClassName} />}
                 <span className="text-sm truncate flex-1 min-w-0" title={sf.fileName ?? "Untitled"}>
                   {sf.fileName ?? "Untitled"}
                 </span>
-                <button
-                  type="button"
-                  className={`ml-2 p-1 rounded transition-colors opacity-0 group-hover/sub:opacity-100 ${
-                    theme === "light"
-                      ? "text-gray-500 hover:text-red-600 hover:bg-red-50"
-                      : "text-gray-400 hover:text-red-400 hover:bg-red-900/20"
-                  }`}
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    await deleteSubFile(sf.subFileId);
-                    setSubFiles((prev) => prev.filter((s) => s.subFileId !== sf.subFileId));
-                  }}
-                  aria-label="Remove sub-file"
-                  title="Remove sub-file"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                {!readOnlyTree && (
+                  <button
+                    type="button"
+                    className={`ml-2 p-1 rounded transition-colors opacity-0 group-hover/sub:opacity-100 ${
+                      theme === "light"
+                        ? "text-gray-500 hover:text-red-600 hover:bg-red-50"
+                        : "text-gray-400 hover:text-red-400 hover:bg-red-900/20"
+                    }`}
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      await deleteSubFile(sf.subFileId);
+                      setSubFiles((prev) => prev.filter((s) => s.subFileId !== sf.subFileId));
+                    }}
+                    aria-label="Remove sub-file"
+                    title="Remove sub-file"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             );
           })}
