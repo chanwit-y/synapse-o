@@ -13,8 +13,9 @@ import { configService } from "@/app/lib/services/config/configService.server";
 const semanticCache = new AiSemanticCacheRedis();
 
 
-export async function aiUnitTest(prompt: string) {
-	console.log("Hi")
+const RESPONSES_ONLY_MODELS = new Set(["gpt-5-codex"]);
+
+export async function aiUnitTest(prompt: string, model: string = "gpt-4.1") {
 	const trimmedPrompt = prompt?.trim();
 	if (!trimmedPrompt) {
 		throw new Error("Prompt is required.");
@@ -25,22 +26,27 @@ export async function aiUnitTest(prompt: string) {
 		throw new Error("OpenAI API key not found. Please add one in Settings.");
 	}
 
-	// Semantic cache (RedisSearch vector KNN). If Redis isn't configured/available, this is a no-op.
 	const cacheDomain = "aiUnitTest";
-	const cacheVersion = "gpt-5 nano";
-	// const cached = await semanticCache.lookupText(trimmedPrompt, cacheDomain, cacheVersion, apiKey);
-	// if (cached) return cached;
+	const cacheVersion = model;
+
+	if (RESPONSES_ONLY_MODELS.has(model)) {
+		const openai = new OpenAI({ apiKey });
+		const response = await openai.responses.create({
+			model,
+			input: [{ role: "user", content: trimmedPrompt }],
+		});
+		const text = response.output_text;
+		void semanticCache.writeText(trimmedPrompt, text, cacheDomain, cacheVersion, apiKey);
+		return text;
+	}
 
 	const llm = new ChatOpenAI({
 		apiKey: apiKey,
-		model: "gpt-4.1",
+		model,
 	});
 
-	console.log("completion is start");
 	const completion = await llm.invoke(trimmedPrompt);
-	console.log("completion is end");
 
-	// Chat models return a message object; normalize to a string for callers.
 	if (typeof completion === "string") {
 		void semanticCache.writeText(trimmedPrompt, completion, cacheDomain, cacheVersion, apiKey);
 		return completion;
@@ -96,6 +102,63 @@ export async function aiAnalyzeImage(
 	question?: string,
 ): Promise<string> {
 	return analyzeImageChain.invoke({ base64Image, mimeType, question });
+}
+
+export async function aiE2e(prompt: string, model: string = "gpt-5-codex") {
+	const trimmedPrompt = prompt?.trim();
+	if (!trimmedPrompt) {
+		throw new Error("Prompt is required.");
+	}
+
+	const apiKey = await configService.getOpenAiApiKey();
+	if (!apiKey) {
+		throw new Error("OpenAI API key not found. Please add one in Settings.");
+	}
+
+	const cacheDomain = "aiE2e";
+	const cacheVersion = model;
+
+	try {
+		if (RESPONSES_ONLY_MODELS.has(model)) {
+			console.log(`[aiE2e] Using Responses API — model=${model}`);
+			const openai = new OpenAI({ apiKey });
+			const response = await openai.responses.create({
+				model,
+				input: [{ role: "user", content: trimmedPrompt }],
+			});
+			const text = response.output_text;
+			console.log(`[aiE2e] Responses API success — ${text.length} chars`);
+			void semanticCache.writeText(trimmedPrompt, text, cacheDomain, cacheVersion, apiKey);
+			return text;
+		}
+
+		console.log(`[aiE2e] Using ChatOpenAI — model=${model}`);
+		const llm = new ChatOpenAI({
+			apiKey: apiKey,
+			model,
+		});
+
+		const completion: unknown = await llm.invoke(trimmedPrompt);
+
+		if (typeof completion === "string") {
+			console.log(`[aiE2e] ChatOpenAI success (string) — ${completion.length} chars`);
+			void semanticCache.writeText(trimmedPrompt, completion, cacheDomain, cacheVersion, apiKey);
+			return completion;
+		}
+		const content: unknown = (completion as { content?: unknown })?.content;
+		if (typeof content === "string") {
+			console.log(`[aiE2e] ChatOpenAI success (content) — ${content.length} chars`);
+			void semanticCache.writeText(trimmedPrompt, content, cacheDomain, cacheVersion, apiKey);
+			return content;
+		}
+		const fallback = JSON.stringify(content ?? completion);
+		console.log(`[aiE2e] ChatOpenAI success (fallback) — ${fallback.length} chars`);
+		void semanticCache.writeText(trimmedPrompt, fallback, cacheDomain, cacheVersion, apiKey);
+		return fallback;
+	} catch (error) {
+		console.error(`[aiE2e] Error — model=${model}:`, error);
+		throw error;
+	}
 }
 
 export async function aiExtractCodeContext(codes: string[]): Promise<string> {

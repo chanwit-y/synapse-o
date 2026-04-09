@@ -11,6 +11,7 @@ import type { TreeNode } from "./@types/treeViewTypes";
 import CreateTestCaseModal from "./CreateTestCaseModal";
 import CodeMappingModal from "./CodeMappingModal";
 import TestCaseToolModal from "./TestCaseToolModal";
+import CreateE2eModal from "./CreateE2eModal";
 
 interface ToolsPanelProps {
   fileId: string;
@@ -20,6 +21,7 @@ interface ToolsPanelProps {
   disableScenario?: boolean;
   disableCodebase?: boolean;
   disableTestCase?: boolean;
+  disableE2e?: boolean;
   onAfterCreateTestCaseFile?: (opts: { node: TreeNode; nodePath: string }) => void;
   onAfterCreateSubFile?: () => void;
   onModalClose?: () => void;
@@ -33,6 +35,7 @@ export default function ToolsPanel({
   disableScenario,
   disableCodebase,
   disableTestCase,
+  disableE2e,
   onAfterCreateTestCaseFile,
   onAfterCreateSubFile,
   onModalClose,
@@ -41,6 +44,10 @@ export default function ToolsPanel({
   const [isTestCaseModalOpen, setIsTestCaseModalOpen] = useState(false);
   const [isCodeMappingModalOpen, setIsCodeMappingModalOpen] = useState(false);
   const [isTestCaseToolModalOpen, setIsTestCaseToolModalOpen] = useState(false);
+  const [isE2eModalOpen, setIsE2eModalOpen] = useState(false);
+  const [isE2eGenerating, setIsE2eGenerating] = useState(false);
+
+  const e2eDisabled = disableE2e || isE2eGenerating;
 
   const handleOpenCodeMapping = () => {
     setIsCodeMappingModalOpen(true);
@@ -118,11 +125,15 @@ export default function ToolsPanel({
         <div className="group relative">
           <button
             type="button"
+            onClick={() => setIsE2eModalOpen(true)}
+            disabled={e2eDisabled}
             className={[
               "flex items-center justify-center rounded-md p-2 text-sm font-medium transition-colors",
-              theme === "dark"
-                ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+              e2eDisabled
+                ? "opacity-40 cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-600"
+                : theme === "dark"
+                  ? "bg-gray-800 text-gray-200 hover:bg-gray-700"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200",
             ].join(" ")}
             aria-label="Create e2e"
           >
@@ -177,6 +188,20 @@ export default function ToolsPanel({
         collectionId={collectionId}
         selectedFilePath={selectedFilePath}
         onAfterCreateSubFile={onAfterCreateSubFile}
+      />
+
+      <CreateE2eModal
+        isOpen={isE2eModalOpen}
+        onClose={() => {
+          setIsE2eModalOpen(false);
+          onModalClose?.();
+        }}
+        fileId={fileId}
+        fileName={fileName}
+        collectionId={collectionId}
+        selectedFilePath={selectedFilePath}
+        onAfterCreateSubFile={onAfterCreateSubFile}
+        onBusyChange={setIsE2eGenerating}
       />
     </div>
   );
