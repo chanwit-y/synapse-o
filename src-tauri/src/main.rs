@@ -45,8 +45,10 @@ fn read_file(path: String) -> String {
 fn extract_files(content: String) -> HashMap<String, String> {
     md::extract_files_map(&content)
 }
+
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![greet, extract_import, read_file, read_files, extract_files])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

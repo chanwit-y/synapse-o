@@ -193,31 +193,53 @@ export default function Home() {
       <main className="flex-1 w-dvw overflow-auto animate-fade-in flex flex-col">
         {selectedFile ? (
           <div className="flex flex-col flex-1 min-h-0">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-1 pt-6 pl-6 text-2xl font-bold text-gray-300">
-                {parentFile && (
-                  <button
-                    type="button"
-                    onClick={() => void goBackToParent()}
-                    className={[
-                      "flex h-8 w-8 items-center justify-center rounded-md transition-colors cursor-pointer mr-1",
-                      theme === "dark"
-                        ? "text-gray-300 hover:bg-gray-700"
-                        : "text-gray-600 hover:bg-gray-100",
-                    ].join(" ")}
-                    aria-label={`Back to ${parentFile.name}`}
-                    title={`Back to ${parentFile.name}`}
-                  >
-                    <ArrowLeft className="h-5 w-5" />
-                  </button>
+            <div className="flex justify-between items-start">
+              <div className="flex flex-col gap-1 pt-6 pl-6">
+                <div className="flex items-center gap-1 text-2xl font-bold text-gray-300">
+                  {parentFile && (
+                    <button
+                      type="button"
+                      onClick={() => void goBackToParent()}
+                      className={[
+                        "flex h-8 w-8 items-center justify-center rounded-md transition-colors cursor-pointer mr-1",
+                        theme === "dark"
+                          ? "text-gray-300 hover:bg-gray-700"
+                          : "text-gray-600 hover:bg-gray-100",
+                      ].join(" ")}
+                      aria-label={`Back to ${parentFile.name}`}
+                      title={`Back to ${parentFile.name}`}
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                    </button>
+                  )}
+                  <IconPopover
+                    value={selectedIconId}
+                    options={iconOptions}
+                    onChange={handleIconChange}
+                    ariaLabel="Change file icon"
+                  />
+                  <span>{selectedFile.name}</span>
+                </div>
+                {selectedFile.tags && selectedFile.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 ml-10">
+                    {selectedFile.tags.map((tag) => {
+                      const hex = (tag.color ?? "#60a5fa").replace("#", "");
+                      const r = parseInt(hex.slice(0, 2), 16);
+                      const g = parseInt(hex.slice(2, 4), 16);
+                      const b = parseInt(hex.slice(4, 6), 16);
+                      const textColor = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.62 ? "#111827" : "#ffffff";
+                      return (
+                        <span
+                          key={tag.id}
+                          className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                          style={{ backgroundColor: tag.color ?? "#60a5fa", color: textColor }}
+                        >
+                          {tag.label}
+                        </span>
+                      );
+                    })}
+                  </div>
                 )}
-                <IconPopover
-                  value={selectedIconId}
-                  options={iconOptions}
-                  onChange={handleIconChange}
-                  ariaLabel="Change file icon"
-                />
-                <span className="">{selectedFile.name}</span>
               </div>
 <div className="flex items-center gap-2">
               {hasThaiContent ? (

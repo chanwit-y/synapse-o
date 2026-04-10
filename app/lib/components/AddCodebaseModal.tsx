@@ -1,6 +1,7 @@
 "use client";
 
-import { Plus, Save } from "lucide-react";
+import { Plus, Save, FolderOpen } from "lucide-react";
+import { open } from "@tauri-apps/plugin-dialog";
 import Modal from "@/app/lib/components/Modal";
 
 interface AddCodebaseModalProps {
@@ -9,12 +10,10 @@ interface AddCodebaseModalProps {
   name: string;
   description: string;
   importSrcPath: string;
-  importPath: string;
   isSaving: boolean;
   onNameChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onImportSrcPathChange: (value: string) => void;
-  onImportPathChange: (value: string) => void;
   onClose: () => void;
   onSave: () => void;
 }
@@ -25,12 +24,10 @@ export default function AddCodebaseModal({
   name,
   description,
   importSrcPath,
-  importPath,
   isSaving,
   onNameChange,
   onDescriptionChange,
   onImportSrcPathChange,
-  onImportPathChange,
   onClose,
   onSave,
 }: AddCodebaseModalProps) {
@@ -89,35 +86,36 @@ export default function AddCodebaseModal({
             <label htmlFor="add-import-src-path" className={labelClasses}>
               Import Src Path <span className="text-red-500">*</span>
             </label>
-            <input
-              id="add-import-src-path"
-              type="text"
-              value={importSrcPath}
-              onChange={(e) => onImportSrcPathChange(e.target.value)}
-              placeholder="e.g., /path/to/source"
-              className={`${inputClasses} font-mono`}
-            />
+            <div className="flex gap-2">
+              <input
+                id="add-import-src-path"
+                type="text"
+                value={importSrcPath}
+                readOnly
+                placeholder="Select a folder..."
+                className={`${inputClasses} font-mono flex-1 cursor-default`}
+              />
+              <button
+                type="button"
+                onClick={async () => {
+                  const selected = await open({ directory: true, multiple: false });
+                  if (selected) onImportSrcPathChange(selected as string);
+                }}
+                className={`shrink-0 flex items-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
+                  isDark
+                    ? "border-gray-700 bg-gray-800 text-gray-200 hover:bg-gray-700"
+                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                <FolderOpen className="h-4 w-4" />
+                Browse
+              </button>
+            </div>
             <p className={`mt-1.5 text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>
               The source path to import from.
             </p>
           </div>
 
-          <div>
-            <label htmlFor="add-import-path" className={labelClasses}>
-              Import File Path
-            </label>
-            <input
-              id="add-import-path"
-              type="text"
-              value={importPath}
-              onChange={(e) => onImportPathChange(e.target.value)}
-              placeholder="e.g., /path/to/project or ./relative/path"
-              className={`${inputClasses} font-mono`}
-            />
-            <p className={`mt-1.5 text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-              The file system path where the codebase is located.
-            </p>
-          </div>
         </div>
 
         <div className={`flex justify-end gap-3 pt-3 border-t ${isDark ? "border-gray-700" : "border-gray-200"}`}>
