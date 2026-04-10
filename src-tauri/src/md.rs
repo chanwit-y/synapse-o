@@ -19,6 +19,11 @@ pub struct ExtractedFile {
 /// ```language
 /// <code>
 /// ```
+///
+/// **path/to/file.ext**
+/// ```language
+/// <code>
+/// ```
 /// ```
 pub fn extract_files(input: &str) -> Vec<ExtractedFile> {
     let mut results = Vec::new();
@@ -73,7 +78,16 @@ pub fn extract_files_map(input: &str) -> HashMap<String, String> {
 /// Supported formats:
 ///   "### File 1: e2e/fixtures/mock-data.ts"  -> Some("e2e/fixtures/mock-data.ts")
 ///   "### `tests/pages/app.page.ts`"          -> Some("tests/pages/app.page.ts")
+///   "**tests/pages/dashboard.page.ts**"       -> Some("tests/pages/dashboard.page.ts")
 fn parse_file_header(line: &str) -> Option<&str> {
+    // Format: **path/to/file.ext**
+    if let Some(inner) = line.strip_prefix("**").and_then(|s| s.strip_suffix("**")) {
+        let path = inner.trim();
+        if !path.is_empty() && path.contains('.') {
+            return Some(path);
+        }
+    }
+
     let line = line.strip_prefix("###")?;
     let line = line.trim();
 
@@ -185,5 +199,101 @@ const y = 2;
         assert_eq!(files.len(), 2);
         assert_eq!(files[0].path, "src/old-format.ts");
         assert_eq!(files[1].path, "src/new-format.ts");
+    }
+
+    #[test]
+    fn test_parse_file_header_bold() {
+        assert_eq!(
+            parse_file_header("**tests/pages/dashboard.page.ts**"),
+            Some("tests/pages/dashboard.page.ts")
+        );
+        assert_eq!(
+            parse_file_header("**tests/fixtures/dashboard.data.ts**"),
+            Some("tests/fixtures/dashboard.data.ts")
+        );
+    }
+
+    #[test]
+    fn test_parse_file_header_bold_no_extension() {
+        assert_eq!(parse_file_header("**just bold text**"), None);
+    }
+
+    #[test]
+    fn test_extract_bold_format() {
+        let md = r#"
+**tests/pages/dashboard.page.ts**
+```typescript
+import { Page } from '@playwright/test';
+
+export class DashboardPage {
+  readonly page: Page;
+  constructor(page: Page) {
+    this.page = page;
+  }
+}
+```
+
+---
+
+**tests/fixtures/dashboard.data.ts**
+```typescript
+export interface DashboardTestData {
+  categories: { name: string; slug: string }[];
+}
+
+export const tc01Data: DashboardTestData = {
+  categories: [{ name: '365 Office', slug: '365-office' }],
+};
+```
+
+---
+
+**tests/dashboard.spec.ts**
+```typescript
+import { expect, test } from '@playwright/test';
+import { DashboardPage } from './pages/dashboard.page';
+
+test('loads dashboard', async ({ page }) => {
+  const dashboard = new DashboardPage(page);
+  await expect(page).toHaveURL(/dashboard/);
+});
+```
+"#;
+        let files = extract_files(md);
+        assert_eq!(files.len(), 3);
+
+        assert_eq!(files[0].path, "tests/pages/dashboard.page.ts");
+        assert!(files[0].code.contains("DashboardPage"));
+
+        assert_eq!(files[1].path, "tests/fixtures/dashboard.data.ts");
+        assert!(files[1].code.contains("DashboardTestData"));
+
+        assert_eq!(files[2].path, "tests/dashboard.spec.ts");
+        assert!(files[2].code.contains("test('loads dashboard'"));
+    }
+
+    #[test]
+    fn test_extract_all_three_formats_mixed() {
+        let md = r#"
+### File 1: src/format-a.ts
+```typescript
+const a = 1;
+```
+
+### `src/format-b.ts`
+```typescript
+const b = 2;
+```
+
+**src/format-c.ts**
+```typescript
+const c = 3;
+```
+"#;
+        let files = extract_files(md);
+        assert_eq!(files.len(), 3);
+        assert_eq!(files[0].path, "src/format-a.ts");
+        assert_eq!(files[1].path, "src/format-b.ts");
+        assert_eq!(files[2].path, "src/format-c.ts");
     }
 }

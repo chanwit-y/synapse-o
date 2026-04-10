@@ -131,7 +131,7 @@ export default function CodeEditor({ selectedFile }: CodeEditorProps) {
   if (!selectedFile) return null;
 
   return (
-    <div className="w-full max-w-[980px] flex flex-col gap-2 h-full">
+    <div className="w-full flex flex-col gap-2 h-full">
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
           <span

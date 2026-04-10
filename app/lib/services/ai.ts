@@ -33,6 +33,7 @@ export async function aiUnitTest(prompt: string, model: string = "gpt-4.1") {
 		const openai = new OpenAI({ apiKey });
 		const response = await openai.responses.create({
 			model,
+			temperature: 0.2,
 			input: [{ role: "user", content: trimmedPrompt }],
 		});
 		const text = response.output_text;
@@ -43,6 +44,7 @@ export async function aiUnitTest(prompt: string, model: string = "gpt-4.1") {
 	const llm = new ChatOpenAI({
 		apiKey: apiKey,
 		model,
+		temperature: 0.2,
 	});
 
 	const completion = await llm.invoke(trimmedPrompt);
