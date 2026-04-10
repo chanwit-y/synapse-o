@@ -10,6 +10,7 @@ import Image from "next/image";
 import MarkdownEditor from "../../lib/components/MarkdownEditor";
 import DataTable from "../../lib/components/DataTable";
 import FlowCanvas from "../../lib/components/FlowCanvas";
+import CodeEditor from "../../lib/components/CodeEditor";
 import FileSidebar from "../../lib/components/FileSidebar";
 import type { TreeNode } from "../../lib/components/@types/treeViewTypes";
 import IconPopover from "../../lib/components/IconPopover";
@@ -17,6 +18,7 @@ import { iconOptions } from "../../lib/components/iconOptions";
 import Drawer from "../../lib/components/Drawer";
 import TagEditor from "../../lib/components/TagEditor";
 import ToolsPanel from "../../lib/components/ToolsPanel";
+import E2eCodeToolsPanel from "../../lib/components/E2eCodeToolsPanel";
 import SubFileList from "../../lib/components/SubFileList";
 import { getParentFile, getSubFilesByFileId, type SubFileEntry } from "@/app/ui/doc/action";
 import { useTheme } from "../../lib/components/ThemeProvider";
@@ -49,6 +51,8 @@ export default function Home() {
   const setFileIcon = useDocWorkspaceStore((s) => s.setFileIcon);
   const setSelectedFileTags = useDocWorkspaceStore((s) => s.setSelectedFileTags);
 
+  const hasUserStoryTag = selectedFile?.tags?.some((t) => t.label === "User story") ?? false;
+  const hasE2eTag = selectedFile?.tags?.some((t) => t.label === "E2E") ?? false;
   const skipDrawerCloseRef = useRef(false);
 
   const { showSnackbar } = useSnackbar();
@@ -61,6 +65,7 @@ export default function Home() {
   const [hasCodebaseSubFile, setHasCodebaseSubFile] = useState(false);
   const [hasTestcaseSubFile, setHasTestcaseSubFile] = useState(false);
   const [hasE2eSubFile, setHasE2eSubFile] = useState(false);
+  const [hasAnySubFiles, setHasAnySubFiles] = useState(false);
 
   useEffect(() => {
     setActiveLang("en");
@@ -72,6 +77,7 @@ export default function Home() {
       setHasCodebaseSubFile(false);
       setHasTestcaseSubFile(false);
       setHasE2eSubFile(false);
+      setHasAnySubFiles(false);
       return;
     }
     let cancelled = false;
@@ -89,6 +95,7 @@ export default function Home() {
       setHasE2eSubFile(
         entries.some((e) => e.extension === "e2e" || (e.fileName?.includes(".e2e") ?? false))
       );
+      setHasAnySubFiles(entries.length > 0);
     });
     return () => { cancelled = true; };
   }, [selectedFile?.id, sidebarReloadKey]);
@@ -183,9 +190,9 @@ export default function Home() {
         selectedNodePath={selectedFilePath}
         selectedNodeId={selectedFile?.id ?? null}
       />
-      <main className="flex-1 w-dvw overflow-auto animate-fade-in">
+      <main className="flex-1 w-dvw overflow-auto animate-fade-in flex flex-col">
         {selectedFile ? (
-          <>
+          <div className="flex flex-col flex-1 min-h-0">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-1 pt-6 pl-6 text-2xl font-bold text-gray-300">
                 {parentFile && (
@@ -279,53 +286,71 @@ export default function Home() {
                 }}
               />
               
-              <div className="mt-6">
-                <ToolsPanel
-                  fileId={selectedFile.id}
-                  fileName={selectedFile.name}
-                  collectionId={selectedFile.collectionId}
-                  selectedFilePath={selectedFilePath}
-                  disableScenario={hasScenarioSubFile}
-                  disableCodebase={hasCodebaseSubFile}
-                  disableTestCase={hasTestcaseSubFile}
-                  disableE2e={hasE2eSubFile || selectedFile.name.includes(".e2e")}
-                  onAfterCreateTestCaseFile={({ node, nodePath }) => {
-                    bumpSidebarReloadKey();
-                    void selectFile(node, nodePath);
-                  }}
-                  onAfterCreateSubFile={bumpSidebarReloadKey}
-                  onModalClose={() => {
-                    skipDrawerCloseRef.current = true;
-                    bumpSidebarReloadKey();
-                  }}
-                />
-              </div>
+              {hasE2eTag && (
+                <div className="mt-6">
+                  <E2eCodeToolsPanel
+                    fileId={selectedFile.id}
+                    collectionId={selectedFile.collectionId}
+                    onAfterCreateSubFile={bumpSidebarReloadKey}
+                  />
+                </div>
+              )}
 
-              <div className="mt-6">
-                <SubFileList
-                  fileId={selectedFile.id}
-                  reloadKey={sidebarReloadKey}
-                  onSelectSubFile={handleSelectSubFile}
-                  onRemoveSubFile={() => {
-                    skipDrawerCloseRef.current = true;
-                    bumpSidebarReloadKey();
-                  }}
-                />
-              </div>
+              {hasUserStoryTag && (
+                <div className="mt-6">
+                  <ToolsPanel
+                    fileId={selectedFile.id}
+                    fileName={selectedFile.name}
+                    collectionId={selectedFile.collectionId}
+                    selectedFilePath={selectedFilePath}
+                    disableScenario={hasScenarioSubFile}
+                    disableCodebase={hasCodebaseSubFile}
+                    disableTestCase={hasTestcaseSubFile}
+                    disableE2e={hasE2eSubFile || selectedFile.name.includes(".e2e")}
+                    onAfterCreateTestCaseFile={({ node, nodePath }) => {
+                      bumpSidebarReloadKey();
+                      void selectFile(node, nodePath);
+                    }}
+                    onAfterCreateSubFile={bumpSidebarReloadKey}
+                    onModalClose={() => {
+                      skipDrawerCloseRef.current = true;
+                      bumpSidebarReloadKey();
+                    }}
+                  />
+                </div>
+              )}
+
+              {hasAnySubFiles && (
+                <div className="mt-6">
+                  <SubFileList
+                    fileId={selectedFile.id}
+                    reloadKey={sidebarReloadKey}
+                    onSelectSubFile={handleSelectSubFile}
+                    onRemoveSubFile={() => {
+                      skipDrawerCloseRef.current = true;
+                      bumpSidebarReloadKey();
+                    }}
+                  />
+                </div>
+              )}
             </Drawer>
             <div
               key={`${selectedFile.id}-${activeLang}`}
-              className="flex justify-center font-sans px-4 py-2 markdown-fade-in"
+              className={`flex justify-center font-sans px-4 py-2 markdown-fade-in${
+                selectedFile.name.includes(".ts") ? " flex-1 min-h-0" : ""
+              }`}
             >
               {selectedFile.extension === "flow" || selectedFile.name.endsWith(".flow") ? (
                 <FlowCanvas selectedFile={selectedFile} />
               ) : selectedFile.extension === "datatable" || selectedFile.name.endsWith(".datatable") ? (
                 <DataTable selectedFile={selectedFile} />
+              ) : selectedFile.name.includes(".ts") ? (
+                <CodeEditor selectedFile={editorFile} />
               ) : (
                 <MarkdownEditor selectedFile={editorFile} disableContentQuery={activeLang === "th"} />
               )}
             </div>
-          </>
+          </div>
         ) : (
           <div className="flex h-full items-center justify-center">
             <Image
