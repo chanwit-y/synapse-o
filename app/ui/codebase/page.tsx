@@ -35,7 +35,6 @@ export default function CodebasePage() {
   const [addName, setAddName] = useState("");
   const [addDescription, setAddDescription] = useState("");
   const [addImportSrcPath, setAddImportSrcPath] = useState("");
-  const [addImportPath, setAddImportPath] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -55,14 +54,13 @@ export default function CodebasePage() {
     setAddName("");
     setAddDescription("");
     setAddImportSrcPath("");
-    setAddImportPath("");
   };
 
   const handleCreate = async () => {
     if (!addName.trim() || !addImportSrcPath.trim()) return;
     setIsSaving(true);
     try {
-      const importFilePath = addImportPath.trim() || await invoke<string>('import', { srcPath: addImportSrcPath.trim() });
+      const importFilePath = await invoke<string>('extract_import', { srcPath: addImportSrcPath.trim() });
       if(importFilePath === "") {
         showSnackbar({ message: "Import failed", variant: "error" });
         return;
@@ -221,12 +219,10 @@ export default function CodebasePage() {
         name={addName}
         description={addDescription}
         importSrcPath={addImportSrcPath}
-        importPath={addImportPath}
         isSaving={isSaving}
         onNameChange={setAddName}
         onDescriptionChange={setAddDescription}
         onImportSrcPathChange={setAddImportSrcPath}
-        onImportPathChange={setAddImportPath}
         onClose={closeAddModal}
         onSave={handleCreate}
       />

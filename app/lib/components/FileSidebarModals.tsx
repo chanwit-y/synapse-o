@@ -8,6 +8,7 @@ import Modal from "./Modal";
 import type { TreeNode } from "./@types/treeViewTypes";
 import AzureBacklogModal from "./AzureBacklogModal";
 import type { BacklogNode } from "./AzureBacklogModal";
+import CustomSelect from "./CustomSelect";
 
 type SelectedNodeForAdd =
   | { node: TreeNode | null; path: string | null; groupIndex: number }
@@ -17,7 +18,24 @@ type SelectedNodeForDelete =
   | { node: TreeNode; path: string; groupIndex: number }
   | null;
 
-type FileFormat = "md" | "datatable";
+type FileFormat = "md" | "datatable" | "code";
+
+const CODE_EXTENSIONS = [
+  { value: "ts", label: "TypeScript (.ts)" },
+  { value: "tsx", label: "TypeScript React (.tsx)" },
+  { value: "js", label: "JavaScript (.js)" },
+  { value: "jsx", label: "JavaScript React (.jsx)" },
+  { value: "rs", label: "Rust (.rs)" },
+  { value: "go", label: "Go (.go)" },
+  { value: "py", label: "Python (.py)" },
+  { value: "java", label: "Java (.java)" },
+  { value: "css", label: "CSS (.css)" },
+  { value: "html", label: "HTML (.html)" },
+  { value: "json", label: "JSON (.json)" },
+  { value: "yaml", label: "YAML (.yaml)" },
+  { value: "sql", label: "SQL (.sql)" },
+  { value: "sh", label: "Shell (.sh)" },
+] as const;
 
 type FileSidebarModalsProps = {
   theme: string;
@@ -33,6 +51,8 @@ type FileSidebarModalsProps = {
   itemName: string;
   onChangeItemName: (value: string) => void;
   fileFormat: FileFormat;
+  codeExtension: string;
+  onChangeCodeExtension: (value: string) => void;
   onSubmitItem: () => void;
   isSavingItem: boolean;
   selectedNodeForAdd: SelectedNodeForAdd;
@@ -83,6 +103,8 @@ export default function FileSidebarModals({
   itemName,
   onChangeItemName,
   fileFormat,
+  codeExtension,
+  onChangeCodeExtension,
   onSubmitItem,
   isSavingItem,
   selectedNodeForAdd,
@@ -187,7 +209,7 @@ export default function FileSidebarModals({
           >
             Add {itemType === "file" ? "File" : "Folder"}
           </h3>
-          {itemType === "file" && (
+          {itemType === "file" && fileFormat !== "code" && (
             <div className="space-y-2">
               <span
                 className={`block text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"
@@ -198,6 +220,23 @@ export default function FileSidebarModals({
                   {fileFormat === "md" ? "Markdown (.md)" : "Data Table (.datatable)"}
                 </span>
               </span>
+            </div>
+          )}
+          {itemType === "file" && fileFormat === "code" && (
+            <div className="space-y-2">
+              <label
+                className={`block text-sm font-medium ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}
+              >
+                Language
+              </label>
+              <CustomSelect
+                value={codeExtension}
+                onChange={onChangeCodeExtension}
+                options={CODE_EXTENSIONS.map((ext) => ({ value: ext.value, label: ext.label }))}
+                placeholder="Select language…"
+                theme={theme}
+                ariaLabel="Code file language"
+              />
             </div>
           )}
           <div className="space-y-2">
@@ -221,7 +260,9 @@ export default function FileSidebarModals({
               placeholder={`Enter ${itemType} name${itemType === "file"
                   ? fileFormat === "datatable"
                     ? " (e.g., my-data)"
-                    : " (e.g., example.md)"
+                    : fileFormat === "code"
+                      ? ` (e.g., utils.${codeExtension})`
+                      : " (e.g., example.md)"
                   : ""
                 }`}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${theme === "light"

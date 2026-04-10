@@ -1,9 +1,12 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::fs;
+use std::{collections::HashMap, fs};
+
+use crate::md::ExtractedFile;
 
 mod import;
+mod md;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -37,9 +40,16 @@ fn read_file(path: String) -> String {
     let c = fs::read_to_string(&path).unwrap_or_default();
    c.to_string()
 }
+
+#[tauri::command]
+fn extract_files(content: String) -> HashMap<String, String> {
+    md::extract_files_map(&content)
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet, extract_import, read_file, read_files])
+        .plugin(tauri_plugin_dialog::init())
+        .invoke_handler(tauri::generate_handler![greet, extract_import, read_file, read_files, extract_files])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
