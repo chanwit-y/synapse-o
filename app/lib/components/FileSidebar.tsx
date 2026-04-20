@@ -20,7 +20,7 @@ import {
 } from "@/app/lib/collection/treeHydrate";
 import { createCollection, findAllCollections, findFileIconsByIds, updateCollectionDirectories, getAllSubFileContentIds } from "@/app/ui/doc/action";
 import { hasAzurePatConfigured } from "@/app/ui/settings/azure-api-key/action";
-import { fileService } from "@/app/lib/services/fileService.client";
+import { fileService, useAnalyzeImageMutation } from "@/app/lib/services/fileService.client";
 
 type BacklogNode = { id: number; title: string; state: string; workItemType: string; children: BacklogNode[] };
 
@@ -36,6 +36,71 @@ function sanitizeUserStoryMdFilename(title: string, id: number): string {
     .slice(0, 80)
     .replace(/^-+|-+$/g, "");
   return `${base || "user-story"}-${id}.md`;
+}
+
+/**
+ * For each distinct image URL in markdown, fetches the image and runs AI analysis once,
+ * then inserts a fenced code block below the first occurrence of that image (same pattern as MarkdownEditor).
+ */
+async function enrichMarkdownWithImageAiDescriptions(
+  markdown: string,
+  analyzeImage: (vars: { file: File; question?: string }) => Promise<string>,
+): Promise<string> {
+  const matches: Array<{ index: number; length: number; url: string }> = [];
+  const re = /!\[([^\]]*)\]\(([^)]+)\)/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(markdown)) !== null) {
+    const rawUrl = m[2].trim().replace(/^<|>$/g, "");
+    if (!rawUrl || rawUrl.toLowerCase().startsWith("data:")) continue;
+    matches.push({ index: m.index, length: m[0].length, url: rawUrl });
+  }
+  if (matches.length === 0) return markdown;
+
+  const uniqueUrls = [...new Set(matches.map((x) => x.url))];
+  const urlToAnalysis = new Map<string, string>();
+  const question = "Describe the content of this image concisely for documentation.";
+
+  for (const url of uniqueUrls) {
+    try {
+      const absolute =
+        url.startsWith("http://") || url.startsWith("https://")
+          ? url
+          : new URL(url, typeof window !== "undefined" ? window.location.origin : "http://localhost").href;
+      const res = await fetch(absolute);
+      if (!res.ok) continue;
+      const blob = await res.blob();
+      if (!blob.type.startsWith("image/")) continue;
+      const subtype = (blob.type.split("/")[1] ?? "png").replace(/[^a-z0-9+-]/gi, "") || "png";
+      const file = new File([blob], `imported-image.${subtype}`, { type: blob.type });
+      const text = await analyzeImage({ file, question });
+      urlToAnalysis.set(url, text);
+    } catch {
+      // Skip images we cannot fetch or analyze
+    }
+  }
+
+  const firstIndexByUrl = new Map<string, number>();
+  for (const match of matches) {
+    if (!urlToAnalysis.has(match.url)) continue;
+    if (!firstIndexByUrl.has(match.url)) firstIndexByUrl.set(match.url, match.index);
+  }
+
+  const insertions: Array<{ pos: number; text: string }> = [];
+  for (const [url, firstIdx] of firstIndexByUrl) {
+    const match = matches.find((x) => x.index === firstIdx && x.url === url);
+    if (!match) continue;
+    const analysis = urlToAnalysis.get(url)!;
+    insertions.push({
+      pos: match.index + match.length,
+      text: `\n\n\`\`\`\n${analysis}\n\`\`\`\n`,
+    });
+  }
+  insertions.sort((a, b) => b.pos - a.pos);
+  let result = markdown;
+  for (const { pos, text } of insertions) {
+    result = result.slice(0, pos) + text + result.slice(pos);
+  }
+  return result;
 }
 
 /** Parent list where a new folder should be added as a sibling of the selected tree node. */
@@ -283,6 +348,7 @@ export default function FileSidebar({
   const [azureCheckedUserStoryIds, setAzureCheckedUserStoryIds] = useState<number[]>([]);
   const [isImportingUserStoriesMd, setIsImportingUserStoriesMd] = useState(false);
   const [azurePatConfigured, setAzurePatConfigured] = useState<boolean | null>(null);
+  const analyzeImageMutation = useAnalyzeImageMutation();
 
   const isResizingRef = useRef(false);
   const startXRef = useRef(0);
@@ -761,12 +827,21 @@ export default function FileSidebar({
           throw new Error(mdPayload?.error || `Failed to convert work item #${item.id} to Markdown`);
         }
 
+        let markdownContent = mdPayload.markdown;
+        try {
+          markdownContent = await enrichMarkdownWithImageAiDescriptions(markdownContent, (vars) =>
+            analyzeImageMutation.mutateAsync(vars),
+          );
+        } catch (err) {
+          console.warn(`Image AI enrichment skipped for work item #${item.id}:`, err);
+        }
+
         const fileName = sanitizeUserStoryMdFilename(item.title, item.id);
         const saveResult = await fileService.saveFile({
           id: null,
           name: fileName,
           collectionId: existingGroup.id,
-          content: mdPayload.markdown,
+          content: markdownContent,
           tags: [],
         });
 
