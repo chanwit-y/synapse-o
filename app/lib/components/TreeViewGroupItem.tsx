@@ -5,14 +5,14 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, ChevronDown, Folder, FileText, Workflow, Table, CloudDownload } from "lucide-react";
+import { ChevronRight, ChevronDown, Folder, FileText, Workflow, Table, CloudDownload, Code } from "lucide-react";
 import type { TreeNode, TreeViewGroup } from "./@types/treeViewTypes";
 import TreeNodeItem, { type MarkdownPickerMultiProps } from "./TreeNodeItem";
 import { useTheme } from "./ThemeProvider";
 import Modal from "./Modal";
 import { useRouter } from "next/navigation";
 
-export type FileType = "md" | "datatable" | "flow";
+export type FileType = "md" | "datatable" | "flow" | "code";
 
 export interface TreeViewGroupItemProps {
   group: TreeViewGroup;
@@ -235,6 +235,17 @@ export default function TreeViewGroupItem({
                 title="Add Data Table"
               >
                 <Table className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              </button>
+              <button
+                type="button"
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddFile?.(selectedNode, selectedNodePath, groupIndex, "code");
+                }}
+                title="Add Code File"
+              >
+                <Code className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
               </button>
               <button
                 type="button"

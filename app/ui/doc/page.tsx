@@ -10,6 +10,7 @@ import Image from "next/image";
 import MarkdownEditor from "../../lib/components/MarkdownEditor";
 import DataTable from "../../lib/components/DataTable";
 import FlowCanvas from "../../lib/components/FlowCanvas";
+import CodeEditor from "../../lib/components/CodeEditor";
 import FileSidebar from "../../lib/components/FileSidebar";
 import type { TreeNode } from "../../lib/components/@types/treeViewTypes";
 import IconPopover from "../../lib/components/IconPopover";
@@ -17,6 +18,7 @@ import { iconOptions } from "../../lib/components/iconOptions";
 import Drawer from "../../lib/components/Drawer";
 import TagEditor from "../../lib/components/TagEditor";
 import ToolsPanel from "../../lib/components/ToolsPanel";
+import E2eCodeToolsPanel from "../../lib/components/E2eCodeToolsPanel";
 import SubFileList from "../../lib/components/SubFileList";
 import { getParentFile, getSubFilesByFileId, type SubFileEntry } from "@/app/ui/doc/action";
 import { useTheme } from "../../lib/components/ThemeProvider";
@@ -49,6 +51,8 @@ export default function Home() {
   const setFileIcon = useDocWorkspaceStore((s) => s.setFileIcon);
   const setSelectedFileTags = useDocWorkspaceStore((s) => s.setSelectedFileTags);
 
+  const hasUserStoryTag = selectedFile?.tags?.some((t) => t.label === "User story") ?? false;
+  const hasE2eTag = selectedFile?.tags?.some((t) => t.label === "E2E") ?? false;
   const skipDrawerCloseRef = useRef(false);
 
   const { showSnackbar } = useSnackbar();
@@ -61,6 +65,7 @@ export default function Home() {
   const [hasCodebaseSubFile, setHasCodebaseSubFile] = useState(false);
   const [hasTestcaseSubFile, setHasTestcaseSubFile] = useState(false);
   const [hasE2eSubFile, setHasE2eSubFile] = useState(false);
+  const [hasAnySubFiles, setHasAnySubFiles] = useState(false);
 
   useEffect(() => {
     setActiveLang("en");
@@ -72,6 +77,7 @@ export default function Home() {
       setHasCodebaseSubFile(false);
       setHasTestcaseSubFile(false);
       setHasE2eSubFile(false);
+      setHasAnySubFiles(false);
       return;
     }
     let cancelled = false;
@@ -89,6 +95,7 @@ export default function Home() {
       setHasE2eSubFile(
         entries.some((e) => e.extension === "e2e" || (e.fileName?.includes(".e2e") ?? false))
       );
+      setHasAnySubFiles(entries.length > 0);
     });
     return () => { cancelled = true; };
   }, [selectedFile?.id, sidebarReloadKey]);
@@ -183,34 +190,56 @@ export default function Home() {
         selectedNodePath={selectedFilePath}
         selectedNodeId={selectedFile?.id ?? null}
       />
-      <main className="flex-1 w-dvw overflow-auto animate-fade-in">
+      <main className="flex-1 w-dvw overflow-auto animate-fade-in flex flex-col">
         {selectedFile ? (
-          <>
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-1 pt-6 pl-6 text-2xl font-bold text-gray-300">
-                {parentFile && (
-                  <button
-                    type="button"
-                    onClick={() => void goBackToParent()}
-                    className={[
-                      "flex h-8 w-8 items-center justify-center rounded-md transition-colors cursor-pointer mr-1",
-                      theme === "dark"
-                        ? "text-gray-300 hover:bg-gray-700"
-                        : "text-gray-600 hover:bg-gray-100",
-                    ].join(" ")}
-                    aria-label={`Back to ${parentFile.name}`}
-                    title={`Back to ${parentFile.name}`}
-                  >
-                    <ArrowLeft className="h-5 w-5" />
-                  </button>
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex justify-between items-start">
+              <div className="flex flex-col gap-1 pt-6 pl-6">
+                <div className="flex items-center gap-1 text-2xl font-bold text-gray-300">
+                  {parentFile && (
+                    <button
+                      type="button"
+                      onClick={() => void goBackToParent()}
+                      className={[
+                        "flex h-8 w-8 items-center justify-center rounded-md transition-colors cursor-pointer mr-1",
+                        theme === "dark"
+                          ? "text-gray-300 hover:bg-gray-700"
+                          : "text-gray-600 hover:bg-gray-100",
+                      ].join(" ")}
+                      aria-label={`Back to ${parentFile.name}`}
+                      title={`Back to ${parentFile.name}`}
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                    </button>
+                  )}
+                  <IconPopover
+                    value={selectedIconId}
+                    options={iconOptions}
+                    onChange={handleIconChange}
+                    ariaLabel="Change file icon"
+                  />
+                  <span>{selectedFile.name}</span>
+                </div>
+                {selectedFile.tags && selectedFile.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 ml-10">
+                    {selectedFile.tags.map((tag) => {
+                      const hex = (tag.color ?? "#60a5fa").replace("#", "");
+                      const r = parseInt(hex.slice(0, 2), 16);
+                      const g = parseInt(hex.slice(2, 4), 16);
+                      const b = parseInt(hex.slice(4, 6), 16);
+                      const textColor = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.62 ? "#111827" : "#ffffff";
+                      return (
+                        <span
+                          key={tag.id}
+                          className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                          style={{ backgroundColor: tag.color ?? "#60a5fa", color: textColor }}
+                        >
+                          {tag.label}
+                        </span>
+                      );
+                    })}
+                  </div>
                 )}
-                <IconPopover
-                  value={selectedIconId}
-                  options={iconOptions}
-                  onChange={handleIconChange}
-                  ariaLabel="Change file icon"
-                />
-                <span className="">{selectedFile.name}</span>
               </div>
 <div className="flex items-center gap-2">
               {hasThaiContent ? (
@@ -279,53 +308,71 @@ export default function Home() {
                 }}
               />
               
-              <div className="mt-6">
-                <ToolsPanel
-                  fileId={selectedFile.id}
-                  fileName={selectedFile.name}
-                  collectionId={selectedFile.collectionId}
-                  selectedFilePath={selectedFilePath}
-                  disableScenario={hasScenarioSubFile}
-                  disableCodebase={hasCodebaseSubFile}
-                  disableTestCase={hasTestcaseSubFile}
-                  disableE2e={hasE2eSubFile || selectedFile.name.includes(".e2e")}
-                  onAfterCreateTestCaseFile={({ node, nodePath }) => {
-                    bumpSidebarReloadKey();
-                    void selectFile(node, nodePath);
-                  }}
-                  onAfterCreateSubFile={bumpSidebarReloadKey}
-                  onModalClose={() => {
-                    skipDrawerCloseRef.current = true;
-                    bumpSidebarReloadKey();
-                  }}
-                />
-              </div>
+              {hasE2eTag && (
+                <div className="mt-6">
+                  <E2eCodeToolsPanel
+                    fileId={selectedFile.id}
+                    collectionId={selectedFile.collectionId}
+                    onAfterCreateSubFile={bumpSidebarReloadKey}
+                  />
+                </div>
+              )}
 
-              <div className="mt-6">
-                <SubFileList
-                  fileId={selectedFile.id}
-                  reloadKey={sidebarReloadKey}
-                  onSelectSubFile={handleSelectSubFile}
-                  onRemoveSubFile={() => {
-                    skipDrawerCloseRef.current = true;
-                    bumpSidebarReloadKey();
-                  }}
-                />
-              </div>
+              {hasUserStoryTag && (
+                <div className="mt-6">
+                  <ToolsPanel
+                    fileId={selectedFile.id}
+                    fileName={selectedFile.name}
+                    collectionId={selectedFile.collectionId}
+                    selectedFilePath={selectedFilePath}
+                    disableScenario={hasScenarioSubFile}
+                    disableCodebase={hasCodebaseSubFile}
+                    disableTestCase={hasTestcaseSubFile}
+                    disableE2e={hasE2eSubFile || selectedFile.name.includes(".e2e")}
+                    onAfterCreateTestCaseFile={({ node, nodePath }) => {
+                      bumpSidebarReloadKey();
+                      void selectFile(node, nodePath);
+                    }}
+                    onAfterCreateSubFile={bumpSidebarReloadKey}
+                    onModalClose={() => {
+                      skipDrawerCloseRef.current = true;
+                      bumpSidebarReloadKey();
+                    }}
+                  />
+                </div>
+              )}
+
+              {hasAnySubFiles && (
+                <div className="mt-6">
+                  <SubFileList
+                    fileId={selectedFile.id}
+                    reloadKey={sidebarReloadKey}
+                    onSelectSubFile={handleSelectSubFile}
+                    onRemoveSubFile={() => {
+                      skipDrawerCloseRef.current = true;
+                      bumpSidebarReloadKey();
+                    }}
+                  />
+                </div>
+              )}
             </Drawer>
             <div
               key={`${selectedFile.id}-${activeLang}`}
-              className="flex justify-center font-sans px-4 py-2 markdown-fade-in"
+              className={`flex justify-center font-sans px-4 py-2 markdown-fade-in${
+                selectedFile.name.includes(".ts") ? " flex-1 min-h-0" : ""
+              }`}
             >
               {selectedFile.extension === "flow" || selectedFile.name.endsWith(".flow") ? (
                 <FlowCanvas selectedFile={selectedFile} />
               ) : selectedFile.extension === "datatable" || selectedFile.name.endsWith(".datatable") ? (
                 <DataTable selectedFile={selectedFile} />
+              ) : selectedFile.name.includes(".ts") ? (
+                <CodeEditor selectedFile={editorFile} />
               ) : (
                 <MarkdownEditor selectedFile={editorFile} disableContentQuery={activeLang === "th"} />
               )}
             </div>
-          </>
+          </div>
         ) : (
           <div className="flex h-full items-center justify-center">
             <Image

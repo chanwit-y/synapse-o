@@ -324,7 +324,8 @@ export default function FileSidebar({
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [itemName, setItemName] = useState("");
   const [itemType, setItemType] = useState<"file" | "folder">("file");
-  const [fileFormat, setFileFormat] = useState<"md" | "datatable">("md");
+  const [fileFormat, setFileFormat] = useState<"md" | "datatable" | "code">("md");
+  const [codeExtension, setCodeExtension] = useState("ts");
   const [isSavingItem, setIsSavingItem] = useState(false);
   const [selectedNodeForAdd, setSelectedNodeForAdd] = useState<{ node: TreeNode | null; path: string | null; groupIndex: number } | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -916,6 +917,7 @@ export default function FileSidebar({
     setIsAddItemModalOpen(false);
     setItemName("");
     setFileFormat("md");
+    setCodeExtension("ts");
     setSelectedNodeForAdd(null);
   };
 
@@ -944,9 +946,10 @@ export default function FileSidebar({
     if (!name || isSavingItem) return;
     if (!selectedNodeForAdd) return;
 
-    const resolvedExtension = itemType === "file" ? fileFormat : null;
+    const defaultExt = fileFormat === "code" ? codeExtension : fileFormat;
+    const resolvedExtension = itemType === "file" ? defaultExt : null;
     const resolvedName = itemType === "file" && !name.includes(".")
-      ? `${name}.${fileFormat}`
+      ? `${name}.${defaultExt}`
       : name;
 
     const newItem: TreeNode = {
@@ -1371,6 +1374,8 @@ export default function FileSidebar({
         itemName={itemName}
         onChangeItemName={setItemName}
         fileFormat={fileFormat}
+        codeExtension={codeExtension}
+        onChangeCodeExtension={setCodeExtension}
         onSubmitItem={handleAddItem}
         isSavingItem={isSavingItem}
         selectedNodeForAdd={selectedNodeForAdd}
