@@ -6,15 +6,14 @@ import {
 	collectFileIds,
 	parseDirectories,
 } from "@/app/lib/collection/treeHydrate";
-import { RagTransactionRepository, type RagTransactionCreateInput } from "@/app/lib/db/repository/rag-transaction";
-import { findAllCollections, findFileIconsByIds, getAllSubFileContentIds } from "@/app/ui/doc/action";
+import { createRagTransactionPg, deleteRagTransactionPg, listRagTransactionsPg } from "@/app/lib/rag/pgvector.server";
+import { ingestMarkdownDocsToPg, type ChunkType } from "@/app/lib/rag/ingestMarkdown.server";
 import type { TreeViewGroup } from "@/app/lib/components/@types/treeViewTypes";
-
-const ragRepo = new RagTransactionRepository();
+import type { RagTransactionRow } from "./types";
 
 export async function getAllRagTransactions() {
 	try {
-		const rows = await ragRepo.findAll();
+		const rows = await listRagTransactionsPg();
 		return { success: true, data: rows };
 	} catch (error) {
 		console.error("Failed to fetch RAG transactions:", error);
@@ -30,7 +29,12 @@ export async function getRagPickerTreeData(): Promise<{
 	error?: string;
 }> {
 	try {
-		const [collections, subFileContentIds] = await Promise.all([findAllCollections(), getAllSubFileContentIds()]);
+		// Lazy import to avoid loading SQLite/better-sqlite3 at module eval time.
+		const docActions = await import("@/app/ui/doc/action");
+		const [collections, subFileContentIds] = await Promise.all([
+			docActions.findAllCollections(),
+			docActions.getAllSubFileContentIds(),
+		]);
 		const hydrated = collections.map((collection) => ({
 			id: collection.id,
 			name: collection.name ?? "",
@@ -38,7 +42,7 @@ export async function getRagPickerTreeData(): Promise<{
 		}));
 		const fileIds = new Set<string>();
 		hydrated.forEach((c) => collectFileIds(c.directories, fileIds));
-		const iconsById = fileIds.size > 0 ? await findFileIconsByIds([...fileIds]) : {};
+		const iconsById = fileIds.size > 0 ? await docActions.findFileIconsByIds([...fileIds]) : {};
 		const groups: TreeViewGroup[] = hydrated.map((c) => ({
 			id: c.id,
 			name: c.name,
@@ -57,14 +61,11 @@ export async function createRagTransaction(data: { ragName: string; collection: 
 		if (!collection) {
 			return { success: false, error: "Select at least one Markdown file from a collection" };
 		}
-		const nowSec = Math.floor(Date.now() / 1000);
-		const input: RagTransactionCreateInput = {
+		const result = await createRagTransactionPg({
 			ragName: data.ragName.trim(),
 			collection,
 			updatedBy: DEFAULT_RAG_UPDATED_BY,
-			updatedAt: nowSec,
-		};
-		const result = await ragRepo.create(input);
+		});
 		return { success: true, data: result };
 	} catch (error) {
 		console.error("Failed to create RAG transaction:", error);
@@ -72,9 +73,60 @@ export async function createRagTransaction(data: { ragName: string; collection: 
 	}
 }
 
+export async function createRagTransactionAndIngest(data: {
+  ragName: string;
+  collection: string;
+  chunkType: ChunkType;
+  fileIds: string[];
+}) {
+  try {
+    const ragName = data.ragName.trim();
+    const collection = data.collection.trim();
+    if (!ragName) return { success: false, error: "RAG name is required" };
+    if (!collection) return { success: false, error: "Select at least one Markdown file" };
+    const fileIds = Array.isArray(data.fileIds) ? data.fileIds.map((s) => s.trim()).filter(Boolean) : [];
+    if (fileIds.length === 0) return { success: false, error: "Select at least one Markdown file" };
+
+    const tx = await createRagTransactionPg({
+      ragName,
+      collection,
+      updatedBy: DEFAULT_RAG_UPDATED_BY,
+    });
+
+    // Load markdown contents from local file DB (Docs).
+    const fileSvc = await import("@/app/lib/services/fileService");
+    const docs: { source: string | null; markdown: string }[] = [];
+    for (const id of fileIds) {
+      const f = await fileSvc.loadFile(id);
+      if (!f) continue;
+      const name = (f.name ?? "").toLowerCase();
+      if (!name.endsWith(".md") && !name.endsWith(".markdown")) continue;
+      const content = typeof (f as { content?: unknown }).content === "string" ? (f as { content: string }).content : "";
+      if (!content.trim()) continue;
+      docs.push({ source: f.name ?? id, markdown: content });
+    }
+
+    if (docs.length === 0) {
+      return { success: false, error: "Selected files contained no Markdown content to ingest." };
+    }
+
+    const ingest = await ingestMarkdownDocsToPg({
+      ragId: tx.id,
+      chunkType: data.chunkType,
+      docs,
+    });
+
+    return { success: true, data: { transaction: tx, ingest } };
+  } catch (error) {
+    console.error("Failed to create + ingest RAG:", error);
+    const message = error instanceof Error ? error.message : "Failed to create + ingest RAG";
+    return { success: false, error: message };
+  }
+}
+
 export async function deleteRagTransaction(id: string) {
 	try {
-		const deleted = await ragRepo.delete(id);
+		const deleted = await deleteRagTransactionPg(id);
 		return { success: deleted, data: deleted };
 	} catch (error) {
 		console.error("Failed to delete RAG transaction:", error);

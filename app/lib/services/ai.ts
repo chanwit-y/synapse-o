@@ -248,3 +248,34 @@ ${body || "<p>(empty description)</p>"}`;
 	return JSON.stringify(content ?? completion);
 }
 
+/**
+ * Embeds text for vector search (RAG).
+ * Returns a list of embeddings aligned with `texts`.
+ */
+export async function aiEmbedTexts(
+	texts: string[],
+	model: string = "text-embedding-3-small",
+): Promise<number[][]> {
+	if (!Array.isArray(texts) || texts.length === 0) {
+		throw new Error("texts array is required.");
+	}
+	const input = texts.map((t) => (t ?? "").trim()).filter(Boolean);
+	if (input.length === 0) {
+		throw new Error("texts array contains no non-empty strings.");
+	}
+
+	const apiKey = await configService.getOpenAiApiKey();
+	if (!apiKey) {
+		throw new Error("OpenAI API key not found. Set OPENAI_API_KEY env or add one in Settings.");
+	}
+
+	const openai = new OpenAI({ apiKey });
+	const response = await openai.embeddings.create({
+		model,
+		input,
+	});
+
+	// OpenAI guarantees `data` aligns with `input` order.
+	return response.data.map((d) => d.embedding as number[]);
+}
+

@@ -7,10 +7,10 @@ import { useSnackbar } from "@/app/lib/components/Snackbar";
 import Modal from "@/app/lib/components/Modal";
 import TreeView from "@/app/lib/components/TreeView";
 import type { TreeNode, TreeViewGroup } from "@/app/lib/components/@types/treeViewTypes";
-import type { RagTransactionRow } from "@/app/lib/db/repository/rag-transaction";
+import type { RagTransactionRow } from "./types";
 import { formatDate, getThemeStyles } from "@/app/ui/codebase/types";
 import {
-  createRagTransaction,
+  createRagTransactionAndIngest,
   deleteRagTransaction,
   getAllRagTransactions,
   getRagPickerTreeData,
@@ -64,6 +64,7 @@ export default function RagPage() {
   const [pickerLoading, setPickerLoading] = useState(false);
   /** Selected .md files by file id → display label (collection › path). */
   const [pickedMarkdownFiles, setPickedMarkdownFiles] = useState<Map<string, { label: string }>>(() => new Map());
+  const [chunkType, setChunkType] = useState<"paragraph" | "fixed" | "heading">("paragraph");
   const [isSaving, setIsSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<RagTransactionRow | null>(null);
   /** After first fetch, animate main content in (fade + slide). */
@@ -105,6 +106,7 @@ export default function RagPage() {
     setPickerGroups([]);
     setPickerSubFileIds(new Set());
     setPickedMarkdownFiles(new Map());
+    setChunkType("paragraph");
     setPickerLoading(false);
   };
 
@@ -156,14 +158,17 @@ export default function RagPage() {
     const collection = [...pickedMarkdownFiles.values()]
       .map((v) => v.label)
       .join(RAG_COLLECTION_FILE_DELIMITER);
+    const fileIds = [...pickedMarkdownFiles.keys()];
     setIsSaving(true);
-    const result = await createRagTransaction({
+    const result = await createRagTransactionAndIngest({
       ragName: ragName.trim(),
       collection,
+      chunkType,
+      fileIds,
     });
     setIsSaving(false);
     if (result.success) {
-      showSnackbar({ message: "RAG record added", variant: "success" });
+      showSnackbar({ message: "RAG saved + ingested to pgvector", variant: "success" });
       resetAddModal();
       await refreshRows();
     } else {
@@ -314,6 +319,21 @@ export default function RagPage() {
                     autoComplete="off"
                   />
                 </label>
+                <label className="block">
+                  <span className={`mb-1 block text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                    Chunk type
+                  </span>
+                  <select
+                    value={chunkType}
+                    onChange={(e) => setChunkType(e.target.value as "paragraph" | "fixed" | "heading")}
+                    disabled={pickerLoading}
+                    className={`w-full rounded-lg border px-3 py-2 text-sm ${styles.inputBg}`}
+                  >
+                    <option value="paragraph">paragraph</option>
+                    <option value="heading">heading</option>
+                    <option value="fixed">fixed</option>
+                  </select>
+                </label>
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button
@@ -343,6 +363,21 @@ export default function RagPage() {
                 RAG: <span className="font-medium text-inherit">{ragName.trim()}</span> — use the checkboxes to select one or more{" "}
                 <code className="text-xs">.md</code> files (row click also toggles).
               </p>
+              <label className="block">
+                <span className={`mb-1 block text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  Chunk type
+                </span>
+                <select
+                  value={chunkType}
+                  onChange={(e) => setChunkType(e.target.value as "paragraph" | "fixed" | "heading")}
+                  disabled={isSaving}
+                  className={`w-full rounded-lg border px-3 py-2 text-sm ${styles.inputBg}`}
+                >
+                  <option value="paragraph">paragraph</option>
+                  <option value="heading">heading</option>
+                  <option value="fixed">fixed</option>
+                </select>
+              </label>
               <div
                 className={`max-h-[min(360px,50vh)] overflow-y-auto rounded-lg border ${tableBorder} ${isDark ? "bg-gray-900/40" : "bg-gray-50/80"
                   }`}
